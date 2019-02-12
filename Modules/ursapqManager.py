@@ -71,8 +71,12 @@ class UrsapqManager:
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
 
         #OvenPS
-        if self.status.oven_isOn and self.ovenPS.connect():
-            self.status.ovenVolt = self.ovenPS[1].voltage
+        if self.status.oven_isOn:
+            try:
+                self.ovenPS.connect()
+                self.status.ovenVolt = self.ovenPS[1].voltage
+            except Exception:
+                pass
 
 
         #If update complete sucessfully, update timestamp
