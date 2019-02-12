@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainWindow</class>
+ <widget class="QMainWindow" name="mainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>329</width>
+    <height>418</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>UrsaPQ Remote - Vacuum</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget{
+	background-color: rgb(255, 255, 255);
+}
+
+QGroupBox {
+    border: 1px solid gray;
+    border-color: #FF17365D;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+ 	border-top-left-radius: 10px;
+ 	border-bottom-right-radius: 10px;
+    padding: 5px 20px;
+    background-color: #FF17365D;
+    color: rgb(255, 255, 255);
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>15</y>
+      <width>301</width>
+      <height>391</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Vacuum</string>
+    </property>
+    <widget class="QCheckBox" name="preVacValve_lock">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>45</y>
+       <width>211</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pre Vacuum Valve Lock</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

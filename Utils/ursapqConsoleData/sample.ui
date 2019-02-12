@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sampleWindow</class>
+ <widget class="QMainWindow" name="sampleWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>330</width>
+    <height>433</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>UrsaPQ Remote - Sample</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget{
+	background-color: rgb(255, 255, 255);
+}
+
+QGroupBox {
+    border: 1px solid gray;
+    border-color: #FF17365D;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+ 	border-top-left-radius: 10px;
+ 	border-bottom-right-radius: 10px;
+    padding: 5px 20px;
+    background-color: #FF17365D;
+    color: rgb(255, 255, 255);
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox_4">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>15</y>
+      <width>301</width>
+      <height>406</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Sample Config</string>
+    </property>
+    <widget class="QCheckBox" name="oven_enable">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>141</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Oven Enable</string>
+     </property>
+     <property name="tristate">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
