@@ -76,7 +76,7 @@ class UrsapqManager:
                 self.ovenPS.connect()
                 self.status.ovenVolt = self.ovenPS[1].voltage
             except Exception:
-                pass
+                self.status.ovenVolt = 0
 
 
         #If update complete sucessfully, update timestamp
