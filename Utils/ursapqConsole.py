@@ -119,7 +119,7 @@ class MainWindow(ConsoleWindow):
 
 if __name__ == '__main__':
 
-    ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
+    ursapq = UrsaPQ( '141.89.116.204' , 22222 , 'ursapqManager_TurboOK'.encode('ascii'))
 
     app = QApplication(sys.argv)
     ui = MainWindow(ursapq)
