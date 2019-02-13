@@ -7,9 +7,10 @@ from PySide2.QtCore import QFile, QObject, QTimer, Slot, QEvent
 
 UI_BASEPATH = 'ursapqConsoleData/'
 #style
-BG_COLOR_OK = 'background-color: #348035;'
+BG_COLOR_OK = 'background-color: #4CBB17;'
 BG_COLOR_WARNING = 'background-color: #efd077;'
 BG_COLOR_ERROR = 'background-color: #e76c53;'
+BG_COLOR_OFF = 'background-color: #808080;'
 
 class ConsoleWindow(QObject):
     '''
@@ -87,17 +88,16 @@ class MainWindow(ConsoleWindow):
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
         pass
 
-    def update(self):
-        #Update displayed values
+    def updateVacuum(self):
+        #VACUUM BOX
         self.window.prevacPressure.setText(  '{:.2e}'.format(self.ursapq.preVacPressure) )
         self.window.chamberPressure.setText( '{:.2e}'.format(self.ursapq.chamberPressure) )
-        self.window.prevacValves.setText( "Open" if self.ursapq.preVacValve_isOpen else "Closed" )
+        self.window.prevacValves.setText( '{} ({})'.format(
+                                           "Open" if self.ursapq.preVacValve_isOpen else "Closed",
+                                           "Locked" if self.ursapq.preVacValve_lock else "Auto" ))
         self.window.pumpStatus.setText(   "Running" if self.ursapq.preVacValve_isOpen else "Stopped" )
 
-        self.window.sampleTemp.setText( '{:.2e}'.format(self.ursapq.ovenVolt) )
-
-
-        #Update status labels
+        #Update status label
         if self.ursapq.preVac_OK:
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_WARNING)
         else:
@@ -105,6 +105,22 @@ class MainWindow(ConsoleWindow):
 
         if self.ursapq.preVac_OK and self.ursapq.mainVac_OK:
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_OK)
+
+    def updateSample(self):
+        self.window.sampleTemp.setText( '{:.2e}'.format(self.ursapq.ovenVolt) )
+
+        #Update status label
+        if self.ursapq.oven_isOn:
+            if self.ursapq.ovenStatus == "ON":
+                self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
+            else:
+                self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
+        else:
+            self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
+
+    def update(self):
+        self.updateVacuum()
+        self.updateSample()
 
         self.window.statusBar().showMessage( 'Last update: %s' % str( self.ursapq.lastUpdate ) )
 
@@ -119,7 +135,7 @@ class MainWindow(ConsoleWindow):
 
 if __name__ == '__main__':
 
-    ursapq = UrsaPQ( '141.89.116.204' , 22222 , 'ursapqManager_TurboOK'.encode('ascii'))
+    ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
 
     app = QApplication(sys.argv)
     ui = MainWindow(ursapq)

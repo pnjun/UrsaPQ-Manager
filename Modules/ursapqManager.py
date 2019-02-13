@@ -1,5 +1,6 @@
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
+import threading
 
 from OvenPS import OvenPS
 from Beckhoff import BeckhoffSys
@@ -30,12 +31,17 @@ class UrsapqManager:
 
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
+        self.oven_stop = threading.Event()
 
     def start(self):
         self.beckhoff.start()
 
+        self.oven_stop.clear()
+        self.ovenController()
+
     def stop(self):
         self.beckhoff.stop()
+        self.oven_stop.set()
 
     #Wrapper functions to make updateStatus func more readable
     def _beckhoffRead(self, key, name, type):
@@ -50,6 +56,20 @@ class UrsapqManager:
         except Exception:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
+
+    def ovenController(self):
+        ''' PID filter to control the sample oven temperature '''
+        try:
+            assert(self.status.oven_isOn)
+            self.ovenPS.connect()
+            self.status.ovenVolt = self.ovenPS[1].voltage
+            self.status.ovenStatus = "ON"
+        except Exception as e:
+            self.status.ovenStatus = "OFF"
+            self.status.ovenVolt = float("nan")
+
+        if not self.oven_stop.is_set():
+            threading.Timer(config.Oven_ControlPeriod, self.ovenController).start()
 
     def updateStatus(self, verbose = False):
         #BECKHOFF VALUES
@@ -69,15 +89,6 @@ class UrsapqManager:
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
-
-        #OvenPS
-        if self.status.oven_isOn:
-            try:
-                self.ovenPS.connect()
-                self.status.ovenVolt = self.ovenPS[1].voltage
-            except Exception:
-                self.status.ovenVolt = 0
-
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()

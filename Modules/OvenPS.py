@@ -5,22 +5,27 @@
 #Fabiano Lever (fabiano.lever@uni-potsdam.de)
 
 import time
-from serial import Serial
+import serial
+from serial.tools import list_ports
 from config import config
 
 class OvenPS:
     #initialize serial connection and check that serial is isOpen
     #TODO: implement consistency check on device ID to prevent wrong physical power supply from being connected
-    def __init__(self, serialPort=config.OvenPS_Serial):
+    def __init__(self, name=config.OvenPS_DeviceName):
         #init serial connection
-        self.serialPort = serialPort
-        self.serial = Serial()
+        self.serial = serial.Serial()
+        self.name = name
+        self.serial.baudrate = 9600
+        self.serial.timeout = 0.20
 
     def connect(self):
-        if not self.serial.isOpen():
-            self.serial = Serial( port=self.serialPort, baudrate=9600 , timeout=0.2)
+        #Scan all serials looking for matching device name
+        self.serial.port = list(list_ports.grep(self.name))[0][0]
+        if not self.serial.is_open:
+            self.serial.open()
 
-        return self.serial.isOpen()
+        self.serial.flush()
 
     #returns a channel
     def __getitem__(self, chid):
