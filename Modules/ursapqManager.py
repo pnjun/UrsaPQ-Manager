@@ -44,8 +44,9 @@ class UrsapqManager:
         self.oven_stop.set()
 
     #Wrapper functions to make updateStatus func more readable
-    def _beckhoffRead(self, key, name, type):
-        self.status.__setattr__(key, self.beckhoff.read(name,type))
+    #rescale can be provided to process data before writing
+    def _beckhoffRead(self, key, name, type, rescale=lambda x:x):
+        self.status.__setattr__(key, rescale( self.beckhoff.read(name,type)) )
 
     def _beckhoffWrite(self, key, name, type):
         try:
@@ -62,11 +63,16 @@ class UrsapqManager:
         try:
             assert(self.status.oven_isOn)
             self.ovenPS.connect()
-            self.status.ovenVolt = self.ovenPS[1].voltage
-            self.status.ovenStatus = "ON"
+            self.status.oven_capVolt  = self.ovenPS[config.Oven_CapChannel].voltage
+            self.status.oven_bodyVolt = self.ovenPS[config.Oven_BodyChannel].voltage
+            self.status.oven_tipVolt  = self.ovenPS[config.Oven_TipChannel].voltage
+            self.status.ovenStatus = "OK"
         except Exception as e:
-            self.status.ovenStatus = "OFF"
-            self.status.ovenVolt = float("nan")
+            self.status.oven_capVolt = float("nan")
+            self.status.oven_bodyVolt = float("nan")
+            self.status.oven_tipVolt = float("nan")
+            self.status.ovenStatus = "ERROR"
+            #print(str(e))
 
         if not self.oven_stop.is_set():
             threading.Timer(config.Oven_ControlPeriod, self.ovenController).start()
@@ -82,7 +88,12 @@ class UrsapqManager:
         self._beckhoffRead('mainVac_OK',          'MAIN.MainVac_OK',        pyads.PLCTYPE_BOOL)
         self._beckhoffRead('preVacValve_isOpen',  'MAIN.PreVacValves_Open', pyads.PLCTYPE_BOOL)
         self._beckhoffRead('oven_isOn',           'MAIN.OvenPS_Relay',      pyads.PLCTYPE_BOOL)
-
+        self._beckhoffRead('sample_capTemp',      'MAIN.Sample_CapTemp',    pyads.PLCTYPE_INT,
+                            lambda x:x/10)
+        self._beckhoffRead('sample_tipTemp',      'MAIN.Sample_TipTemp',    pyads.PLCTYPE_INT,
+                            lambda x:x/10)
+        self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT,
+                            lambda x:x/10)
 
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.

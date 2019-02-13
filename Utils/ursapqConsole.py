@@ -1,11 +1,12 @@
 import sys
+import os
 from ursapqUtils import UrsaPQ
 
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
 from PySide2.QtCore import QFile, QObject, QTimer, Slot, QEvent
 
-UI_BASEPATH = 'ursapqConsoleData/'
+UI_BASEPATH = '/ursapqConsoleData/'
 #style
 BG_COLOR_OK = 'background-color: #4CBB17;'
 BG_COLOR_WARNING = 'background-color: #efd077;'
@@ -24,7 +25,8 @@ class ConsoleWindow(QObject):
         super(ConsoleWindow, self).__init__(None)
         self.updateTime = updateTime
 
-        self.window = QUiLoader().load( QFile(UI_BASEPATH + uifilename) )
+        local_dir = os.path.dirname(os.path.abspath(__file__))
+        self.window = QUiLoader().load( QFile(local_dir + UI_BASEPATH + uifilename) )
 
         self.setupCallbacks()
 
@@ -107,15 +109,19 @@ class MainWindow(ConsoleWindow):
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_OK)
 
     def updateSample(self):
-        self.window.sampleTemp.setText( '{:.2e}'.format(self.ursapq.ovenVolt) )
+        self.window.bodyTemp.setText( '{:.1f}'.format(self.ursapq.sample_bodyTemp) )
+        self.window.capTemp.setText(  '{:.1f}'.format(self.ursapq.sample_capTemp) )
+        self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
 
         #Update status label
         if self.ursapq.oven_isOn:
-            if self.ursapq.ovenStatus == "ON":
+            self.window.ovenStatus.setText("ON")
+            if self.ursapq.ovenStatus == "OK":
                 self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
             else:
                 self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
         else:
+            self.window.ovenStatus.setText("OFF")
             self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
 
     def update(self):
