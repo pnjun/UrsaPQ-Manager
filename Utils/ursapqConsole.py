@@ -70,13 +70,17 @@ class VacuumWindow(ConsoleWindow):
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
-
         self.ursapq = ursapq
+
+        super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
         self.window.ovenEnableBox.addWidget(self.enableSwitch)
 
     def setupCallbacks(self):
         self.enableSwitch.toggled.connect(self.oven_enable)
+
+        self.window.bodySetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
+        self.window.tipSetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
+        self.window.capSetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
 
     def update(self):
         self.enableSwitch.setChecked( self.ursapq.oven_enable )
