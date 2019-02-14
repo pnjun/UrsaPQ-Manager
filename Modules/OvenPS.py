@@ -17,7 +17,7 @@ class OvenPS:
         self.serial = serial.Serial()
         self.name = name
         self.serial.baudrate = 9600
-        self.serial.timeout = 0.20
+        self.serial.timeout = 0.3
 
     def connect(self):
         #Scan all serials looking for matching device name
@@ -26,6 +26,16 @@ class OvenPS:
             self.serial.open()
 
         self.serial.flush()
+
+    def allOn(self):
+        self[1].on()
+        self[2].on()
+        self[3].on()
+
+    def allOff(self):
+        self[1].off()
+        self[2].off()
+        self[3].off()
 
     #returns a channel
     def __getitem__(self, chid):
@@ -65,7 +75,14 @@ class OvenPS:
             def voltage(self):
                 serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
                 serial.write( b':MEAS:VOLT?\r\n'); serial.flush()
-                return float (serial.readline())
+                return float(serial.readline())
+
+            #retrives actual measured power output on channel
+            @property
+            def power(self):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':MEAS:POW?\r\n'); serial.flush()
+                return float(serial.readline())
 
         return OvenPSChannel()
 

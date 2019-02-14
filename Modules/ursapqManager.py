@@ -1,12 +1,48 @@
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
+from collections import namedtuple
 import threading
+import traceback
+import time
 
 from OvenPS import OvenPS
 from Beckhoff import BeckhoffSys
 import pyads
-
 from config import config
+
+
+class TempPIDFilter:
+    def __init__(self, p, i ,d, setPoint):
+        '''
+        Temperature PID filter. Takes the filter coefficients for the
+        proportional, integral and derivative components
+        '''
+        self.d = d
+        self.i = i
+        self.p = p
+        self.setPoint = setPoint
+        self.reset()
+
+    def filter(self, t_in):
+        if not self.lastcall:
+            self.lastcall = datetime.now()
+        now = datetime.now()
+
+        dt = (now - self.lastcall).total_seconds() #get time elapsed since last filter run
+        err = self.setPoint - t_in
+
+        self.integ += dt*err
+        out = self.p * err + self.i * self.integ + self.d / dt * (err - self.lastErr)
+        self.lastErr = err
+        self.lastcall = now
+
+        return out
+
+    def reset(self):
+        self.integ = 0
+        self.lastErr = 0
+        self.lastcall = None
+
 
 class UrsapqManager:
     '''
@@ -14,7 +50,7 @@ class UrsapqManager:
     between HW components. Values are then made available to clients trough a
     shared namespace accessible via the ursapqUtils library.
 
-    The updateStatus() function can be used to get info on all tracked values.
+    The updateStatus() and ovenController() functions can be used to get info on all tracked values.
     '''
 
     def __init__(self, port, authkey):
@@ -33,8 +69,13 @@ class UrsapqManager:
         self.ovenPS = OvenPS()
         self.oven_stop = threading.Event()
 
+        self.TipPID =  TempPIDFilter(*tuple(config.Oven_TipPIDParams),  config.Oven_TipDefSetpoint)
+        self.CapPID =  TempPIDFilter(*tuple(config.Oven_CapPIDParams),  config.Oven_CapDefSetpoint)
+        self.BodyPID = TempPIDFilter(*tuple(config.Oven_BodyPIDParams), config.Oven_BodyDefSetpoint)
+
     def start(self):
         self.beckhoff.start()
+        self.updateStatus()
 
         self.oven_stop.clear()
         self.ovenController()
@@ -58,25 +99,6 @@ class UrsapqManager:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
 
-    def ovenController(self):
-        ''' PID filter to control the sample oven temperature '''
-        try:
-            assert(self.status.oven_isOn)
-            self.ovenPS.connect()
-            self.status.oven_capVolt  = self.ovenPS[config.Oven_CapChannel].voltage
-            self.status.oven_bodyVolt = self.ovenPS[config.Oven_BodyChannel].voltage
-            self.status.oven_tipVolt  = self.ovenPS[config.Oven_TipChannel].voltage
-            self.status.ovenStatus = "OK"
-        except Exception as e:
-            self.status.oven_capVolt = float("nan")
-            self.status.oven_bodyVolt = float("nan")
-            self.status.oven_tipVolt = float("nan")
-            self.status.ovenStatus = "ERROR"
-            #print(str(e))
-
-        if not self.oven_stop.is_set():
-            threading.Timer(config.Oven_ControlPeriod, self.ovenController).start()
-
     def updateStatus(self, verbose = False):
         #BECKHOFF VALUES
 
@@ -95,6 +117,8 @@ class UrsapqManager:
         self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT,
                             lambda x:x/10)
 
+        self._beckhoffRead('sample_posZ','MAIN.SampleZ.NcToPlc.TargetPos', pyads.PLCTYPE_REAL)
+
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
@@ -103,6 +127,45 @@ class UrsapqManager:
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
+
+    def ovenController(self):
+        ''' PID filter to control the sample oven temperature '''
+        try:
+            assert(self.status.oven_isOn)
+            self.ovenPS.connect()
+            self.status.oven_capPow  = self.ovenPS[config.Oven_CapCh].power
+            self.status.oven_bodyPow = self.ovenPS[config.Oven_BodyCh].power
+            self.status.oven_tipPow  = self.ovenPS[config.Oven_TipCh].power
+        except Exception:
+            self.status.oven_capPow = float("nan")
+            self.status.oven_bodyPow = float("nan")
+            self.status.oven_tipPow = float("nan")
+
+            self.TipPID.reset()
+            self.CapPID.reset()
+            self.BodyPID.reset()
+            self.status.oven_PIDStatus = "OFF"
+            #print(traceback.format_exc())
+        else:
+            self.ovenPS.allOn()
+            self.ovenPS[config.Oven_CapCh].setVoltage  = self.CapPID.filter(self.status.sample_capTemp)
+            self.ovenPS[config.Oven_TipCh].setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
+            self.ovenPS[config.Oven_BodyCh].setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
+
+            print(abs(self.TipPID.lastErr))
+
+            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr:
+                self.status.oven_PIDStatus = "OK"
+            else:
+                self.status.oven_PIDStatus = "TRACKING"
+
+        if self.oven_stop.is_set():
+            self.ovenPS.allOff()
+            self.TipPID.reset()
+            self.CapPID.reset()
+            self.BodyPID.reset()
+        else:
+            threading.Timer(config.Oven_ControlPeriod, self.ovenController).start()
 
 if __name__=='__main__':
     import time
@@ -119,5 +182,6 @@ if __name__=='__main__':
 
         except Exception as e:
             expManager.stop()
-            print("Server Error: %s" % str(e))
+            print("Server Error:")
+            print(traceback.format_exc())
         time.sleep(config.UrsapqServer_ReconnectPeriod)

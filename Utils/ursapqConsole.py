@@ -1,16 +1,17 @@
 import sys
 import os
 from ursapqUtils import UrsaPQ
+from ursapqConsole import Switch
 
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
 from PySide2.QtCore import QFile, QObject, QTimer, Slot, QEvent
 
-UI_BASEPATH = '/ursapqConsoleData/'
+UI_BASEPATH = '/ursapqConsole/'
 #style
 BG_COLOR_OK = 'background-color: #4CBB17;'
-BG_COLOR_WARNING = 'background-color: #efd077;'
-BG_COLOR_ERROR = 'background-color: #e76c53;'
+BG_COLOR_WARNING = 'background-color: #F9A602;'
+BG_COLOR_ERROR = 'background-color: #DF2800;'
 BG_COLOR_OFF = 'background-color: #808080;'
 
 class ConsoleWindow(QObject):
@@ -49,36 +50,45 @@ class ConsoleWindow(QObject):
 
 class VacuumWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
+        self.prevacValveLock = Switch(thumb_radius=11, track_radius=8)
         super(VacuumWindow, self).__init__('vacuum.ui', *args, **kvargs)
         self.ursapq = ursapq
+        self.window.prevacValveLockBox.addWidget(self.prevacValveLock)
 
     def setupCallbacks(self):
-        self.window.preVacValve_lock.stateChanged.connect(self.preVacValve_lock)
+        self.prevacValveLock.toggled.connect(self.preVacValve_lock)
 
     def update(self):
-        self.window.preVacValve_lock.setChecked( self.ursapq.preVacValve_lock )
+        self.prevacValveLock.setChecked( self.ursapq.preVacValve_lock )
 
     #Callbacks:
     @Slot()
     def preVacValve_lock(self):
-        self.ursapq.preVacValve_lock = self.window.preVacValve_lock.isChecked()
+        self.ursapq.preVacValve_lock = self.prevacValveLock.isChecked()
 
 
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
+        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
         super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
+
         self.ursapq = ursapq
+        self.window.ovenEnableBox.addWidget(self.enableSwitch)
 
     def setupCallbacks(self):
-        self.window.oven_enable.stateChanged.connect(self.oven_enable)
+        self.enableSwitch.toggled.connect(self.oven_enable)
 
     def update(self):
-        self.window.oven_enable.setChecked( self.ursapq.oven_enable )
+        self.enableSwitch.setChecked( self.ursapq.oven_enable )
+        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
+        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
+        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
+
 
     #Callbacks:
     @Slot()
     def oven_enable(self):
-        self.ursapq.oven_enable = self.window.oven_enable.isChecked()
+        self.ursapq.oven_enable = self.enableSwitch.isChecked()
 
 class MainWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
@@ -116,13 +126,16 @@ class MainWindow(ConsoleWindow):
         #Update status label
         if self.ursapq.oven_isOn:
             self.window.ovenStatus.setText("ON")
-            if self.ursapq.ovenStatus == "OK":
+            if self.ursapq.oven_PIDStatus == "OK":
                 self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
             else:
-                self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
+                self.window.sample_SL.setStyleSheet(BG_COLOR_WARNING)
         else:
             self.window.ovenStatus.setText("OFF")
-            self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
+            if self.ursapq.oven_enable:
+                self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
+            else:
+                self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
 
     def update(self):
         self.updateVacuum()

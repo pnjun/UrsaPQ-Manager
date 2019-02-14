@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
-    <height>433</height>
+    <width>328</width>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,10 +18,13 @@
 	background-color: rgb(255, 255, 255);
 }
 
+QLabel {
+	font-size: 12.5pt;
+}
+
 QGroupBox {
     border: 1px solid gray;
-    border-color: #FF17365D;
-    font-size: 14px;
+    border-color: #003959;
     border-radius: 10px;
 }
 
@@ -30,7 +33,7 @@ QGroupBox::title {
  	border-top-left-radius: 10px;
  	border-bottom-right-radius: 10px;
     padding: 5px 20px;
-    background-color: #FF17365D;
+    background-color: #003959;
     color: rgb(255, 255, 255);
 }</string>
   </property>
@@ -47,20 +50,33 @@ QGroupBox::title {
     <property name="title">
      <string>Sample Config</string>
     </property>
-    <widget class="QCheckBox" name="oven_enable">
+    <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
        <x>15</x>
        <y>45</y>
-       <width>141</width>
-       <height>26</height>
+       <width>106</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>Oven Enable</string>
      </property>
-     <property name="tristate">
-      <bool>false</bool>
+    </widget>
+    <widget class="QFrame" name="ovenToggleBox">
+     <property name="geometry">
+      <rect>
+       <x>194</x>
+       <y>45</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
     </widget>
    </widget>

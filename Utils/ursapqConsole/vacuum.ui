@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>329</width>
-    <height>418</height>
+    <width>270</width>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,13 +15,17 @@
   </property>
   <property name="styleSheet">
    <string notr="true">#centralwidget{
-	background-color: rgb(255, 255, 255);
+	background-color: #FFFFFF;
+}
+
+QLabel {
+	font-size: 12.5pt;
 }
 
 QGroupBox {
+	background-color: #EFEFEF;
     border: 1px solid gray;
-    border-color: #FF17365D;
-    font-size: 14px;
+    border-color: #003959;
     border-radius: 10px;
 }
 
@@ -30,7 +34,7 @@ QGroupBox::title {
  	border-top-left-radius: 10px;
  	border-bottom-right-radius: 10px;
     padding: 5px 20px;
-    background-color: #FF17365D;
+    background-color: #003959;
     color: rgb(255, 255, 255);
 }</string>
   </property>
@@ -40,24 +44,35 @@ QGroupBox::title {
      <rect>
       <x>15</x>
       <y>15</y>
-      <width>301</width>
-      <height>391</height>
+      <width>241</width>
+      <height>286</height>
      </rect>
     </property>
     <property name="title">
      <string>Vacuum</string>
     </property>
-    <widget class="QCheckBox" name="preVacValve_lock">
+    <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>15</x>
        <y>45</y>
-       <width>211</width>
-       <height>26</height>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="prevacValveLockBox"/>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>75</x>
+       <y>45</y>
+       <width>136</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Pre Vacuum Valve Lock</string>
+      <string>Prevac valve Lock</string>
      </property>
     </widget>
    </widget>
