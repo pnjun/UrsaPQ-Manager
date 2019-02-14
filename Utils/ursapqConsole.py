@@ -70,29 +70,42 @@ class VacuumWindow(ConsoleWindow):
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.ursapq = ursapq
-
         super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
         self.window.ovenEnableBox.addWidget(self.enableSwitch)
+        self.ursapq = ursapq
 
     def setupCallbacks(self):
         self.enableSwitch.toggled.connect(self.oven_enable)
-
-        self.window.bodySetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
-        self.window.tipSetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
-        self.window.capSetPoint.setPlainText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
+        self.window.setPointsButton.clicked.connect(self.newSetPoints)
 
     def update(self):
         self.enableSwitch.setChecked( self.ursapq.oven_enable )
         self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
         self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
         self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
-
+        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
+        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
+        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
 
     #Callbacks:
     @Slot()
     def oven_enable(self):
         self.ursapq.oven_enable = self.enableSwitch.isChecked()
+
+    @Slot()
+    def newSetPoints(self):
+        try:
+            self.ursapq.oven_bodySetPoint = float( self.window.bodySetPoint_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.oven_tipSetPoint = float( self.window.tipSetPoint_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.oven_capSetPoint = float( self.window.capSetPoint_in.toPlainText() )
+        except Exception:
+            pass
 
 class MainWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
