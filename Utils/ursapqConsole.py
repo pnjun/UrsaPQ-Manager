@@ -51,21 +51,28 @@ class ConsoleWindow(QObject):
 class VacuumWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         self.prevacValveLock = Switch(thumb_radius=11, track_radius=8)
+        self.pumpsEnable = Switch(thumb_radius=11, track_radius=8)
         super(VacuumWindow, self).__init__('vacuum.ui', *args, **kvargs)
         self.ursapq = ursapq
         self.window.prevacValveLockBox.addWidget(self.prevacValveLock)
+        self.window.pumpsEnableBox.addWidget(self.pumpsEnable)
 
     def setupCallbacks(self):
         self.prevacValveLock.toggled.connect(self.preVacValve_lock)
+        self.pumpsEnable.toggled.connect(self.enablePumps)
 
     def update(self):
         self.prevacValveLock.setChecked( self.ursapq.preVacValve_lock )
+        self.pumpsEnable.setChecked( self.ursapq.pumps_enable )
 
     #Callbacks:
     @Slot()
     def preVacValve_lock(self):
         self.ursapq.preVacValve_lock = self.prevacValveLock.isChecked()
 
+    @Slot()
+    def enablePumps(self):
+        self.ursapq.pumps_enable = self.pumpsEnable.isChecked()
 
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
@@ -124,7 +131,7 @@ class MainWindow(ConsoleWindow):
         self.window.prevacValves.setText( '{} ({})'.format(
                                            "Open" if self.ursapq.preVacValve_isOpen else "Closed",
                                            "Locked" if self.ursapq.preVacValve_lock else "Auto" ))
-        self.window.pumpStatus.setText(   "Running" if self.ursapq.preVacValve_isOpen else "Stopped" )
+        self.window.pumpStatus.setText(   "Running" if self.ursapq.pumps_areON else "Stopped" )
 
         #Update status label
         if self.ursapq.preVac_OK:

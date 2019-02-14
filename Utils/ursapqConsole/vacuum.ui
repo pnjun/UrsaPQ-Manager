@@ -55,7 +55,7 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>45</y>
+       <y>90</y>
        <width>46</width>
        <height>31</height>
       </rect>
@@ -65,14 +65,38 @@ QGroupBox::title {
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>75</x>
-       <y>45</y>
+       <x>90</x>
+       <y>90</y>
        <width>136</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>Prevac valve Lock</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="pumpsEnableBox"/>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>45</y>
+       <width>136</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pumps enable</string>
      </property>
     </widget>
    </widget>
