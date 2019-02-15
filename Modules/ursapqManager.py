@@ -3,6 +3,7 @@ from datetime import datetime
 from collections import namedtuple
 import threading
 import traceback
+import math
 import time
 
 from OvenPS import OvenPS
@@ -36,7 +37,9 @@ class TempPIDFilter:
         self.lastErr = err
         self.lastcall = now
 
-        return out
+        # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
+        # the PID out to make it linear in applied power.
+        return math.sqrt(abs(out))
 
     def reset(self):
         self.integ = 0
@@ -99,6 +102,28 @@ class UrsapqManager:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
 
+    def ovenUpdateSetpoints(self):
+        try:
+            self.TipPID.setPoint = self.status.oven_tipSetPoint__setter
+            del self.status.oven_tipSetPoint__setter
+        except:
+            pass
+        self.status.oven_tipSetPoint = self.TipPID.setPoint
+
+        try:
+            self.CapPID.setPoint = self.status.oven_capSetPoint__setter
+            del self.status.oven_capSetPoint__setter
+        except:
+            pass
+        self.status.oven_capSetPoint = self.CapPID.setPoint
+
+        try:
+            self.BodyPID.setPoint = self.status.oven_bodySetPoint__setter
+            del self.status.oven_bodySetPoint__setter
+        except:
+            pass
+        self.status.oven_bodySetPoint = self.BodyPID.setPoint
+
     def updateStatus(self, verbose = False):
         #BECKHOFF VALUES
 
@@ -108,6 +133,7 @@ class UrsapqManager:
         self._beckhoffRead('preVacPressure',      'MAIN.PreVac_Pressure',   pyads.PLCTYPE_REAL)
         self._beckhoffRead('preVac_OK',           'MAIN.PreVac_OK',         pyads.PLCTYPE_BOOL)
         self._beckhoffRead('mainVac_OK',          'MAIN.MainVac_OK',        pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('pumps_areON',         'MAIN.TurboPump_ON',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('preVacValve_isOpen',  'MAIN.PreVacValves_Open', pyads.PLCTYPE_BOOL)
         self._beckhoffRead('oven_isOn',           'MAIN.OvenPS_Relay',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('sample_capTemp',      'MAIN.Sample_CapTemp',    pyads.PLCTYPE_INT,
@@ -118,6 +144,7 @@ class UrsapqManager:
                             lambda x:x/10)
 
         self._beckhoffRead('sample_posZ','MAIN.SampleZ.NcToPlc.TargetPos', pyads.PLCTYPE_REAL)
+        self.ovenUpdateSetpoints()
 
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.
@@ -152,9 +179,7 @@ class UrsapqManager:
             self.ovenPS[config.Oven_TipCh].setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
             self.ovenPS[config.Oven_BodyCh].setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
 
-            print(abs(self.TipPID.lastErr))
-
-            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr:
+            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven_NormalOpMaxErr:
                 self.status.oven_PIDStatus = "OK"
             else:
                 self.status.oven_PIDStatus = "TRACKING"
