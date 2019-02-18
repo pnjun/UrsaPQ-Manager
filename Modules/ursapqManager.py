@@ -142,9 +142,9 @@ class UrsapqManager:
         newTip = self._getParamWrite('oven_tipSetPoint')
         newCap = self._getParamWrite('oven_capSetPoint')
         newBody = self._getParamWrite('oven_bodySetPoint')
-        if newTip : self.TipPID.setPoint = newTip
-        if newCap : self.CapPID.setPoint = newCap
-        if newBody : self.BodyPID.setPoint = newBody
+        if newTip is not None: self.TipPID.setPoint = newTip
+        if newCap is not None: self.CapPID.setPoint = newCap
+        if newBody is not None: self.BodyPID.setPoint = newBody
         self.status.oven_tipSetPoint = self.TipPID.setPoint
         self.status.oven_capSetPoint = self.CapPID.setPoint
         self.status.oven_bodySetPoint = self.BodyPID.setPoint
@@ -222,12 +222,12 @@ class UrsapqManager:
             newBack     = self._getParamWrite('hv_setBack')
             newFront    = self._getParamWrite('hv_setFront')
 
-            if newPhosphor : self.HVPS.Phosphor.setVoltage = newPhosphor
-            if newMesh     : self.HVPS.Mesh.setVoltage = newMesh
-            if newLens     : self.HVPS.Lens.setVoltage = newLens
-            if newBack     : self.HVPS.Back.setVoltage = newBack
+            if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
+            if newMesh     is not None: self.HVPS.Mesh.setVoltage = newMesh
+            if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
+            if newBack     is not None: self.HVPS.Back.setVoltage = newBack
             #prevent MCP overvoltage by limiting back-front deltaV
-            if newFront :
+            if newFront is not None:
                 newFront = min( newFront, self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV)
                 self.HVPS.Front.setVoltage = newFront
 
