@@ -12,7 +12,7 @@ from config import config
 class OvenPS:
     #initialize serial connection and check that serial is isOpen
     #TODO: implement consistency check on device ID to prevent wrong physical power supply from being connected
-    def __init__(self, name=config.OvenPS_DeviceName):
+    def __init__(self, name=config.Oven.PS_DeviceName):
         #init serial connection
         self.serial = serial.Serial()
         self.name = name
@@ -28,24 +28,17 @@ class OvenPS:
         self.serial.flush()
 
     def allOn(self):
-        self[1].on()
-        self[2].on()
-        self[3].on()
+        for key, val in config.Oven.Channels._asdict().items():
+            self.__getattr__(key).on()
 
     def allOff(self):
-        self[1].off()
-        self[2].off()
-        self[3].off()
+        for key, val in config.Oven.Channels._asdict().items():
+            self.__getattr__(key).off()
 
     #returns a channel
-    def __getitem__(self, chid):
+    def __getattr__(self, channelname):
 
-        if not isinstance(chid, int):
-            raise TypeError("Channel index must be an int")
-
-        if chid > 3 or chid < 1:
-            raise ValueError("Channel index must be between 1 and 3")
-
+        chid = getattr(config.Oven.Channels, channelname)
         serial = self.serial
 
         class OvenPSChannel:

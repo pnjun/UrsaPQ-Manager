@@ -5,26 +5,78 @@
 #Fabiano Lever (fabiano.lever@uni-potsdam.de)
 
 import time
-from serial import Serial
+import serial
+from serial.tools import list_ports
+from config import config
 
 class HVPS:
-    #initialize serial connection and check that serial is isOpen
-    #TODO: implement consistency check on device ID to prevent wrong physical power supply from being connected
-    def __init__(self, serialPort):
+    #initialize serials connection and check that serial is isOpen
+
+    def __init__(self, posName = config.HVPS.Pos_Devicename,
+                       negName = config.HVPS.Neg_Devicename):
         #init serial connection
-        self.serial = Serial( port=serialPort, baudrate=9600 , timeout=0.1)
-        self.serial.isOpen()
+        self.posSerial = serial.Serial()
+        self.negSerial = serial.Serial()
+        self.posName = posName
+        self.negName = negName
+        self.posSerial.baudrate = 9600
+        self.posSerial.timeout = 0.02
+        self.negSerial.baudrate = 9600
+        self.negSerial.timeout = 0.02
+
+        self._mcpEnable = False
+        self._tofEnable = False
+
+    def connect(self):
+        #Scan all serials looking for matching device name
+        self.posSerial.port = list(list_ports.grep(self.posName))[0][0]
+        self.negSerial.port = list(list_ports.grep(self.negName))[0][0]
+        if not self.posSerial.is_open:
+            self.posSerial.open()
+        if not self.negSerial.is_open:
+            self.negSerial.open()
+
+        self.posSerial.flush()
+        self.negSerial.flush()
+
+    @property
+    def mcpEnable(self):
+        return self._mcpEnable
+
+    @mcpEnable.setter
+    def mcpEnable(self, enable):
+        for key,val in config.HVPS.MCP_Channels._asdict().items():
+            if enable:
+                self.__getattr__(key).on()
+                self._mcpEnable = True
+            else:
+                self.__getattr__(key).off()
+                self._mcpEnable = False
+
+    @property
+    def tofEnable(self):
+        return self._tofEnable
+
+    @tofEnable.setter
+    def tofEnable(self, enable):
+        for key,val in config.HVPS.TOF_Channels._asdict().items():
+            if enable:
+                self.__getattr__(key).on()
+                self._tofEnable = True
+            else:
+                self.__getattr__(key).off()
+                self._tofEnable = False
 
     #returns a channel
-    def __getitem__(self, chid):
+    def __getattr__(self, channelname):
 
-        if not isinstance(chid, int):
-            raise TypeError("Channel index must be an int")
+        try:
+            channel = getattr(config.HVPS.MCP_Channels, channelname)
+        except AttributeError:
+            channel = getattr(config.HVPS.TOF_Channels, channelname)
 
-        if chid > 5 or chid < 0:
-            raise ValueError("Channel index must be between 0 and 5")
-
-        serial = self.serial
+        chid = int( channel[0] ) #first char is channel num
+        serial = self.posSerial if channel[1] == 'p' else self.negSerial
 
         class HVPSChannel:
             #uses the SCPI commands to talk to power supply, read manual in /Manuals folder for explanation
@@ -53,17 +105,18 @@ class HVPS:
         return HVPSChannel()
 
 if __name__=='__main__':
-    print("Running test on channel 5")
+    print("Running test on MeshCh")
 
-    d = HVPS('/dev/ttyUSB0')
-    d[5].setVoltage = 20
-    print(d[5].setVoltage)
-    print(d[5].voltage)
+    d = HVPS()
+    d.connect()
+    d.MeshCh.setVoltage = 20
+    print(d.MeshCh.setVoltage)
+    print(d.MeshCh.voltage)
 
-    d[5].on()
+    d.MeshCh.on()
+    time.sleep(4)
+    print(d.MeshCh.voltage)
+
+    d.MeshCh.off()
     time.sleep(1)
-    print(d[5].voltage)
-
-    d[5].off()
-    time.sleep(1)
-    print(d[5].voltage)
+    print(d.MeshCh.voltage)

@@ -114,6 +114,59 @@ class SampleWindow(ConsoleWindow):
         except Exception:
             pass
 
+class SpectrometerWindow(ConsoleWindow):
+    def __init__(self, ursapq, *args, **kvargs):
+        self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
+        super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
+        self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
+        self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
+        self.ursapq = ursapq
+
+    def setupCallbacks(self):
+        self.mcpEnableSwitch.toggled.connect(self.mcpEnable)
+        self.tofEnableSwitch.toggled.connect(self.tofEnable)
+        self.window.mcpSetButton.clicked.connect(self.mcpSet)
+        self.window.tofSetButton.clicked.connect(self.tofSet)
+
+    def update(self):
+        self.mcpEnableSwitch.setChecked( self.ursapq.hv_mcpEnable )
+        self.tofEnableSwitch.setChecked( self.ursapq.hv_tofEnable )
+        self.window.mcpFront_act.setText(  '{:.2f}'.format(self.ursapq.hv_front))
+        self.window.mcpBack_act.setText(   '{:.2f}'.format(self.ursapq.hv_back))
+        self.window.mcpPhos_act.setText(   '{:.2f}'.format(self.ursapq.hv_phosphor))
+        self.window.mcpFront_set.setText(  '{:.1f}'.format(self.ursapq.hv_setFront))
+        self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.hv_setBack))
+        self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.hv_setPhosphor))
+
+    #Callbacks:
+    @Slot()
+    def mcpEnable(self):
+        self.ursapq.hv_mcpEnable = self.mcpEnableSwitch.isChecked()
+
+    @Slot()
+    def tofEnable(self):
+        self.ursapq.hv_tofEnable = self.tofEnableSwitch.isChecked()
+
+    @Slot()
+    def mcpSet(self):
+        try:
+            self.ursapq.hv_setFront = float( self.window.mcpFront_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.hv_setBack = float( self.window.mcpBack_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.hv_setPhosphor = float( self.window.mcpPhos_in.toPlainText() )
+        except Exception:
+            pass
+
+    @Slot()
+    def tofSet(self):
+        pass
+
 class MainWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
@@ -122,6 +175,7 @@ class MainWindow(ConsoleWindow):
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
+        self.window.spectr_MB.clicked.connect(self.showSpectrometer)
         pass
 
     def updateVacuum(self):
@@ -165,9 +219,20 @@ class MainWindow(ConsoleWindow):
             else:
                 self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
 
+    def updateSpectrometer(self):
+        if self.ursapq.HVPS_Status == 'OFF':
+            self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
+        elif self.ursapq.HVPS_Status == 'WARNING':
+            self.window.detector_SL.setStyleSheet(BG_COLOR_WARNING)
+        elif self.ursapq.HVPS_Status == 'OK':
+            self.window.detector_SL.setStyleSheet(BG_COLOR_OK)
+        else:
+            self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)
+
     def update(self):
         self.updateVacuum()
         self.updateSample()
+        self.updateSpectrometer()
 
         self.window.statusBar().showMessage( 'Last update: %s' % str( self.ursapq.lastUpdate ) )
 
@@ -178,7 +243,9 @@ class MainWindow(ConsoleWindow):
     @Slot()
     def showVacuum(self):
         self.vacuumWindow = VacuumWindow(self.ursapq)
-
+    @Slot()
+    def showSpectrometer(self):
+        self.spectrWindow = SpectrometerWindow(self.ursapq)
 
 if __name__ == '__main__':
 

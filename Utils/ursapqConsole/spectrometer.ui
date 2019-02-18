@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>824</width>
+    <height>465</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Spectrometer - UrsaPQ Remote</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget{
+	background-color: #FFFFFF;
+}
+
+QLabel {
+	font-size: 12.5pt;
+}
+
+QGroupBox {
+	background-color: #EFEFEF;
+    border: 1px solid gray;
+    border-color: #003959;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+ 	border-top-left-radius: 10px;
+ 	border-bottom-right-radius: 10px;
+    padding: 5px 20px;
+    background-color: #003959;
+    color: rgb(255, 255, 255);
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>15</y>
+      <width>391</width>
+      <height>301</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Flight Tube</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget_6">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="tofEnableBox"/>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>45</y>
+       <width>166</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>HV Enable</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="widget_2" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>120</y>
+       <width>361</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Lens</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>30</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ASD</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>60</y>
+        <width>106</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ASDF</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_8">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>0</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_9">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>30</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_10">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>60</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="tipSetPoint_in_5">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="tofSetButton">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>105</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Set values</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_11">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_12">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>30</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="tipSetPoint_13">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="tipSetPoint_in_6">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>30</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="tipSetPoint_in_7">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_13">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Actual</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_14">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Setpoint</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>TOF [V]</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>15</y>
+      <width>391</width>
+      <height>301</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Detector</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="mcpEnableBox"/>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>45</y>
+       <width>166</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>HV Enable</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="widget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>120</y>
+       <width>361</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Front</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>30</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Back</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>60</y>
+        <width>106</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Phosphor</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpFront_act">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>0</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpBack_act">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>30</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpPhos_act">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>60</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="mcpFront_in">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="mcpSetButton">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>105</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Set values</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpFront_set">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>0</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpBack_set">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>30</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="mcpPhos_set">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="mcpBack_in">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>30</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="mcpPhos_in">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Actual</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Setpoint</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>90</y>
+       <width>76</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>MCP [V]</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>330</y>
+      <width>796</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Magnet</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

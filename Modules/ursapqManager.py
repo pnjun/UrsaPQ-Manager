@@ -7,6 +7,7 @@ import math
 import time
 
 from OvenPS import OvenPS
+from HVPS import HVPS
 from Beckhoff import BeckhoffSys
 import pyads
 from config import config
@@ -70,22 +71,27 @@ class UrsapqManager:
 
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
-        self.oven_stop = threading.Event()
+        self.HVPS = HVPS()
+        self.controls_stop = threading.Event() # Stops background event loops (oven and HVPS controllers)
 
-        self.TipPID =  TempPIDFilter(*tuple(config.Oven_TipPIDParams),  config.Oven_TipDefSetpoint)
-        self.CapPID =  TempPIDFilter(*tuple(config.Oven_CapPIDParams),  config.Oven_CapDefSetpoint)
-        self.BodyPID = TempPIDFilter(*tuple(config.Oven_BodyPIDParams), config.Oven_BodyDefSetpoint)
+        self.TipPID =  TempPIDFilter(*tuple(config.Oven.PID.TipParams),  config.Oven.PID.TipDefSetpoint)
+        self.CapPID =  TempPIDFilter(*tuple(config.Oven.PID.CapParams),  config.Oven.PID.CapDefSetpoint)
+        self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
 
     def start(self):
         self.beckhoff.start()
         self.updateStatus()
 
-        self.oven_stop.clear()
+        self.controls_stop.clear()
         self.ovenController()
+
+        self.status.hv_tofEnable = False
+        self.status.hv_mcpEnable = False
+        self.HVPSController()
 
     def stop(self):
         self.beckhoff.stop()
-        self.oven_stop.set()
+        self.controls_stop.set()
 
     #Wrapper functions to make updateStatus func more readable
     #rescale can be provided to process data before writing
@@ -102,27 +108,15 @@ class UrsapqManager:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
 
-    def ovenUpdateSetpoints(self):
+    def _getParamWrite(self, key):
+        ''' Checks if a paramater write request has been made by a client. If so, returns the value and deletes
+            the request. Returns none otherwise '''
         try:
-            self.TipPID.setPoint = self.status.oven_tipSetPoint__setter
-            del self.status.oven_tipSetPoint__setter
+            var = self.status.__getattr__(key + '__setter')
+            self.status.__delattr__(key+'__setter')
+            return var
         except:
-            pass
-        self.status.oven_tipSetPoint = self.TipPID.setPoint
-
-        try:
-            self.CapPID.setPoint = self.status.oven_capSetPoint__setter
-            del self.status.oven_capSetPoint__setter
-        except:
-            pass
-        self.status.oven_capSetPoint = self.CapPID.setPoint
-
-        try:
-            self.BodyPID.setPoint = self.status.oven_bodySetPoint__setter
-            del self.status.oven_bodySetPoint__setter
-        except:
-            pass
-        self.status.oven_bodySetPoint = self.BodyPID.setPoint
+            return None
 
     def updateStatus(self, verbose = False):
         #BECKHOFF VALUES
@@ -142,9 +136,24 @@ class UrsapqManager:
                             lambda x:x/10)
         self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT,
                             lambda x:x/10)
-
         self._beckhoffRead('sample_posZ','MAIN.SampleZ.NcToPlc.TargetPos', pyads.PLCTYPE_REAL)
-        self.ovenUpdateSetpoints()
+
+        # Update PID setpoints if necessary
+        newTip = self._getParamWrite('oven_tipSetPoint')
+        newCap = self._getParamWrite('oven_capSetPoint')
+        newBody = self._getParamWrite('oven_bodySetPoint')
+        if newTip : self.TipPID.setPoint = newTip
+        if newCap : self.CapPID.setPoint = newCap
+        if newBody : self.BodyPID.setPoint = newBody
+        self.status.oven_tipSetPoint = self.TipPID.setPoint
+        self.status.oven_capSetPoint = self.CapPID.setPoint
+        self.status.oven_bodySetPoint = self.BodyPID.setPoint
+
+        # HV enable status
+        tofEn = self._getParamWrite('hv_tofEnable')
+        mcpEn = self._getParamWrite('hv_mcpEnable')
+        if tofEn != None: self.status.hv_tofEnable = tofEn
+        if mcpEn != None: self.status.hv_mcpEnable = mcpEn
 
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.
@@ -155,42 +164,109 @@ class UrsapqManager:
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
 
+    #Manages sample oven tempearture control loop
     def ovenController(self):
         ''' PID filter to control the sample oven temperature '''
-        try:
+        try: #try connecting to OVPS, if not,
             assert(self.status.oven_isOn)
             self.ovenPS.connect()
-            self.status.oven_capPow  = self.ovenPS[config.Oven_CapCh].power
-            self.status.oven_bodyPow = self.ovenPS[config.Oven_BodyCh].power
-            self.status.oven_tipPow  = self.ovenPS[config.Oven_TipCh].power
+            self.status.oven_capPow  = self.ovenPS.Cap.power
+            self.status.oven_bodyPow = self.ovenPS.Body.power
+            self.status.oven_tipPow  = self.ovenPS.Tip.power
+
+            self.ovenPS.allOn()
+            self.ovenPS.Cap.setVoltage  = self.CapPID.filter(self.status.sample_capTemp)
+            self.ovenPS.Tip.setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
+            self.ovenPS.Body.setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
+
+            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven_NormalOpMaxErr:
+                self.status.oven_PIDStatus = "OK"
+            else:
+                self.status.oven_PIDStatus = "TRACKING"
         except Exception:
-            self.status.oven_capPow = float("nan")
-            self.status.oven_bodyPow = float("nan")
-            self.status.oven_tipPow = float("nan")
+            self.status.oven_capPow = math.nan
+            self.status.oven_bodyPow = math.nan
+            self.status.oven_tipPow = math.nan
 
             self.TipPID.reset()
             self.CapPID.reset()
             self.BodyPID.reset()
             self.status.oven_PIDStatus = "OFF"
             #print(traceback.format_exc())
-        else:
-            self.ovenPS.allOn()
-            self.ovenPS[config.Oven_CapCh].setVoltage  = self.CapPID.filter(self.status.sample_capTemp)
-            self.ovenPS[config.Oven_TipCh].setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
-            self.ovenPS[config.Oven_BodyCh].setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
 
-            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven_NormalOpMaxErr:
-                self.status.oven_PIDStatus = "OK"
-            else:
-                self.status.oven_PIDStatus = "TRACKING"
-
-        if self.oven_stop.is_set():
+        if self.controls_stop.is_set():
             self.ovenPS.allOff()
             self.TipPID.reset()
             self.CapPID.reset()
             self.BodyPID.reset()
         else:
-            threading.Timer(config.Oven_ControlPeriod, self.ovenController).start()
+            threading.Timer(config.Oven.ControlPeriod, self.ovenController).start()
+
+    #Manages HVPS, runs separately from main update function due to serial not updating fast enough
+    def HVPSController(self):
+        ''' Manages serial comms with HVPSs '''
+        try:
+            self.HVPS.connect()
+            self.HVPS.tofEnable = self.status.hv_tofEnable
+            self.HVPS.mcpEnable = self.status.hv_mcpEnable
+
+            self.status.hv_phosphor  = self.HVPS.Phosphor.voltage
+            self.status.hv_back      = self.HVPS.Back.voltage
+            self.status.hv_front     = self.HVPS.Front.voltage
+            self.status.hv_mesh      = self.HVPS.Mesh.voltage
+            self.status.hv_lens      = self.HVPS.Lens.voltage
+
+            newPhosphor = self._getParamWrite('hv_setPhosphor')
+            newMesh     = self._getParamWrite('hv_setMesh')
+            newLens     = self._getParamWrite('hv_setLens')
+            newBack     = self._getParamWrite('hv_setBack')
+            newFront    = self._getParamWrite('hv_setFront')
+
+            if newPhosphor : self.HVPS.Phosphor.setVoltage = newPhosphor
+            if newMesh     : self.HVPS.Mesh.setVoltage = newMesh
+            if newLens     : self.HVPS.Lens.setVoltage = newLens
+            if newBack     : self.HVPS.Back.setVoltage = newBack
+            #prevent MCP overvoltage by limiting back-front deltaV
+            if newFront :
+                newFront = min( newFront, self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV)
+                self.HVPS.Front.setVoltage = newFront
+
+            self.status.hv_setPhosphor   = self.HVPS.Phosphor.setVoltage
+            self.status.hv_setMesh       = self.HVPS.Mesh.setVoltage
+            self.status.hv_setLens       = self.HVPS.Lens.setVoltage
+            self.status.hv_setBack       = self.HVPS.Back.setVoltage
+            self.status.hv_setFront      = self.HVPS.Front.setVoltage
+
+            if self.HVPS.tofEnable and self.HVPS.mcpEnable:
+                self.status.HVPS_Status = "OK"
+            elif not self.HVPS.tofEnable and not self.HVPS.mcpEnable:
+                self.status.HVPS_Status = "OFF"
+            else:
+                self.status.HVPS_Status = "WARNING"
+
+        except Exception:
+            self.status.hv_phosphor  = math.nan
+            self.status.hv_back      = math.nan
+            self.status.hv_front     = math.nan
+            self.status.hv_mesh      = math.nan
+            self.status.hv_lens      = math.nan
+            self.status.hv_setPhosphor   = math.nan
+            self.status.hv_setMesh       = math.nan
+            self.status.hv_setLens       = math.nan
+            self.status.hv_setBack       = math.nan
+            self.status.hv_setFront      = math.nan
+            self.status.HVPS_Status = "ERROR"
+            print(traceback.format_exc())
+
+        if self.controls_stop.is_set():
+            try:
+                self.HVPS.tofEnable = False
+                self.HVPS.mcpEnable = False
+            except Exception:
+                pass
+        else:
+            threading.Timer(config.HVPS.UpdatePeriod, self.HVPSController).start()
+
 
 if __name__=='__main__':
     import time

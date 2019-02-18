@@ -49,3 +49,8 @@ if __name__=='__main__':
     ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
     print(ursapq.lastUpdate)
     print(ursapq.preVacPressure)
+    print( ursapq.hv_setFront )
+    print( ursapq.hv_setBack )
+
+    ursapq.hv_setFront = 2
+    ursapq.hv_tofEnable = not ursapq.hv_tofEnable
