@@ -132,9 +132,9 @@ class SpectrometerWindow(ConsoleWindow):
     def update(self):
         self.mcpEnableSwitch.setChecked( self.ursapq.hv_mcpEnable )
         self.tofEnableSwitch.setChecked( self.ursapq.hv_tofEnable )
-        self.window.mcpFront_act.setText(  '{:.2f}'.format(self.ursapq.hv_front))
-        self.window.mcpBack_act.setText(   '{:.2f}'.format(self.ursapq.hv_back))
-        self.window.mcpPhos_act.setText(   '{:.2f}'.format(self.ursapq.hv_phosphor))
+        self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.hv_front))
+        self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.hv_back))
+        self.window.mcpPhos_act.setText(   '{:.1f}'.format(self.ursapq.hv_phosphor))
         self.window.mcpFront_set.setText(  '{:.1f}'.format(self.ursapq.hv_setFront))
         self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.hv_setBack))
         self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.hv_setPhosphor))

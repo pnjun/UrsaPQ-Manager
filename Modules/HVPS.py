@@ -94,7 +94,6 @@ class HVPS:
 
             @setVoltage.setter
             def setVoltage(self, val):
-                print(val)
                 serial.write( b':VOLT %f,(@%d)' % (float(val), int(chid)) + b'\r\n'); serial.flush()
 
             #retrives actual measured voltage on channel
