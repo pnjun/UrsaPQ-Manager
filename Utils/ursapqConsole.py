@@ -268,6 +268,7 @@ class MainWindow(ConsoleWindow):
         self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
+        self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
