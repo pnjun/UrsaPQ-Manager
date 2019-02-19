@@ -2,7 +2,8 @@ import sys
 import os
 import time
 from ursapqUtils import UrsaPQ
-from ursapqConsoleResources import Switch
+from ursapqConsoleResources.switch import Switch
+from ursapqConsoleResources.config import config
 
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
@@ -298,7 +299,7 @@ class MainWindow(ConsoleWindow):
         self.spectrWindow = SpectrometerWindow(self.ursapq)
 
 def main():
-    ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
+    ursapq = UrsaPQ( config.UrsapqServer_IP , config.UrsapqServer_Port , config.UrsapqServer_AuthKey.encode('ascii'))
 
     app = QApplication(sys.argv)
     ui = MainWindow(ursapq)
