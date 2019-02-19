@@ -56,7 +56,6 @@ class UrsapqManager:
 
     The updateStatus() and ovenController() functions can be used to get info on all tracked values.
     '''
-
     def __init__(self, port, authkey):
         self.port = port
         self.authkey = authkey
@@ -166,11 +165,16 @@ class UrsapqManager:
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
 
+    class OvenOFFException(Exception):
+        pass
+
     #Manages sample oven tempearture control loop
     def ovenController(self):
         ''' PID filter to control the sample oven temperature '''
         try: #try connecting to OVPS, if not,
-            assert(self.status.oven_isOn)
+            if not self.status.oven_isOn:
+                raise UrsapqManager.OvenOFFException("Oven PS is off")
+
             self.ovenPS.connect()
             self.status.oven_capPow  = self.ovenPS.Cap.power
             self.status.oven_bodyPow = self.ovenPS.Body.power
@@ -185,17 +189,25 @@ class UrsapqManager:
                 self.status.oven_PIDStatus = "OK"
             else:
                 self.status.oven_PIDStatus = "TRACKING"
-        except Exception:
+
+        except Exception as e:
             self.status.oven_capPow = math.nan
             self.status.oven_bodyPow = math.nan
             self.status.oven_tipPow = math.nan
-
             self.TipPID.reset()
             self.CapPID.reset()
             self.BodyPID.reset()
-            self.status.oven_PIDStatus = "OFF"
-            self.setMessage("ERROR: Cannot connect to OvenPS")
-            #print(traceback.format_exc())
+
+            if not self.status.oven_enable:
+                self.status.oven_PIDStatus = "OFF"
+            else:
+                if isinstance(e, UrsapqManager.OvenOFFException):
+                    self.setMessage("ERROR: Oven enabled but not active, check interlock")
+                else:
+                    self.setMessage("ERROR: Cannot connect to OvenPS, check USB")
+                    print("OvenPS not reachable: " , traceback.format_exc())
+                self.status.oven_PIDStatus = "ERROR"
+
 
         if self.controls_stop.is_set():
             self.ovenPS.allOff()
@@ -246,10 +258,10 @@ class UrsapqManager:
             #Must be done after others have been loaded
             if self.HVPS.Back.setVoltage < self.HVPS.Front.setVoltage:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage
-                self.setMessage("WARNING: MCP Back voltage rescaled")
+                self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
             if self.HVPS.Back.setVoltage > self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV
-                self.setMessage("WARNING: MCP Back voltage rescaled")
+                self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
 
 
             self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
@@ -283,7 +295,7 @@ class UrsapqManager:
             self.status.tof_retarderSetHV   = math.nan
             self.status.tof_magnetSetHV     = math.nan
             self.status.HV_Status = "ERROR"
-            self.setMessage("ERROR: Cannot connect to HVPS")
+            self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate")
             print(traceback.format_exc())
 
         if self.controls_stop.is_set():
