@@ -285,7 +285,10 @@ class MainWindow(ConsoleWindow):
         self.updateSample()
         self.updateSpectrometer()
 
-        self.window.statusBar().showMessage( 'Last update: %s' % str( self.ursapq.lastUpdate ) )
+
+        lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%d-%m %H:%M:%S")
+        message = self.ursapq.statusMessage + "(" + lastStatusMessage + ")"
+        self.window.statusBar().showMessage( 'Last update: %s' % str(self.ursapq.lastUpdate )  + " | " + message )
 
     #Callbacks:
     @Slot()

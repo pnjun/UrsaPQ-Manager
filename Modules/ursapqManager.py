@@ -77,6 +77,13 @@ class UrsapqManager:
         self.TipPID =  TempPIDFilter(*tuple(config.Oven.PID.TipParams),  config.Oven.PID.TipDefSetpoint)
         self.CapPID =  TempPIDFilter(*tuple(config.Oven.PID.CapParams),  config.Oven.PID.CapDefSetpoint)
         self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
+        self.status.statusMessage = ""
+        self.status.lastStatusMessage = datetime.now()
+
+    def setMessage(self, msg):
+        ''' Sets a server status message that clients can read '''
+        self.status.statusMessage = msg
+        self.status.lastStatusMessage = datetime.now()
 
     def start(self):
         self.beckhoff.start()
@@ -89,7 +96,10 @@ class UrsapqManager:
         self.status.mcp_hvEnable = False
         self.HVPSController()
 
+        self.setMessage("Server started.")
+
     def stop(self):
+        self.setMessage("Server stopped.")
         self.beckhoff.stop()
         self.controls_stop.set()
 
@@ -184,6 +194,7 @@ class UrsapqManager:
             self.CapPID.reset()
             self.BodyPID.reset()
             self.status.oven_PIDStatus = "OFF"
+            self.setMessage("ERROR: Cannot connect to OvenPS")
             #print(traceback.format_exc())
 
         if self.controls_stop.is_set():
@@ -229,10 +240,17 @@ class UrsapqManager:
             if newMagnet   is not None: self.HVPS.Magnet.setVoltage = newMagnet
             if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
             if newBack     is not None: self.HVPS.Back.setVoltage = newBack
+            if newFront    is not None: self.HVPS.Front.setVoltage = newFront
+
             #prevent MCP overvoltage by limiting back-front deltaV
-            if newFront is not None:
-                newFront = min( newFront, self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV)
-                self.HVPS.Front.setVoltage = newFront
+            #Must be done after others have been loaded
+            if self.HVPS.Front.setVoltage < self.HVPS.Back.setVoltage:
+                self.HVPS.Front.setVoltage = self.HVPS.Back.setVoltage
+                self.setMessage("WARNING: MCP Front voltage rescaled")
+            if self.HVPS.Front.setVoltage > self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV:
+                self.HVPS.Front.setVoltage = self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV
+                self.setMessage("WARNING: MCP Front voltage rescaled")
+
 
             self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
             self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
@@ -265,6 +283,7 @@ class UrsapqManager:
             self.status.tof_retarderSetHV   = math.nan
             self.status.tof_magnetSetHV     = math.nan
             self.status.HV_Status = "ERROR"
+            self.setMessage("ERROR: Cannot connect to HVPS")
             print(traceback.format_exc())
 
         if self.controls_stop.is_set():
