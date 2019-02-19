@@ -118,54 +118,86 @@ class SpectrometerWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.coilEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
+        self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
         self.ursapq = ursapq
 
     def setupCallbacks(self):
         self.mcpEnableSwitch.toggled.connect(self.mcpEnable)
         self.tofEnableSwitch.toggled.connect(self.tofEnable)
+        self.coilEnableSwitch.toggled.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
 
     def update(self):
-        self.mcpEnableSwitch.setChecked( self.ursapq.hv_mcpEnable )
-        self.tofEnableSwitch.setChecked( self.ursapq.hv_tofEnable )
-        self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.hv_front))
-        self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.hv_back))
-        self.window.mcpPhos_act.setText(   '{:.1f}'.format(self.ursapq.hv_phosphor))
-        self.window.mcpFront_set.setText(  '{:.1f}'.format(self.ursapq.hv_setFront))
-        self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.hv_setBack))
-        self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.hv_setPhosphor))
+        self.mcpEnableSwitch.setChecked( self.ursapq.mcp_hvEnable )
+        self.tofEnableSwitch.setChecked( self.ursapq.tof_hvEnable )
+        self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
+        self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))
+        self.window.mcpPhos_act.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
+        self.window.mcpFront_set.setText(  '{:.1f}'.format(self.ursapq.mcp_frontSetHV))
+        self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.mcp_backSetHV))
+        self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorSetHV))
+
+        self.window.tofMesh_act.setText(     '{:.1f}'.format(self.ursapq.tof_meshHV))
+        self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
+        self.window.tofLens_act.setText(     '{:.1f}'.format(self.ursapq.tof_lensHV))
+        self.window.tofMagnet_act.setText(   '{:.1f}'.format(self.ursapq.tof_magnetHV))
+        self.window.tofMesh_set.setText(     '{:.1f}'.format(self.ursapq.tof_meshSetHV))
+        self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
+        self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
+        self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
+
 
     #Callbacks:
     @Slot()
     def mcpEnable(self):
-        self.ursapq.hv_mcpEnable = self.mcpEnableSwitch.isChecked()
+        self.ursapq.mcp_hvEnable = self.mcpEnableSwitch.isChecked()
 
     @Slot()
     def tofEnable(self):
-        self.ursapq.hv_tofEnable = self.tofEnableSwitch.isChecked()
+        self.ursapq.tof_hvEnable = self.tofEnableSwitch.isChecked()
+
+    @Slot()
+    def coilEnable(self):
+        pass
 
     @Slot()
     def mcpSet(self):
         try:
-            self.ursapq.hv_setFront = float( self.window.mcpFront_in.toPlainText() )
+            self.ursapq.mcp_frontSetHV = float( self.window.mcpFront_in.toPlainText() )
         except Exception:
             pass
         try:
-            self.ursapq.hv_setBack = float( self.window.mcpBack_in.toPlainText() )
+            self.ursapq.mcp_backSetHV = float( self.window.mcpBack_in.toPlainText() )
         except Exception:
             pass
         try:
-            self.ursapq.hv_setPhosphor = float( self.window.mcpPhos_in.toPlainText() )
+            self.ursapq.mcp_phosphorSetHV = float( self.window.mcpPhos_in.toPlainText() )
         except Exception:
             pass
 
     @Slot()
     def tofSet(self):
-        pass
+        try:
+            self.ursapq.tof_meshSetHV = float( self.window.tofMesh_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.tof_retarderSetHV = float( self.window.tofRetarder_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.tof_lensSetHV = float( self.window.tofLens_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.tof_magnetSetHV = float( self.window.tofMagnet_in.toPlainText() )
+        except Exception:
+            pass
 
 class MainWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
@@ -220,11 +252,11 @@ class MainWindow(ConsoleWindow):
                 self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
 
     def updateSpectrometer(self):
-        if self.ursapq.HVPS_Status == 'OFF':
+        if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
-        elif self.ursapq.HVPS_Status == 'WARNING':
+        elif self.ursapq.HV_Status == 'WARNING':
             self.window.detector_SL.setStyleSheet(BG_COLOR_WARNING)
-        elif self.ursapq.HVPS_Status == 'OK':
+        elif self.ursapq.HV_Status == 'OK':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OK)
         else:
             self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)

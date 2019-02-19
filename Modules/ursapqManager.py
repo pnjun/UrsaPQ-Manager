@@ -85,8 +85,8 @@ class UrsapqManager:
         self.controls_stop.clear()
         self.ovenController()
 
-        self.status.hv_tofEnable = False
-        self.status.hv_mcpEnable = False
+        self.status.tof_hvEnable = False
+        self.status.mcp_hvEnable = False
         self.HVPSController()
 
     def stop(self):
@@ -150,10 +150,10 @@ class UrsapqManager:
         self.status.oven_bodySetPoint = self.BodyPID.setPoint
 
         # HV enable status
-        tofEn = self._getParamWrite('hv_tofEnable')
-        mcpEn = self._getParamWrite('hv_mcpEnable')
-        if tofEn != None: self.status.hv_tofEnable = tofEn
-        if mcpEn != None: self.status.hv_mcpEnable = mcpEn
+        tofEn = self._getParamWrite('tof_hvEnable')
+        mcpEn = self._getParamWrite('mcp_hvEnable')
+        if tofEn is not None: self.status.tof_hvEnable = tofEn
+        if mcpEn is not None: self.status.mcp_hvEnable = mcpEn
 
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.
@@ -207,55 +207,67 @@ class UrsapqManager:
         ''' Manages serial comms with HVPSs '''
         try:
             self.HVPS.connect()
-            self.HVPS.tofEnable = self.status.hv_tofEnable
-            self.HVPS.mcpEnable = self.status.hv_mcpEnable
+            self.HVPS.tofEnable = self.status.tof_hvEnable
+            self.HVPS.mcpEnable = self.status.mcp_hvEnable
 
-            self.status.hv_phosphor  = self.HVPS.Phosphor.voltage
-            self.status.hv_back      = self.HVPS.Back.voltage
-            self.status.hv_front     = self.HVPS.Front.voltage
-            self.status.hv_mesh      = self.HVPS.Mesh.voltage
-            self.status.hv_lens      = self.HVPS.Lens.voltage
+            self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
+            self.status.mcp_backHV      = self.HVPS.Back.voltage
+            self.status.mcp_frontHV     = self.HVPS.Front.voltage
+            self.status.tof_meshHV      = self.HVPS.Mesh.voltage
+            self.status.tof_lensHV      = self.HVPS.Lens.voltage
+            self.status.tof_retarderHV  = self.HVPS.Retarder.voltage
+            self.status.tof_magnetHV    = self.HVPS.Magnet.voltage
 
-            newPhosphor = self._getParamWrite('hv_setPhosphor')
-            newMesh     = self._getParamWrite('hv_setMesh')
-            newLens     = self._getParamWrite('hv_setLens')
-            newBack     = self._getParamWrite('hv_setBack')
-            newFront    = self._getParamWrite('hv_setFront')
+            newMesh     = self._getParamWrite('tof_meshSetHV')
+            newLens     = self._getParamWrite('tof_lensSetHV')
+            newRetarter = self._getParamWrite('tof_retarderSetHV')
+            newMagnet   = self._getParamWrite('tof_magnetSetHV')
+            newPhosphor = self._getParamWrite('mcp_phosphorSetHV')
+            newBack     = self._getParamWrite('mcp_backSetHV')
+            newFront    = self._getParamWrite('mcp_frontSetHV')
 
-            if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
             if newMesh     is not None: self.HVPS.Mesh.setVoltage = newMesh
             if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
+            if newRetarter is not None: self.HVPS.Retarder.setVoltage = newRetarter
+            if newMagnet   is not None: self.HVPS.Magnet.setVoltage = newMagnet
+            if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
             if newBack     is not None: self.HVPS.Back.setVoltage = newBack
             #prevent MCP overvoltage by limiting back-front deltaV
             if newFront is not None:
                 newFront = min( newFront, self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV)
                 self.HVPS.Front.setVoltage = newFront
 
-            self.status.hv_setPhosphor   = self.HVPS.Phosphor.setVoltage
-            self.status.hv_setMesh       = self.HVPS.Mesh.setVoltage
-            self.status.hv_setLens       = self.HVPS.Lens.setVoltage
-            self.status.hv_setBack       = self.HVPS.Back.setVoltage
-            self.status.hv_setFront      = self.HVPS.Front.setVoltage
+            self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
+            self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
+            self.status.tof_retarderSetHV   = self.HVPS.Retarder.setVoltage
+            self.status.tof_magnetSetHV     = self.HVPS.Magnet.setVoltage
+            self.status.mcp_phosphorSetHV   = self.HVPS.Phosphor.setVoltage
+            self.status.mcp_backSetHV       = self.HVPS.Back.setVoltage
+            self.status.mcp_frontSetHV      = self.HVPS.Front.setVoltage
 
             if self.HVPS.tofEnable and self.HVPS.mcpEnable:
-                self.status.HVPS_Status = "OK"
+                self.status.HV_Status = "OK"
             elif not self.HVPS.tofEnable and not self.HVPS.mcpEnable:
-                self.status.HVPS_Status = "OFF"
+                self.status.HV_Status = "OFF"
             else:
-                self.status.HVPS_Status = "WARNING"
+                self.status.HV_Status = "WARNING"
 
         except Exception:
-            self.status.hv_phosphor  = math.nan
-            self.status.hv_back      = math.nan
-            self.status.hv_front     = math.nan
-            self.status.hv_mesh      = math.nan
-            self.status.hv_lens      = math.nan
-            self.status.hv_setPhosphor   = math.nan
-            self.status.hv_setMesh       = math.nan
-            self.status.hv_setLens       = math.nan
-            self.status.hv_setBack       = math.nan
-            self.status.hv_setFront      = math.nan
-            self.status.HVPS_Status = "ERROR"
+            self.status.mcp_phosphorHV  = math.nan
+            self.status.mcp_backHV      = math.nan
+            self.status.mcp_frontHV     = math.nan
+            self.status.tof_meshHV      = math.nan
+            self.status.tof_lensHV      = math.nan
+            self.status.tof_retarderHV  = math.nan
+            self.status.tof_magnetHV    = math.nan
+            self.status.mcp_phosphorSetHV   = math.nan
+            self.status.mcp_backSetHV       = math.nan
+            self.status.mcp_frontSetHV      = math.nan
+            self.status.tof_meshSetHV       = math.nan
+            self.status.tof_lensSetHV       = math.nan
+            self.status.tof_retarderSetHV   = math.nan
+            self.status.tof_magnetSetHV     = math.nan
+            self.status.HV_Status = "ERROR"
             print(traceback.format_exc())
 
         if self.controls_stop.is_set():
