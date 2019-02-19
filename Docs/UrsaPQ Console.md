@@ -6,13 +6,13 @@ It functions as graphical user interface for the ursapqUtils module.
 
 ## Install
 Clone this repo and create a config.json file in the Utils/ursapqConsoleResources/ folder with the following info:
-` 
+```
   {
     "UrsapqServer_IP"   : <IP ADDRESS OF URSAPQ MANAGER>,
     "UrsapqServer_Port" : <PORT (USUALLY 2222)>,
     "UrsapqServer_AuthKey" : <AUTH KEY>
   }
-`
+```
 
 ## Usage
 Run the program with:
