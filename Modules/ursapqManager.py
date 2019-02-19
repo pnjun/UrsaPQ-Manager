@@ -244,12 +244,12 @@ class UrsapqManager:
 
             #prevent MCP overvoltage by limiting back-front deltaV
             #Must be done after others have been loaded
-            if self.HVPS.Front.setVoltage < self.HVPS.Back.setVoltage:
-                self.HVPS.Front.setVoltage = self.HVPS.Back.setVoltage
-                self.setMessage("WARNING: MCP Front voltage rescaled")
-            if self.HVPS.Front.setVoltage > self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV:
-                self.HVPS.Front.setVoltage = self.HVPS.Back.setVoltage + config.HVPS.MaxFrontBackDeltaV
-                self.setMessage("WARNING: MCP Front voltage rescaled")
+            if self.HVPS.Back.setVoltage < self.HVPS.Front.setVoltage:
+                self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage
+                self.setMessage("WARNING: MCP Back voltage rescaled")
+            if self.HVPS.Back.setVoltage > self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV:
+                self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV
+                self.setMessage("WARNING: MCP Back voltage rescaled")
 
 
             self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
