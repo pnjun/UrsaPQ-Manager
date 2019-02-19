@@ -8,9 +8,9 @@ It runs automatically at startup and is automatically restarted in case if fails
 ## Start / Stop / Restart
 
 The service can be started stopped and restarted with:
-* sudo systemctl start ursapqManager.service
-* sudo systemctl stop ursapqManager.service
-* sudo systemctl restart ursapqManager.service
+* `sudo systemctl start ursapqManager.service`
+* `sudo systemctl stop ursapqManager.service`
+* `sudo systemctl restart ursapqManager.service`
 
 ## Source location
 The soruce code for the server process is located in ~/ExpManager/Modules/. The server script is ursapqManager.py
