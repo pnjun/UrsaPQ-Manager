@@ -149,12 +149,6 @@ class UrsapqManager:
         self.status.oven_capSetPoint = self.CapPID.setPoint
         self.status.oven_bodySetPoint = self.BodyPID.setPoint
 
-        # HV enable status
-        tofEn = self._getParamWrite('tof_hvEnable')
-        mcpEn = self._getParamWrite('mcp_hvEnable')
-        if tofEn is not None: self.status.tof_hvEnable = tofEn
-        if mcpEn is not None: self.status.mcp_hvEnable = mcpEn
-
         #Write out config values if necessary + update them after the write attempt
         #Every piece is updating a different variable.
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
@@ -207,8 +201,13 @@ class UrsapqManager:
         ''' Manages serial comms with HVPSs '''
         try:
             self.HVPS.connect()
-            self.HVPS.tofEnable = self.status.tof_hvEnable
-            self.HVPS.mcpEnable = self.status.mcp_hvEnable
+            # HV enable status
+            tofEn = self._getParamWrite('tof_hvEnable')
+            mcpEn = self._getParamWrite('mcp_hvEnable')
+            if tofEn is not None: self.HVPS.tofEnable = tofEn
+            if mcpEn is not None: self.HVPS.mcpEnable = mcpEn
+            self.status.tof_hvEnable = self.HVPS.tofEnable
+            self.status.mcp_hvEnable = self.HVPS.mcpEnable
 
             self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
             self.status.mcp_backHV      = self.HVPS.Back.voltage

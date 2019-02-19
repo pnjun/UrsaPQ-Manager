@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from ursapqUtils import UrsaPQ
 from ursapqConsoleResources import Switch
 
@@ -29,8 +30,6 @@ class ConsoleWindow(QObject):
         local_dir = os.path.dirname(os.path.abspath(__file__))
         self.window = QUiLoader().load( QFile(local_dir + UI_BASEPATH + uifilename) )
 
-        self.setupCallbacks()
-
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.update)
         self.updateTimer.start(self.updateTime)
@@ -43,23 +42,22 @@ class ConsoleWindow(QObject):
             del self.updateTimer
         return False
 
-    def setupCallbacks(self):
-        pass
     def update(self):
         pass
 
 class VacuumWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
-        self.prevacValveLock = Switch(thumb_radius=11, track_radius=8)
-        self.pumpsEnable = Switch(thumb_radius=11, track_radius=8)
         super(VacuumWindow, self).__init__('vacuum.ui', *args, **kvargs)
         self.ursapq = ursapq
+        self.prevacValveLock = Switch(thumb_radius=11, track_radius=8)
+        self.pumpsEnable = Switch(thumb_radius=11, track_radius=8)
         self.window.prevacValveLockBox.addWidget(self.prevacValveLock)
         self.window.pumpsEnableBox.addWidget(self.pumpsEnable)
+        self.setupCallbacks()
 
     def setupCallbacks(self):
-        self.prevacValveLock.toggled.connect(self.preVacValve_lock)
-        self.pumpsEnable.toggled.connect(self.enablePumps)
+        self.prevacValveLock.clicked.connect(self.preVacValve_lock)
+        self.pumpsEnable.clicked.connect(self.enablePumps)
 
     def update(self):
         self.prevacValveLock.setChecked( self.ursapq.preVacValve_lock )
@@ -76,13 +74,14 @@ class VacuumWindow(ConsoleWindow):
 
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
-        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
         super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
+        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.window.ovenEnableBox.addWidget(self.enableSwitch)
         self.ursapq = ursapq
+        self.setupCallbacks()
 
     def setupCallbacks(self):
-        self.enableSwitch.toggled.connect(self.oven_enable)
+        self.enableSwitch.clicked.connect(self.oven_enable)
         self.window.setPointsButton.clicked.connect(self.newSetPoints)
 
     def update(self):
@@ -116,19 +115,22 @@ class SampleWindow(ConsoleWindow):
 
 class SpectrometerWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
+        super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.coilEnableSwitch = Switch(thumb_radius=11, track_radius=8)
-        super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
         self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
         self.ursapq = ursapq
+        self.setupCallbacks()
+
+        self.resetTimer = False
 
     def setupCallbacks(self):
-        self.mcpEnableSwitch.toggled.connect(self.mcpEnable)
-        self.tofEnableSwitch.toggled.connect(self.tofEnable)
-        self.coilEnableSwitch.toggled.connect(self.coilEnable)
+        self.mcpEnableSwitch.clicked.connect(self.mcpEnable)
+        self.tofEnableSwitch.clicked.connect(self.tofEnable)
+        self.coilEnableSwitch.clicked.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
 
@@ -151,15 +153,25 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
         self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
 
+        if self.resetTimer:
+            self.updateTimer.setInterval( self.updateTime )
 
     #Callbacks:
     @Slot()
     def mcpEnable(self):
         self.ursapq.mcp_hvEnable = self.mcpEnableSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+        self.resetTimer = True
 
     @Slot()
     def tofEnable(self):
         self.ursapq.tof_hvEnable = self.tofEnableSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+        self.resetTimer = True
 
     @Slot()
     def coilEnable(self):
@@ -203,6 +215,7 @@ class MainWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
         self.ursapq = ursapq
+        self.setupCallbacks()
 
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)
@@ -254,7 +267,7 @@ class MainWindow(ConsoleWindow):
     def updateSpectrometer(self):
         self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
-        self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))        
+        self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
