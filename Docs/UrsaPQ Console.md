@@ -19,4 +19,4 @@ Run the program with:
 
 `python3 ursapqConsole.py`
 
-On windows doubleclicking the `ursapqConsole.pyw` file launches the app as well.
+On windows doubleclicking the `ursapqConsole.pyw` file launches the app suppressing the terminal window.
