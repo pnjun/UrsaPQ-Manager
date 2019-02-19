@@ -1,0 +1,2 @@
+import ursapqConsole
+ursapqConsole.main()

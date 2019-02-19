@@ -279,8 +279,7 @@ class UrsapqManager:
         else:
             threading.Timer(config.HVPS.UpdatePeriod, self.HVPSController).start()
 
-
-if __name__=='__main__':
+def main():
     import time
     expManager = UrsapqManager( config.UrsapqServer_Port , config.UrsapqServer_AuthKey.encode('ascii'))
 
@@ -298,3 +297,6 @@ if __name__=='__main__':
             print("Server Error:")
             print(traceback.format_exc())
         time.sleep(config.UrsapqServer_ReconnectPeriod)
+
+if __name__=='__main__':
+    main()

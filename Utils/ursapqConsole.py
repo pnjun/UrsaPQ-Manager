@@ -1,13 +1,13 @@
 import sys
 import os
 from ursapqUtils import UrsaPQ
-from ursapqConsole import Switch
+from ursapqConsoleResources import Switch
 
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
 from PySide2.QtCore import QFile, QObject, QTimer, Slot, QEvent
 
-UI_BASEPATH = '/ursapqConsole/'
+UI_BASEPATH = '/ursapqConsoleResources/'
 #style
 BG_COLOR_OK = 'background-color: #4CBB17;'
 BG_COLOR_WARNING = 'background-color: #F9A602;'
@@ -279,10 +279,12 @@ class MainWindow(ConsoleWindow):
     def showSpectrometer(self):
         self.spectrWindow = SpectrometerWindow(self.ursapq)
 
-if __name__ == '__main__':
-
+def main():
     ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
 
     app = QApplication(sys.argv)
     ui = MainWindow(ursapq)
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
