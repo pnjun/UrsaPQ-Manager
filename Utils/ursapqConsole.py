@@ -252,6 +252,10 @@ class MainWindow(ConsoleWindow):
                 self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
 
     def updateSpectrometer(self):
+        self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
+        self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
+        self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))        
+
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
         elif self.ursapq.HV_Status == 'WARNING':
