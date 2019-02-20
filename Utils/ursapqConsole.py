@@ -15,32 +15,39 @@ BG_COLOR_OK = 'background-color: #4CBB17;'
 BG_COLOR_WARNING = 'background-color: #F9A602;'
 BG_COLOR_ERROR = 'background-color: #DF2800;'
 BG_COLOR_OFF = 'background-color: #808080;'
+BG_COLOR_WHITE = 'background-color: #FFFFFF;'
 
 class ConsoleWindow(QObject):
     '''
     Generic consloe window loaded from ui file. Automatically starts a QTimer
     calling self.update() repeatedly. The timer is deleted when the window is
-    closed by the user.
+    closed.
     The update and setupcallbacks should be overridden by child classes
     '''
 
     def __init__(self, uifilename, updateTime = 500):
         super(ConsoleWindow, self).__init__(None)
         self.updateTime = updateTime
+        self.uifilename = uifilename
 
-        local_dir = os.path.dirname(os.path.abspath(__file__))
-        self.window = QUiLoader().load( QFile(local_dir + UI_BASEPATH + uifilename) )
+        self.loadUi()
 
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.update)
         self.updateTimer.start(self.updateTime)
 
+    def loadUi(self):
+        local_dir = os.path.dirname(os.path.abspath(__file__))
+        self.window = QUiLoader().load( QFile(local_dir + UI_BASEPATH + self.uifilename) )
         self.window.installEventFilter(self)
         self.window.show()
 
     def eventFilter(self, obj, event):
         if obj is self.window and event.type() == QEvent.Close:
-            del self.updateTimer
+            try:
+                del self.updateTimer
+            except AttributeError:
+                pass
         return False
 
     def update(self):
@@ -232,11 +239,6 @@ class MainWindow(ConsoleWindow):
             self.closeChildWindows()
         return super(MainWindow, self).eventFilter(obj, event)
 
-    def connect(self):
-        self.ursapq = UrsaPQ(  config.UrsapqServer_IP ,
-                               config.UrsapqServer_Port ,
-                               config.UrsapqServer_AuthKey.encode('ascii'))
-
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
@@ -297,32 +299,43 @@ class MainWindow(ConsoleWindow):
         else:
             self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)
 
+    def connect(self):
+        self.ursapq = UrsaPQ(  config.UrsapqServer_IP ,
+                               config.UrsapqServer_Port ,
+                               config.UrsapqServer_AuthKey.encode('ascii'))
+
     def update(self):
         try:
             self.updateVacuum()
             self.updateSample()
             self.updateSpectrometer()
+        except Exception as e:
+            try:
+                self.connect()
+            except Exception:
+                self.closeChildWindows()
 
+            self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
+            statusbar = "NOT CONNECTED - Attempting connection to: %s:%d" % (config.UrsapqServer_IP, config.UrsapqServer_Port)
+        else:
             lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
             message = lastStatusMessage + " - " + self.ursapq.statusMessage
             update =  'Last update: %s' % self.ursapq.lastUpdate.strftime("%d-%m-%y %H:%M:%S")
             statusbar = update + " | " + message
-        except Exception as e:
-            self.closeChildWindows()
-            try:
-                self.connect()
-            except Exception:
-                pass
-
-            statusbar = "Attempting to connect to: %s:%d" % (config.UrsapqServer_IP, config.UrsapqServer_Port)
-
+            self.window.statusBar().setStyleSheet(BG_COLOR_WHITE)
 
         self.window.statusBar().showMessage(statusbar)
 
     def closeChildWindows(self):
-        if self.sampleWindow: self.sampleWindow.close()
-        if self.spectrWindow: self.spectrWindow.close()
-        if self.vacuumWindow: self.vacuumWindow.close()
+        if self.sampleWindow:
+            self.sampleWindow.close()
+            self.sampleWindow = None
+        if self.spectrWindow:
+            self.spectrWindow.close()
+            self.spectrWindow = None
+        if self.vacuumWindow:
+            self.vacuumWindow.close()
+            self.vacuumWindow = None
 
     #Callbacks:
     @Slot()
