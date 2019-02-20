@@ -252,18 +252,16 @@ class MainWindow(ConsoleWindow):
         self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
 
         #Update status label
-        if self.ursapq.oven_isOn:
-            self.window.ovenStatus.setText("ON")
-            if self.ursapq.oven_PIDStatus == "OK":
-                self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
-            else:
-                self.window.sample_SL.setStyleSheet(BG_COLOR_WARNING)
+        self.window.ovenStatus.setText(self.ursapq.oven_PIDStatus)
+
+        if self.ursapq.oven_PIDStatus == "OK":
+            self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
+        elif self.ursapq.oven_PIDStatus == "TRACKING":
+            self.window.sample_SL.setStyleSheet(BG_COLOR_WARNING)
+        elif self.ursapq.oven_PIDStatus == "OFF":
+            self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
         else:
-            self.window.ovenStatus.setText("OFF")
-            if self.ursapq.oven_enable:
-                self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
-            else:
-                self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
+            self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
 
     def updateSpectrometer(self):
         self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
@@ -285,9 +283,9 @@ class MainWindow(ConsoleWindow):
         self.updateSample()
         self.updateSpectrometer()
 
-
+    
         lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
-        message = "Status (" + lastStatusMessage + "): " + self.ursapq.statusMessage
+        message = lastStatusMessage + " - " + self.ursapq.statusMessage
         update =  'Last update: %s' % self.ursapq.lastUpdate.strftime("%d-%m-%y %H:%M:%S")
 
         self.window.statusBar().showMessage(update + " | " + message)
