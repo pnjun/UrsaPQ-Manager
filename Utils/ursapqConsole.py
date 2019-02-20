@@ -46,6 +46,9 @@ class ConsoleWindow(QObject):
     def update(self):
         pass
 
+    def close(self):
+        self.window.close()
+
 class VacuumWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         super(VacuumWindow, self).__init__('vacuum.ui', *args, **kvargs)
@@ -213,10 +216,26 @@ class SpectrometerWindow(ConsoleWindow):
             pass
 
 class MainWindow(ConsoleWindow):
-    def __init__(self, ursapq, *args, **kvargs):
+    def __init__(self, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
-        self.ursapq = ursapq
+        self.ursapq = None
+        self.sampleWindow = None
+        self.spectrWindow = None
+        self.vacuumWindow = None
+
         self.setupCallbacks()
+
+        self.window.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if obj is self.window and event.type() == QEvent.Close:
+            self.closeChildWindows()
+        return super(MainWindow, self).eventFilter(obj, event)
+
+    def connect(self):
+        self.ursapq = UrsaPQ(  config.UrsapqServer_IP ,
+                               config.UrsapqServer_Port ,
+                               config.UrsapqServer_AuthKey.encode('ascii'))
 
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)
@@ -279,16 +298,31 @@ class MainWindow(ConsoleWindow):
             self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)
 
     def update(self):
-        self.updateVacuum()
-        self.updateSample()
-        self.updateSpectrometer()
+        try:
+            self.updateVacuum()
+            self.updateSample()
+            self.updateSpectrometer()
 
-    
-        lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
-        message = lastStatusMessage + " - " + self.ursapq.statusMessage
-        update =  'Last update: %s' % self.ursapq.lastUpdate.strftime("%d-%m-%y %H:%M:%S")
+            lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
+            message = lastStatusMessage + " - " + self.ursapq.statusMessage
+            update =  'Last update: %s' % self.ursapq.lastUpdate.strftime("%d-%m-%y %H:%M:%S")
+            statusbar = update + " | " + message
+        except Exception as e:
+            self.closeChildWindows()
+            try:
+                self.connect()
+            except Exception:
+                pass
 
-        self.window.statusBar().showMessage(update + " | " + message)
+            statusbar = "Attempting to connect to: %s:%d" % (config.UrsapqServer_IP, config.UrsapqServer_Port)
+
+
+        self.window.statusBar().showMessage(statusbar)
+
+    def closeChildWindows(self):
+        if self.sampleWindow: self.sampleWindow.close()
+        if self.spectrWindow: self.spectrWindow.close()
+        if self.vacuumWindow: self.vacuumWindow.close()
 
     #Callbacks:
     @Slot()
@@ -302,10 +336,8 @@ class MainWindow(ConsoleWindow):
         self.spectrWindow = SpectrometerWindow(self.ursapq)
 
 def main():
-    ursapq = UrsaPQ( config.UrsapqServer_IP , config.UrsapqServer_Port , config.UrsapqServer_AuthKey.encode('ascii'))
-
     app = QApplication(sys.argv)
-    ui = MainWindow(ursapq)
+    ui = MainWindow()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

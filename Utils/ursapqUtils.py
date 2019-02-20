@@ -26,7 +26,6 @@ class UrsaPQ:
 
         super(UrsaPQ, self).__setattr__('_manager', statusManager((ipAddr, port), authkey) )
         self._manager.connect()
-
         super(UrsaPQ, self).__setattr__('_status', self._manager.getStatusNamespace() )
 
     def __getattr__(self, key):
