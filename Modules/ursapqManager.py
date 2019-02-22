@@ -11,7 +11,7 @@ from HVPS import HVPS
 from Beckhoff import BeckhoffSys
 import pyads
 from config import config
-
+import time
 
 class TempPIDFilter:
     def __init__(self, p, i ,d, setPoint):
@@ -56,9 +56,9 @@ class UrsapqManager:
 
     The updateStatus() and ovenController() functions can be used to get info on all tracked values.
     '''
-    def __init__(self, port, authkey):
-        self.port = port
-        self.authkey = authkey
+    def __init__(self):
+        self.port = config.UrsapqServer_Port
+        self.authkey = config.UrsapqServer_AuthKey.encode('ascii')
 
         class statusManager(BaseManager): pass
         statusObj = Namespace()
@@ -79,6 +79,12 @@ class UrsapqManager:
         self.status.statusMessage = ""
         self.status.lastStatusMessage = datetime.now()
 
+
+        self.doocs = config.UrsapqServer_WriteDoocs # if true we write data to doo
+        if self.doocs:
+            self.pydoocs = __import__('pydoocs')
+            self.doocs_stop = threading.Event() # Stops background event loops (oven and HVPS controllers)
+
         self.setMessage("Server is ready, but not started")
 
     def setMessage(self, msg):
@@ -98,13 +104,20 @@ class UrsapqManager:
         self.status.mcp_hvEnable = False
         self.HVPSController()
 
+        if self.doocs:
+            self.doocs_stop.clear()
+            self.writeDoocs()
+
         self.setMessage("Server started.")
 
     def stop(self):
-        self.setMessage("Server stopped.")
         self.beckhoff.stop()
         self.controls_stop.set()
 
+        if self.doocs:
+            self.doocs_stop.set()
+
+        self.setMessage("Server stopped.")
     #Wrapper functions to make updateStatus func more readable
     #rescale can be provided to process data before writing
     def _beckhoffRead(self, key, name, type, rescale=lambda x:x):
@@ -129,6 +142,37 @@ class UrsapqManager:
             return var
         except:
             return None
+
+
+    def writeDoocs(self):
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.CHAMBER", self.status.chamberPressure)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.PREVAC",  self.status.preVacPressure)
+
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.PHOSPHORHV", self.status.mcp_phosphorHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.BACKHV",     self.status.mcp_backHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.FRONTHV",    self.status.mcp_frontHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     self.status.tof_meshHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_lensHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   self.status.tof_magnetHV)
+
+        '''
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.TEMP"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSX"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSY"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSZ"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ"
+        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.COILCURR"
+        '''
+        if not self.doocs_stop.is_set():
+            threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
+
+
 
     def updateStatus(self, verbose = False):
         #BECKHOFF VALUES
@@ -311,8 +355,7 @@ class UrsapqManager:
             threading.Timer(config.HVPS.UpdatePeriod, self.HVPSController).start()
 
 def main():
-    import time
-    expManager = UrsapqManager( config.UrsapqServer_Port , config.UrsapqServer_AuthKey.encode('ascii'))
+    expManager = UrsapqManager()
 
     while True:
         print("Attempting to start server...")
