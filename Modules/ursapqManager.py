@@ -155,11 +155,11 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_lensHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   self.status.tof_magnetHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP",      self.status.sample_capTemp)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP",      self.status.sample_tipTemp)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP",     self.status.sample_bodyTemp)
 
         '''
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP"
         pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.TEMP"
         pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSX"
         pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSY"
