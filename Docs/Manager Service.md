@@ -14,7 +14,8 @@ The service can be started stopped and restarted with:
 
 ## Logging
 Logs can be seen using:
-`journalctl -n 30 -u ursapqManager.service`
+* `journalctl -n 30 -u ursapqManager.service`
+* `sudo systemctl status ursapqManager.service`
 
 ## Source location
 The soruce code for the server process is located in ~/ExpManager/Modules/. The server script is ursapqManager.py

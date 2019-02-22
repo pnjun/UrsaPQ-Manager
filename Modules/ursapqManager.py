@@ -79,12 +79,15 @@ class UrsapqManager:
         self.status.statusMessage = ""
         self.status.lastStatusMessage = datetime.now()
 
+        self.setMessage("Server is ready, but not started")
+
     def setMessage(self, msg):
         ''' Sets a server status message that clients can read '''
         self.status.statusMessage = msg
         self.status.lastStatusMessage = datetime.now()
 
     def start(self):
+        self.setMessage("Attempting to start server...")
         self.beckhoff.start()
         self.updateStatus()
 
@@ -185,7 +188,7 @@ class UrsapqManager:
             self.ovenPS.Tip.setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
             self.ovenPS.Body.setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
 
-            if abs(self.TipPID.lastErr) < config.Oven_NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven_NormalOpMaxErr:
+            if abs(self.TipPID.lastErr) < config.Oven.PID.NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven.PID.NormalOpMaxErr:
                 self.status.oven_PIDStatus = "OK"
             else:
                 self.status.oven_PIDStatus = "TRACKING"
