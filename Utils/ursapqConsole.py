@@ -222,27 +222,46 @@ class SpectrometerWindow(ConsoleWindow):
         except Exception:
             pass
 
+class DataDisplayWindow(ConsoleWindow):
+    def __init__(self, ursapq, title, varname, *args, **kvargs):
+        super(DataDisplayWindow, self).__init__('dataDisplay.ui', *args, **kvargs)
+        self.ursapq = ursapq
+        self.window.dataBox.setTitle(title)
+        self.varname = varname
+
+    def update(self):
+        self.window.dataView.setText( '{:.2e}'.format(self.ursapq.__getattr__(self.varname)))
+
+
 class MainWindow(ConsoleWindow):
     def __init__(self, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
         self.ursapq = None
-        self.sampleWindow = None
-        self.spectrWindow = None
-        self.vacuumWindow = None
-
+        self.childWindows = [] # lists of all children windows        
+        
         self.setupCallbacks()
-
         self.window.installEventFilter(self)
 
     def eventFilter(self, obj, event):
+        #Close child windows event
         if obj is self.window and event.type() == QEvent.Close:
             self.closeChildWindows()
+
+        if obj is self.window.chamberPressure and event.type() == QEvent.MouseButtonPress:
+            self.childWindows.append(DataDisplayWindow(self.ursapq, "Main Chamber Pressure", "chamberPressure"))
+        if obj is self.window.prevacPressure and event.type() == QEvent.MouseButtonPress:
+            self.childWindows.append(DataDisplayWindow(self.ursapq, "Pre Vacuum Pressure", "preVacPressure"))
+
         return super(MainWindow, self).eventFilter(obj, event)
+    
 
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
         self.window.spectr_MB.clicked.connect(self.showSpectrometer)
+
+        self.window.chamberPressure.installEventFilter(self)
+        self.window.prevacPressure.installEventFilter(self)
         pass
 
     def updateVacuum(self):
@@ -327,26 +346,20 @@ class MainWindow(ConsoleWindow):
         self.window.statusBar().showMessage(statusbar)
 
     def closeChildWindows(self):
-        if self.sampleWindow:
-            self.sampleWindow.close()
-            self.sampleWindow = None
-        if self.spectrWindow:
-            self.spectrWindow.close()
-            self.spectrWindow = None
-        if self.vacuumWindow:
-            self.vacuumWindow.close()
-            self.vacuumWindow = None
+        for win in self.childWindows:
+            win.close()
+            del win
 
     #Callbacks:
     @Slot()
     def showSample(self):
-        self.sampleWindow = SampleWindow(self.ursapq)
+        self.childWindows.append(SampleWindow(self.ursapq))
     @Slot()
     def showVacuum(self):
-        self.vacuumWindow = VacuumWindow(self.ursapq)
+        self.childWindows.append(VacuumWindow(self.ursapq))
     @Slot()
     def showSpectrometer(self):
-        self.spectrWindow = SpectrometerWindow(self.ursapq)
+        self.childWindows.append(SpectrometerWindow(self.ursapq))
 
 def main():
     app = QApplication(sys.argv)

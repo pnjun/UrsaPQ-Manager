@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainWindow</class>
+ <widget class="QMainWindow" name="mainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>676</width>
+    <height>241</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>UrsaPQ Remote - DataDisplay</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget{
+	background-color: #FFFFFF;
+}
+
+QLabel {
+	font-size: 12.5pt;
+}
+
+QGroupBox {
+	background-color: #EFEFEF;
+    border: 1px solid gray;
+    border-color: #003959;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+ 	border-top-left-radius: 10px;
+ 	border-bottom-right-radius: 10px;
+    padding: 5px 20px;
+    background-color: #003959;
+    color: rgb(255, 255, 255);
+}
+
+#dataView {
+	font-size: 90pt;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="dataBox">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>15</y>
+      <width>646</width>
+      <height>211</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Data Display</string>
+    </property>
+    <widget class="QLabel" name="dataView">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>60</y>
+       <width>616</width>
+       <height>106</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
