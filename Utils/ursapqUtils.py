@@ -45,11 +45,8 @@ class UrsaPQ:
 
 if __name__=='__main__':
     import time
-    ursapq = UrsaPQ( '141.89.116.204' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
+    ursapq = UrsaPQ( '192.168.0.0' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
     print(ursapq.lastUpdate)
     print(ursapq.preVacPressure)
-    print( ursapq.hv_setFront )
-    print( ursapq.hv_setBack )
+    print( ursapq.sample_pos_x )
 
-    ursapq.hv_setFront = 2
-    ursapq.hv_tofEnable = not ursapq.hv_tofEnable

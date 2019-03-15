@@ -159,16 +159,15 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP",      self.status.sample_tipTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP",     self.status.sample_bodyTemp)
 
-        '''
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.TEMP"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSX"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSY"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSZ"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ"
-        pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.COILCURR"
-        '''
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.TEMP", self.status.magnet_temp)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSX", self.status.sample_pos_x)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSY", self.status.sample_pos_y)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSZ", self.status.sample_pos_z)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY", self.status.magnet_pos_y)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY",  self.status.frame_pos_y)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ",  self.status.frame_pos_x) #DOOCS HAS WRONG NAME FOR FRAMEX
+        #pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.COILCURR"
+        
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
 
@@ -190,7 +189,12 @@ class UrsapqManager:
         self._beckhoffRead('sample_tipTemp',      'MAIN.Sample_TipTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
         self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT, lambda x:x/10)
         self._beckhoffRead('magnet_temp',         'MAIN.Magnet_Temp',       pyads.PLCTYPE_INT, lambda x:x/10)
-        self._beckhoffRead('sample_posZ','MAIN.SampleZ.NcToPlc.TargetPos',  pyads.PLCTYPE_REAL)
+        self._beckhoffRead('sample_pos_x',   'MAIN.SampleX.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('sample_pos_y',   'MAIN.SampleY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('sample_pos_z',   'MAIN.SampleZ.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('frame_pos_x',    'MAIN.FrameX.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('frame_pos_y',    'MAIN.FrameY.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
 
         # Update PID setpoints if necessary
         newTip = self._getParamWrite('oven_tipSetPoint')
