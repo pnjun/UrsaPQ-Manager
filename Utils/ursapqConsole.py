@@ -281,7 +281,7 @@ class MainWindow(ConsoleWindow):
             if self.ursapq.pumps_enable:
                 self.window.vacuum_SL.setStyleSheet(BG_COLOR_ERROR)
             else:
-                self.window.vacuum_SL.setStyleSheet(BG_COLOR_OK)
+                self.window.vacuum_SL.setStyleSheet(BG_COLOR_OFF)
 
         if self.ursapq.preVac_OK and self.ursapq.mainVac_OK:
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_OK)
