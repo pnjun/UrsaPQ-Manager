@@ -124,10 +124,18 @@ class UrsapqManager:
 
         self.setMessage("Server is ready, but not started")
 
-    def setMessage(self, msg):
-        ''' Sets a server status message that clients can read '''
+    def setMessage(self, msg, timeout = None):
+        ''' 
+        Sets a server status message that clients can read.
+        If timeout is specified, message goes back to previous message after timeout
+        '''
+        if False: # Not working properly, TO BE FIXED
+            print(timeout)
+            threading.Timer(timeout, self.setMessage, [self.status.statusMessage] ).start()
+
         self.status.statusMessage = msg
         self.status.lastStatusMessage = datetime.now()
+        
 
     def start(self):
         ''' Starts status update operations. '''
@@ -144,7 +152,7 @@ class UrsapqManager:
             self.doocs_stop.clear()
             self.writeDoocs()
 
-        self.setMessage("Server started.")
+        self.setMessage("Server running")
 
     def stop(self):
         ''' Stops status update operations. '''
@@ -154,7 +162,7 @@ class UrsapqManager:
         if self.doocs:
             self.doocs_stop.set()
 
-        self.setMessage("Server stopped.")
+        self.setMessage("Server stopped")
 
     #Wrapper functions to make updateStatus func more readable
     #rescale can be provided to process data before writing
@@ -310,9 +318,9 @@ class UrsapqManager:
                 self.status.oven_PIDStatus = "OFF"
             else:
                 if isinstance(e, UrsapqManager.OvenOFFException):
-                    self.setMessage("ERROR: Oven enabled but not active, check interlock")
+                    self.setMessage("ERROR: Oven enabled but not active, check interlock", 5)
                 else:
-                    self.setMessage("ERROR: Cannot connect to OvenPS, check USB")
+                    self.setMessage("ERROR: Cannot connect to OvenPS, check USB", 5)
                     print("OvenPS not reachable: " , traceback.format_exc())
                 self.status.oven_PIDStatus = "ERROR"
 
@@ -382,10 +390,10 @@ class UrsapqManager:
             #Must be done after others setpoints have been loaded
             if self.HVPS.Back.setVoltage < self.HVPS.Front.setVoltage:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage
-                self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
+                self.setMessage("WARNING: MCP Back voltage setpoint rescaled", 30)
             if self.HVPS.Back.setVoltage > self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV
-                self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
+                self.setMessage("WARNING: MCP Back voltage setpoint rescaled", 30)
 
             # Update setPoint status
             self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
@@ -421,7 +429,7 @@ class UrsapqManager:
             self.status.tof_retarderSetHV   = math.nan
             self.status.tof_magnetSetHV     = math.nan
             self.status.HV_Status = "ERROR"
-            self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate")
+            self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate", 5)
             print(traceback.format_exc())
 
         if self.controls_stop.is_set():

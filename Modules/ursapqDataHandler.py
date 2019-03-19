@@ -1,6 +1,7 @@
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
 from collections import namedtuple
+import matplotlib.pyplot as plt
 import threading
 import traceback
 import math
@@ -34,9 +35,14 @@ class ursapqDataHandler:
             self.pydoocs = __import__('pydoocs')
             self.doocs_stop = threading.Event() # Stops event for DOOCS update thread
 
+    def test(self):
+        out = self.pydoocs.read("FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD")
+        plt.plot(out['data'])
+        plt.show()
 
 def main():
     dataHandler = ursapqDataHandler()
+    dataHandler.test()
 
 
 if __name__=='__main__':
