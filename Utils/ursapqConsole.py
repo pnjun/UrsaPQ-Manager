@@ -3,7 +3,7 @@ import os
 import time
 from ursapqUtils import UrsaPQ
 from ursapqConsoleResources.switch import Switch
-from ursapqConsoleResources.config import config
+
 
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
@@ -320,9 +320,7 @@ class MainWindow(ConsoleWindow):
             self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)
 
     def connect(self):
-        self.ursapq = UrsaPQ(  config.UrsapqServer_IP ,
-                               config.UrsapqServer_Port ,
-                               config.UrsapqServer_AuthKey.encode('ascii'))
+        self.ursapq = UrsaPQ()
 
     def update(self):
         try:
@@ -332,11 +330,12 @@ class MainWindow(ConsoleWindow):
         except Exception as e:
             try:
                 self.connect()
-            except Exception:
+            except Exception as e:
+                print(str(e))
                 self.closeChildWindows()
 
             self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
-            statusbar = "NOT CONNECTED - Attempting connection to: %s:%d" % (config.UrsapqServer_IP, config.UrsapqServer_Port)
+            statusbar = "NOT CONNECTED - Attempting connection (check config file)"
         else:
             lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
             message = lastStatusMessage + " - " + self.ursapq.statusMessage

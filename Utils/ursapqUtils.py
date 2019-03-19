@@ -1,4 +1,5 @@
 from multiprocessing.managers import BaseManager, NamespaceProxy
+from config import config
 
 class UrsaPQ:
     '''
@@ -18,35 +19,51 @@ class UrsaPQ:
     print(exp)
     '''
 
-    def __init__(self, ipAddr, port, authkey):
+    def __init__(self):
         # Connects to remote manager and obtains an handle on the shared namespace
         # representing the status. (see multiprocessing.Manager)
+
         class statusManager(BaseManager): pass
         statusManager.register('getStatusNamespace', proxytype=NamespaceProxy)
 
-        super(UrsaPQ, self).__setattr__('_manager', statusManager((ipAddr, port), authkey) )
+        super(UrsaPQ, self).__setattr__('_manager', statusManager((config.UrsapqServer_IP, 
+                                                                   config.UrsapqServer_Port),
+                                                                   config.UrsapqServer_AuthKey.encode('ascii')) )
         self._manager.connect()
         super(UrsaPQ, self).__setattr__('_status', self._manager.getStatusNamespace() )
+
+        try:
+            class writeManager(BaseManager): pass
+            writeManager.register('getWriteNamespace', proxytype=NamespaceProxy)
+
+            super(UrsaPQ, self).__setattr__('_writeManager', writeManager((config.UrsapqServer_IP, 
+                                                                           config.UrsapqServer_WritePort),
+                                                                           config.UrsapqServer_WriteKey.encode('ascii')) )
+            self._writeManager.connect()
+            super(UrsaPQ, self).__setattr__('_writeStatus', self._writeManager.getWriteNamespace() )
+        # If writestatus setup fails (missing config?) disable write option
+        except Exception:
+            super(UrsaPQ, self).__setattr__('_writeStatus', None )
 
     def __getattr__(self, key):
         # Attribute lookup is passed on directly to the status namespace
         return self._status.__getattr__(key)
 
     def __setattr__(self, key, val):
-        # Attribute setting is done by setting the key__setter variable in the
-        # status namespace. expManager process will try to act on that request.
-        if key.endswith('__setter'):
-            raise Exception("Variable names ending with '__setter' are reserved")
+        # Attribute setting is done by setting the variable in the writeStatus
+        # namespace. expManager process will try to act on that request
 
-        return self._status.__setattr__(key + '__setter', val)
+        if self._writeStatus is not None:
+            return self._writeStatus.__setattr__(key, val)
+        else:
+            raise Exception("Writing not allowed, add write password to config file to enable")
 
     def __repr__(self):
         return str(self._status)
 
 if __name__=='__main__':
     import time
-    ursapq = UrsaPQ( '192.168.0.0' , 2222 , 'ursapqManager_TurboOK'.encode('ascii'))
+    ursapq = UrsaPQ()
     print(ursapq.lastUpdate)
     print(ursapq.preVacPressure)
     print( ursapq.sample_pos_x )
-

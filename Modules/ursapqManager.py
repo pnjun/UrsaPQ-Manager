@@ -76,18 +76,30 @@ class UrsapqManager:
         Creates the namespace and starts the multiprocessing manager.
         Initializes hardware control moudles and PID filters for oven control
         '''
+
+        # Status namespace for client to read
         self.port = config.UrsapqServer_Port
         self.authkey = config.UrsapqServer_AuthKey.encode('ascii')
 
-        #Setup multiprocessing manager
         class statusManager(BaseManager): pass
         statusObj = Namespace()
         statusManager.register('getStatusNamespace', callable = lambda:statusObj, proxytype=NamespaceProxy)
         self.manager = statusManager(('', self.port), self.authkey)
 
-        # Shared system status namespace
         self.manager.start()
         self.status = self.manager.getStatusNamespace()
+
+        # Namespace for client write requests
+        self.writePort = config.UrsapqServer_WritePort
+        self.writeKey = config.UrsapqServer_WriteKey.encode('ascii')
+
+        class writeManager(BaseManager): pass
+        writeRequestObj = Namespace()
+        writeManager.register('getWriteNamespace', callable = lambda:writeRequestObj, proxytype=NamespaceProxy)
+        self.writeManager = writeManager(('', self.writePort), self.writeKey)
+
+        self.writeManager.start()
+        self.writeStatus = self.writeManager.getWriteNamespace()
 
         # Instances of hardware control modules
         self.beckhoff = BeckhoffSys()
@@ -152,9 +164,9 @@ class UrsapqManager:
     def _beckhoffWrite(self, key, name, type):
         try:
             #If __setter variable is present, use its value to update HW
-            self.beckhoff.write(name, self.status.__getattr__(key+'__setter'), type)
+            self.beckhoff.write(name, self.writeStatus.__getattr__(key), type)
             #Delete __setter from namespace after
-            self.status.__delattr__(key+'__setter')
+            self.writeStatus.__delattr__(key)
         except Exception:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
@@ -164,8 +176,8 @@ class UrsapqManager:
         ''' Checks if a paramater write request has been made by a client. If so, returns the value and deletes
             the request. Returns none otherwise '''
         try:
-            var = self.status.__getattr__(key + '__setter')
-            self.status.__delattr__(key+'__setter')
+            var = self.writeStatus.__getattr__(key)
+            self.writeStatus.__delattr__(key)
             return var
         except:
             return None
