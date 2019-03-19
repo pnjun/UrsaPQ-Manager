@@ -26,14 +26,18 @@ class TempPIDFilter:
         self.reset()
 
     def filter(self, t_in):
-        if not self.lastcall:
+        '''
+        Calculates filter output given current input. Keeps track of time
+        elapsed between subsequent calls and adjusts coefficients accordingly
+        '''
+        if not self.lastcall:                      # If first call, initialize lastcall to now
             self.lastcall = datetime.now()
         now = datetime.now()
 
-        dt = (now - self.lastcall).total_seconds() #get time elapsed since last filter run
+        dt = (now - self.lastcall).total_seconds() # Get time elapsed since last filter run
         err = self.setPoint - t_in
 
-        self.integ += dt*err
+        self.integ += dt*err                       # Calculate PID filter output and update internal counters
         out = self.p * err + self.i * self.integ + self.d / dt * (err - self.lastErr)
         self.lastErr = err
         self.lastcall = now
@@ -52,38 +56,59 @@ class UrsapqManager:
     '''
     Keeps track of the status of all components in the setup and syncs the values
     between HW components. Values are then made available to clients trough a
-    shared namespace accessible via the ursapqUtils library.
+    shared namespace ( self.status ) accessible via the ursapqUtils library.
+    The shared namespace is implemented using the multiprocessing.Manager python lib.
+    It also takes care communication with DOOCS.
 
-    The updateStatus() and ovenController() functions can be used to get info on all tracked values.
+    The updateStatus(), ovenController() and HVPSController() functions can be used to get info on all tracked values.
+
+    The control is split in various threads with different tasks (one thread per task):
+        * Beckhoff readout
+        * Oven Temperature control
+        * HV power supply control
+        * DOOCS update
+
+    The start() and stop() functions are used to start and stop the data update loops.
+    The multiprocessing managers is always active.
     '''
     def __init__(self):
+        '''
+        Creates the namespace and starts the multiprocessing manager.
+        Initializes hardware control moudles and PID filters for oven control
+        '''
         self.port = config.UrsapqServer_Port
         self.authkey = config.UrsapqServer_AuthKey.encode('ascii')
 
+        #Setup multiprocessing manager
         class statusManager(BaseManager): pass
         statusObj = Namespace()
         statusManager.register('getStatusNamespace', callable = lambda:statusObj, proxytype=NamespaceProxy)
         self.manager = statusManager(('', self.port), self.authkey)
 
+        # Shared system status namespace
         self.manager.start()
         self.status = self.manager.getStatusNamespace()
 
+        # Instances of hardware control modules
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
         self.HVPS = HVPS()
-        self.controls_stop = threading.Event() # Stops background event loops (oven and HVPS controllers)
+        self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
+        #PID filters
         self.TipPID =  TempPIDFilter(*tuple(config.Oven.PID.TipParams),  config.Oven.PID.TipDefSetpoint)
         self.CapPID =  TempPIDFilter(*tuple(config.Oven.PID.CapParams),  config.Oven.PID.CapDefSetpoint)
         self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
+
+        #System status message initalization
         self.status.statusMessage = ""
         self.status.lastStatusMessage = datetime.now()
 
-
+        #If config is set, initialize DOOCS communication
         self.doocs = config.UrsapqServer_WriteDoocs # if true we write data to doo
         if self.doocs:
             self.pydoocs = __import__('pydoocs')
-            self.doocs_stop = threading.Event() # Stops background event loops (oven and HVPS controllers)
+            self.doocs_stop = threading.Event() # Stops event for DOOCS update thread
 
         self.setMessage("Server is ready, but not started")
 
@@ -93,6 +118,7 @@ class UrsapqManager:
         self.status.lastStatusMessage = datetime.now()
 
     def start(self):
+        ''' Starts status update operations. '''
         self.setMessage("Attempting to start server...")
         self.beckhoff.start()
         self.updateStatus()
@@ -111,6 +137,7 @@ class UrsapqManager:
         self.setMessage("Server started.")
 
     def stop(self):
+        ''' Stops status update operations. '''
         self.beckhoff.stop()
         self.controls_stop.set()
 
@@ -118,6 +145,7 @@ class UrsapqManager:
             self.doocs_stop.set()
 
         self.setMessage("Server stopped.")
+
     #Wrapper functions to make updateStatus func more readable
     #rescale can be provided to process data before writing
     def _beckhoffRead(self, key, name, type, rescale=lambda x:x):
@@ -133,6 +161,7 @@ class UrsapqManager:
             pass
         self.status.__setattr__(key, self.beckhoff.read(name,type))
 
+    #Wrapper function to make processing of write requests from clients cleaner
     def _getParamWrite(self, key):
         ''' Checks if a paramater write request has been made by a client. If so, returns the value and deletes
             the request. Returns none otherwise '''
@@ -145,6 +174,8 @@ class UrsapqManager:
 
 
     def writeDoocs(self):
+        ''' Writes values to DOOCS '''
+
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.CHAMBER", self.status.chamberPressure)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.PREVAC",  self.status.preVacPressure)
 
@@ -167,14 +198,15 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY",  self.status.frame_pos_y)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ",  self.status.frame_pos_x) #DOOCS HAS WRONG NAME FOR FRAMEX
         #pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.COILCURR"
-        
+
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
 
-
-
     def updateStatus(self, verbose = False):
-        #BECKHOFF VALUES
+        '''
+        Main update function. Reads/Writes values from beckhoff to the status namespace and
+        updates the oven temperature set points if needed.
+        '''
 
         #Update 'read only' values
         #First argument is variable named exposed by ursapsUtils, second and third are PLC variable names
@@ -207,8 +239,8 @@ class UrsapqManager:
         self.status.oven_capSetPoint = self.CapPID.setPoint
         self.status.oven_bodySetPoint = self.BodyPID.setPoint
 
-        #Write out config values if necessary + update them after the write attempt
-        #Every piece is updating a different variable.
+        # Check if a client requested a change and wirte it out to beckhoff if necessary
+        # self.status namespace values are updated to the new value if write is succesful
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
@@ -221,27 +253,41 @@ class UrsapqManager:
 
     #Manages sample oven tempearture control loop
     def ovenController(self):
-        ''' PID filter to control the sample oven temperature '''
-        try: #try connecting to OVPS, if not,
+        '''
+        Runs the PID filter for oven control.
+        Attempts connection with the hardware and updates values if possible.
+        Values are set to NaN if no hardware connection fails.
+        If update succeeded, new voltages are calculated via the PID filters
+        '''
+
+        #Try connection to OVPS, if not,
+        try:
+            # If oven is not powered by beckhoff, dont even bother trying
             if not self.status.oven_isOn:
                 raise UrsapqManager.OvenOFFException("Oven PS is off")
 
+            # Try to read out status
             self.ovenPS.connect()
             self.status.oven_capPow  = self.ovenPS.Cap.power
             self.status.oven_bodyPow = self.ovenPS.Body.power
             self.status.oven_tipPow  = self.ovenPS.Tip.power
 
+            # If we got this far, the OvenPS is probably connected and working,
+            # we can set the new control voltages based on PID filter
             self.ovenPS.allOn()
             self.ovenPS.Cap.setVoltage  = self.CapPID.filter(self.status.sample_capTemp)
             self.ovenPS.Tip.setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
             self.ovenPS.Body.setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
 
+            # Write oven status variable
             if abs(self.TipPID.lastErr) < config.Oven.PID.NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven.PID.NormalOpMaxErr:
                 self.status.oven_PIDStatus = "OK"
             else:
                 self.status.oven_PIDStatus = "TRACKING"
 
+        # If connection failed, set everything to NaN and reset PID filters
         except Exception as e:
+
             self.status.oven_capPow = math.nan
             self.status.oven_bodyPow = math.nan
             self.status.oven_tipPow = math.nan
@@ -249,6 +295,7 @@ class UrsapqManager:
             self.CapPID.reset()
             self.BodyPID.reset()
 
+            #Update status variable
             if not self.status.oven_enable:
                 self.status.oven_PIDStatus = "OFF"
             else:
@@ -260,27 +307,41 @@ class UrsapqManager:
                 self.status.oven_PIDStatus = "ERROR"
 
 
+        # If stopping, switch everything off and reset PID filters
         if self.controls_stop.is_set():
             self.ovenPS.allOff()
             self.TipPID.reset()
             self.CapPID.reset()
             self.BodyPID.reset()
+        # If not stopping, calls itself again after configurable interval
         else:
             threading.Timer(config.Oven.ControlPeriod, self.ovenController).start()
 
-    #Manages HVPS, runs separately from main update function due to serial not updating fast enough
     def HVPSController(self):
-        ''' Manages serial comms with HVPSs '''
+        '''
+        Manages serial comms with HVPSs.
+        Reqires different (longer) update period than the main update since serial communication is slow.
+        If communication with HVPS is possible, updates the values. If not sets everything to NaN.
+
+        WARNING: In order to let users switch channles on/off manually through the buttons on the PS,
+        channels are only turned on/off programmatically when the enable status changes. If a user
+        turns channles on/off manually, an inconsistent state is created, as the enable status will not reflect
+        the real channel status.
+        '''
         try:
+            # Try connecting
             self.HVPS.connect()
-            # HV enable status
+
+            # Check if user has changed the enable status and acts on it
             tofEn = self._getParamWrite('tof_hvEnable')
             mcpEn = self._getParamWrite('mcp_hvEnable')
             if tofEn is not None: self.HVPS.tofEnable = tofEn
             if mcpEn is not None: self.HVPS.mcpEnable = mcpEn
+            # Updates enable value if enable is succesful
             self.status.tof_hvEnable = self.HVPS.tofEnable
             self.status.mcp_hvEnable = self.HVPS.mcpEnable
 
+            # Update actual voltages
             self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
             self.status.mcp_backHV      = self.HVPS.Back.voltage
             self.status.mcp_frontHV     = self.HVPS.Front.voltage
@@ -289,6 +350,7 @@ class UrsapqManager:
             self.status.tof_retarderHV  = self.HVPS.Retarder.voltage
             self.status.tof_magnetHV    = self.HVPS.Magnet.voltage
 
+            # Read in write requests for voltage setpoints
             newMesh     = self._getParamWrite('tof_meshSetHV')
             newLens     = self._getParamWrite('tof_lensSetHV')
             newRetarter = self._getParamWrite('tof_retarderSetHV')
@@ -297,6 +359,7 @@ class UrsapqManager:
             newBack     = self._getParamWrite('mcp_backSetHV')
             newFront    = self._getParamWrite('mcp_frontSetHV')
 
+            # Apply new setpoints if needed
             if newMesh     is not None: self.HVPS.Mesh.setVoltage = newMesh
             if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
             if newRetarter is not None: self.HVPS.Retarder.setVoltage = newRetarter
@@ -306,7 +369,7 @@ class UrsapqManager:
             if newFront    is not None: self.HVPS.Front.setVoltage = newFront
 
             #prevent MCP overvoltage by limiting back-front deltaV
-            #Must be done after others have been loaded
+            #Must be done after others setpoints have been loaded
             if self.HVPS.Back.setVoltage < self.HVPS.Front.setVoltage:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage
                 self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
@@ -314,7 +377,7 @@ class UrsapqManager:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV
                 self.setMessage("WARNING: MCP Back voltage setpoint rescaled")
 
-
+            # Update setPoint status
             self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
             self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
             self.status.tof_retarderSetHV   = self.HVPS.Retarder.setVoltage
@@ -330,6 +393,8 @@ class UrsapqManager:
             else:
                 self.status.HV_Status = "WARNING"
 
+        # IF update failed, HVPS is probably off/disconnected.
+        # Set everything to NaN
         except Exception:
             self.status.mcp_phosphorHV  = math.nan
             self.status.mcp_backHV      = math.nan
