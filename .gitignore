@@ -1,3 +1,4 @@
 Modules/config.json
-Utils/ursapqConsoleResources/config.json
+Utils/config.json
 *.pyc
+*.so
