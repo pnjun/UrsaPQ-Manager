@@ -166,6 +166,7 @@ class SpectrometerWindow(ConsoleWindow):
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
+            self.resetTimer = False
 
     #Callbacks:
     @Slot()
