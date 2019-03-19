@@ -126,8 +126,6 @@ class UrsapqManager:
         self.controls_stop.clear()
         self.ovenController()
 
-        self.status.tof_hvEnable = False
-        self.status.mcp_hvEnable = False
         self.HVPSController()
 
         if self.doocs:
@@ -418,6 +416,8 @@ class UrsapqManager:
             try:
                 self.HVPS.tofEnable = False
                 self.HVPS.mcpEnable = False
+                self.status.tof_hvEnable = False
+                self.status.mcp_hvEnable = False
             except Exception:
                 pass
         else:
