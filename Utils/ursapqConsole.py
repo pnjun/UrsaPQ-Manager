@@ -94,6 +94,8 @@ class SampleWindow(ConsoleWindow):
     def setupCallbacks(self):
         self.enableSwitch.clicked.connect(self.oven_enable)
         self.window.setPointsButton.clicked.connect(self.newSetPoints)
+        self.window.moveButton.clicked.connect(self.move_sample)
+        self.window.stopButton.clicked.connect(self.stop_motion)
 
     def update(self):
         self.enableSwitch.setChecked( self.ursapq.oven_enable )
@@ -104,10 +106,35 @@ class SampleWindow(ConsoleWindow):
         self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
         self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
 
+        self.window.pos_x.setText( 'X = {:.1f}'.format(self.ursapq.sample_pos_x))
+        self.window.pos_y.setText( 'Y = {:.1f}'.format(self.ursapq.sample_pos_y))
+        self.window.pos_z.setText( 'Z = {:.1f}'.format(self.ursapq.sample_pos_z))
+
     #Callbacks:
     @Slot()
     def oven_enable(self):
         self.ursapq.oven_enable = self.enableSwitch.isChecked()
+
+    @Slot()
+    def move_sample(self):
+        try:
+            self.ursapq.sample_pos_x_setPoint = float( self.window.pos_x_set.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.sample_pos_y_setPoint = float( self.window.pos_y_set.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.sample_pos_z_setPoint = float( self.window.pos_z_set.toPlainText() )
+        except Exception:
+            pass
+
+        self.ursapq.sample_pos_enable = True
+
+    @Slot()
+    def stop_motion(self):
+        self.ursapq.sample_pos_stop = True
 
     @Slot()
     def newSetPoints(self):

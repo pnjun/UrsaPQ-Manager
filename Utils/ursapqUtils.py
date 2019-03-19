@@ -64,6 +64,10 @@ class UrsaPQ:
 if __name__=='__main__':
     import time
     ursapq = UrsaPQ()
-    print(ursapq.lastUpdate)
-    print(ursapq.preVacPressure)
     print( ursapq.sample_pos_x )
+    print( ursapq.sample_pos_x_setPoint )
+    ursapq.sample_pos_stop = True
+
+
+
+

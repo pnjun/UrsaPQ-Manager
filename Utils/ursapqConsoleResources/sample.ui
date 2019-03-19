@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>674</width>
-    <height>412</height>
+    <width>690</width>
+    <height>405</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -315,13 +315,154 @@ QGroupBox::title {
      <rect>
       <x>360</x>
       <y>15</y>
-      <width>301</width>
+      <width>316</width>
       <height>376</height>
      </rect>
     </property>
     <property name="title">
      <string>Manipulator</string>
     </property>
+    <widget class="QWidget" name="widget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>90</y>
+       <width>286</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <widget class="QLabel" name="pos_x">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pos_y">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pos_z">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>226</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Manipulator position:</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="widget_2" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>195</y>
+       <width>286</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <widget class="QPlainTextEdit" name="pos_x_set">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="pos_y_set">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="pos_z_set">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButton">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>75</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="stopButton">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>75</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stop</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_11">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>150</y>
+       <width>226</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Manipulator control:</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>

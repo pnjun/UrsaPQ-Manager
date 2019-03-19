@@ -262,6 +262,18 @@ class UrsapqManager:
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('sample_pos_x_setPoint',   'MAIN.SampleX_SetPoint', pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('sample_pos_y_setPoint',   'MAIN.SampleY_SetPoint', pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('sample_pos_z_setPoint',   'MAIN.SampleZ_SetPoint', pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('sample_pos_enable',       'MAIN.Sample_MotionEnable', pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('sample_pos_stop',         'MAIN.Sample_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('magnet_pos_y_setPoint',   'MAIN.MagnetY_SetPoint', pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('magnet_pos_enable',       'MAIN.Sample_MotionEnable', pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('magnet_pos_stop',         'MAIN.Sample_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('frame_pos_x_setPoint',    'MAIN.FrameX_SetPoint',  pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('frame_pos_y_setPoint',    'MAIN.FrameY_SetPoint',  pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('frame_pos_enable',        'MAIN.Sample_MotionEnable', pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('frame_pos_stop',          'MAIN.Sample_MotionStop',   pyads.PLCTYPE_BOOL)
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()

@@ -2,8 +2,8 @@ import time
 import serial
 
 ser = serial.Serial(
-    port='/dev/ttyUSB0',
-    baudrate=9600,
+    port='/dev/ttyUSB2',
+    baudrate=115200,
 )
 
 ser.isOpen()
