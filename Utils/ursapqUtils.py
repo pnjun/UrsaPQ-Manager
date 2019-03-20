@@ -26,7 +26,7 @@ class UrsaPQ:
         class statusManager(BaseManager): pass
         statusManager.register('getStatusNamespace', proxytype=NamespaceProxy)
 
-        super(UrsaPQ, self).__setattr__('_manager', statusManager((config.UrsapqServer_IP, 
+        super(UrsaPQ, self).__setattr__('_manager', statusManager((config.UrsapqServer_IP,
                                                                    config.UrsapqServer_Port),
                                                                    config.UrsapqServer_AuthKey.encode('ascii')) )
         self._manager.connect()
@@ -36,7 +36,7 @@ class UrsaPQ:
             class writeManager(BaseManager): pass
             writeManager.register('getWriteNamespace', proxytype=NamespaceProxy)
 
-            super(UrsaPQ, self).__setattr__('_writeManager', writeManager((config.UrsapqServer_IP, 
+            super(UrsaPQ, self).__setattr__('_writeManager', writeManager((config.UrsapqServer_IP,
                                                                            config.UrsapqServer_WritePort),
                                                                            config.UrsapqServer_WriteKey.encode('ascii')) )
             self._writeManager.connect()
@@ -63,11 +63,18 @@ class UrsaPQ:
 
 if __name__=='__main__':
     import time
+    import matplotlib.pyplot as plt
+
     ursapq = UrsaPQ()
-    print( ursapq.sample_pos_x )
-    print( ursapq.sample_pos_x_setPoint )
-    ursapq.sample_pos_stop = True
 
-
-
-
+    fig = plt.figure()
+    tofTracepl = fig.add_subplot(121)
+    tofSlicepl = fig.add_subplot(122)
+    tofTrace, = tofTracepl.plot(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+    tofSlice, = tofSlicepl.plot(ursapq.data_tofSingleShot)
+    fig.show()
+    while True:
+        tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+        tofSlice.set_ydata(ursapq.data_tofSingleShot)
+        fig.canvas.draw()
+        fig.canvas.flush_events()
