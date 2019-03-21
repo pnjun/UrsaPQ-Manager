@@ -42,6 +42,7 @@ class ursapqDataHandler:
         # Data
         self.dataUpdated  = threading.Event() #Event is set every time new data is available
         self.tofTrace = None
+        self.laserTrace = None
         self.macropulse = None
         self.timestamp = 0
 
@@ -87,16 +88,19 @@ class ursapqDataHandler:
             else:
                 newTof = self.pydoocs.read(config.Data_FLASH_TOF, macropulse = self.macropulse + 1)'''
 
-            newTof = self.pydoocs.read(config.Data_FLASH_TOF)
+            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
+            newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
 
             self.macropulse = newTof['macropulse']
             self.timestamp  = newTof['timestamp']
 
             try:
                 #self.tofTrace[0] = newTof['data'][:][0]
-                self.tofTrace[1] = self.dataFilter( newTof['data'].T[1] ,  self.tofTrace[1] )
+                self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
+                self.laserTrace[1] = self.dataFilter( newLaser['data'].T[1] ,  self.laserTrace[1] )
             except TypeError:
                 self.tofTrace  = newTof['data'].T
+                self.laserTrace = newLaser['data'].T
 
             # Notify filter workers that new data is available
             self.dataUpdated.set()
@@ -132,7 +136,8 @@ class ursapqDataHandler:
         #Run until stop event
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
-            self.status.data_tofTrace = self.tofTrace
+            self.status.data_laserTrace = self.laserTrace
+            self.status.data_tofTrace   = self.tofTrace
 
 def main():
     dataHandler = ursapqDataHandler()

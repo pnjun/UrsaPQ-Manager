@@ -51,7 +51,11 @@ class UrsaPQ:
 
     def __setattr__(self, key, val):
         # Attribute setting is done by setting the variable in the writeStatus
-        # namespace. expManager process will try to act on that request
+        # namespace. expManager process will try to act on that reques
+        # attributes named data_* are used for data analysis and can be set directly
+
+        if key.startswith("data_"):
+            return self._status.__setattr__(key, val)
 
         if self._writeStatus is not None:
             return self._writeStatus.__setattr__(key, val)
@@ -66,15 +70,4 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
 
     ursapq = UrsaPQ()
-
-    fig = plt.figure()
-    tofTracepl = fig.add_subplot(121)
-    tofSlicepl = fig.add_subplot(122)
-    tofTrace, = tofTracepl.plot(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
-    tofSlice, = tofSlicepl.plot(ursapq.data_tofSingleShot)
-    fig.show()
-    while True:
-        tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
-        tofSlice.set_ydata(ursapq.data_tofSingleShot)
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+    print(ursapq.chamberPressure)
