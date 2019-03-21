@@ -1,3 +1,4 @@
+
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
 from collections import namedtuple
@@ -7,6 +8,7 @@ import math
 import time
 
 from OvenPS import OvenPS
+from RigolPS import RigolPS
 from HVPS import HVPS
 from Beckhoff import BeckhoffSys
 import pyads
@@ -105,6 +107,7 @@ class UrsapqManager:
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
         self.HVPS = HVPS()
+        self.RigolPS = RigolPS()
         self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
         #PID filters
@@ -125,7 +128,7 @@ class UrsapqManager:
         self.setMessage("Server is ready, but not started")
 
     def setMessage(self, msg, timeout = None):
-        ''' 
+        '''
         Sets a server status message that clients can read.
         If timeout is specified, message goes back to previous message after timeout
         '''
@@ -135,7 +138,7 @@ class UrsapqManager:
 
         self.status.statusMessage = msg
         self.status.lastStatusMessage = datetime.now()
-        
+
 
     def start(self):
         ''' Starts status update operations. '''
@@ -145,8 +148,12 @@ class UrsapqManager:
 
         self.controls_stop.clear()
         self.ovenController()
-
         self.HVPSController()
+
+        self.RigolController()
+        #self.status.coil_current = math.nan
+        #self.status.coil_setCurrent = math.nan
+        #self.status.coil_enable = False
 
         if self.doocs:
             self.doocs_stop.clear()
@@ -189,7 +196,6 @@ class UrsapqManager:
             return var
         except:
             return None
-
 
     def writeDoocs(self):
         ''' Writes values to DOOCS '''
@@ -280,6 +286,39 @@ class UrsapqManager:
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
+
+    #Manages sample oven tempearture control loop
+    def RigolController(self):
+        #Coil current control
+        try:
+            raise Exception("RIGOL PS COMMS ARE FUCKED IS FUCKED")
+
+            self.RigolPS.connect()
+            newCoil = self._getParamWrite('coil_setCurrent')
+            if newCoil is not None: self.RigolPS.Coil.setCurrent = newCoil
+            self.status.coil_current = self.RigolPS.Coil.current
+            self.status.coil_setCurrent = self.RigolPS.Coil.setCurrent
+
+            coilEnable = self._getParamWrite('coil_enable')
+            if coilEnable is not None:
+                if coilEnable:
+                    self.RigolPS.Coil.on()
+                else:
+                    self.RigolPS.Coil.off()
+            self.status.coil_enable = self.RigolPS.isOn()
+
+        except Exception as e:
+            self.status.coil_current = math.nan
+            self.status.coil_setCurrent = math.nan
+            self.status.coil_enable = False
+            self.setMessage("ERROR: Cannot connect to RigolPS (restart it?)")
+
+        # If stopping, switch everything off and reset PID filters
+        if self.controls_stop.is_set():
+            self.RigolPS.Coil.off()
+        else:
+            threading.Timer(config.RigolPS.ControlPeriod, self.RigolController).start()
+
 
     class OvenOFFException(Exception):
         pass
@@ -425,6 +464,8 @@ class UrsapqManager:
         # IF update failed, HVPS is probably off/disconnected.
         # Set everything to NaN
         except Exception:
+            self.status.mcp_hvEnable = False
+            self.status.tof_hvEnable = False
             self.status.mcp_phosphorHV  = math.nan
             self.status.mcp_backHV      = math.nan
             self.status.mcp_frontHV     = math.nan

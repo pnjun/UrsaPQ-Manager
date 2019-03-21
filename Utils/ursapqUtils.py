@@ -70,4 +70,7 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
 
     ursapq = UrsaPQ()
-    print(ursapq.chamberPressure)
+    ursapq.coil_enable = False
+    ursapq.coil_setCurrent = 1.3
+    print(ursapq.coil_enable)
+    print(ursapq.coil_current)

@@ -142,7 +142,7 @@ class SampleWindow(ConsoleWindow):
         except Exception:
             pass
         else:
-            self.ursapq.sample_pos_z_enable = True        
+            self.ursapq.sample_pos_z_enable = True
 
     @Slot()
     def stop_motion(self):
@@ -183,10 +183,13 @@ class SpectrometerWindow(ConsoleWindow):
         self.coilEnableSwitch.clicked.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
+        self.window.coilSetButton.clicked.connect(self.coilSet)
 
     def update(self):
         self.mcpEnableSwitch.setChecked( self.ursapq.mcp_hvEnable )
         self.tofEnableSwitch.setChecked( self.ursapq.tof_hvEnable )
+        self.coilEnableSwitch.setChecked( self.ursapq.coil_enable )
+
         self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
@@ -200,6 +203,9 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
         self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
         self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
+
+        self.window.coilCurrent.setText(  '{:.1f}'.format(self.ursapq.coil_current))
+        self.window.coilCurrent_set.setText(  '{:.1f}'.format(self.ursapq.coil_setCurrent))
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
@@ -224,7 +230,14 @@ class SpectrometerWindow(ConsoleWindow):
 
     @Slot()
     def coilEnable(self):
-        pass
+        self.ursapq.coil_enable = self.coilEnableSwitch.isChecked()
+
+    @Slot()
+    def coilSet(self):
+        try:
+            self.ursapq.coil_setCurrent = float( self.window.coilCurrent_in.toPlainText() )
+        except Exception:
+            pass
 
     @Slot()
     def mcpSet(self):
@@ -342,6 +355,7 @@ class MainWindow(ConsoleWindow):
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
+        self.window.coilCurrent.setText(  '{:.1f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
@@ -366,9 +380,9 @@ class MainWindow(ConsoleWindow):
             except Exception as e:
                 print(str(e))
                 self.closeChildWindows()
-
             self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
             statusbar = "NOT CONNECTED - Attempting connection (check config file)"
+
         else:
             lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
             message = lastStatusMessage + " - " + self.ursapq.statusMessage

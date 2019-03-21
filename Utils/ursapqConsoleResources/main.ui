@@ -414,7 +414,7 @@ QGroupBox::title {
        <string>Coil Current [A]:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_17">
+     <widget class="QLabel" name="coilCurrent">
       <property name="geometry">
        <rect>
         <x>15</x>
