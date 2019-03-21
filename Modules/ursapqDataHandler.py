@@ -46,19 +46,35 @@ class ursapqDataHandler:
         self.timestamp = 0
 
     def start(self):
+        '''
+        Starts Threads to handle incoming data, each thread performs a different
+        piece of the analysis
+        '''
         self.stopEvent.clear()
         threading.Thread(target = self.doocsUpdateLoop).start()
         threading.Thread(target = self.statusUpdateLoop).start()
         threading.Thread(target = self.slicerLoop).start()
 
     def stop(self):
+        '''
+        Tells background threads to stop
+        '''
         self.stopEvent.set()
 
     def dataFilter(self, newData, oldData):
+        '''
+        Quick and dirty " Average " filter for incoming data. It's fast and does not
+        use memory, while performing almost like a moving average
+        '''
         return oldData * config.Data_FilterLevel + newData * (1-config.Data_FilterLevel)
 
     #TODO: HANDLE LENGHT CHANGE CASE
     def doocsUpdateLoop(self):
+        '''
+        Keeps reading data from DOOCS and filters it as it comes in.
+        The commented part should make it so that it takes in all data sequentially,
+        but the ifs slow it down too much. Might need to rewrite it with try...except
+        '''
         #Run until stop event
         while not self.stopEvent.isSet():
             # If we are running behind doocs, drop data by jumping ahaead
@@ -86,10 +102,14 @@ class ursapqDataHandler:
             self.dataUpdated.set()
 
     def getRisingEdges(self, data, trigger):
-        ''' Returns array of indices where a rising edge above trigger value is found. '''
+        ''' Returns array of indices where a rising edge above trigger value is found in data '''
         return np.flatnonzero((data[:-1] < trigger) & (data[1:] > trigger))
 
     def slicerLoop(self):
+        '''
+        Sllices self.tofTrace in individual pieces (each piece is a x-ray pulse) and averages
+        All slices togheter. Stores result in status.data_tofSingleShot
+        '''
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
             triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TriggerLevel)
@@ -105,6 +125,10 @@ class ursapqDataHandler:
             self.status.data_tofSingleShot = tofSlice / len(slices)
 
     def statusUpdateLoop(self):
+        '''
+        Writes incoming (filtered) data to status namespace. Run in a different thread
+        so that doocsUpdateLoop can run as fast as possible
+        '''
         #Run until stop event
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
