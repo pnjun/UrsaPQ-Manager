@@ -200,7 +200,7 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.PHOSPHORHV", self.status.mcp_phosphorHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.BACKHV",     self.status.mcp_backHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.FRONTHV",    self.status.mcp_frontHV)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     self.status.tof_meshHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     math.nan) #MESH DOES NOT EXIST
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_lensHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   self.status.tof_magnetHV)
@@ -378,13 +378,11 @@ class UrsapqManager:
             self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
             self.status.mcp_backHV      = self.HVPS.Back.voltage
             self.status.mcp_frontHV     = self.HVPS.Front.voltage
-            self.status.tof_meshHV      = self.HVPS.Mesh.voltage
             self.status.tof_lensHV      = self.HVPS.Lens.voltage
             self.status.tof_retarderHV  = self.HVPS.Retarder.voltage
             self.status.tof_magnetHV    = self.HVPS.Magnet.voltage
 
             # Read in write requests for voltage setpoints
-            newMesh     = self._getParamWrite('tof_meshSetHV')
             newLens     = self._getParamWrite('tof_lensSetHV')
             newRetarter = self._getParamWrite('tof_retarderSetHV')
             newMagnet   = self._getParamWrite('tof_magnetSetHV')
@@ -393,7 +391,6 @@ class UrsapqManager:
             newFront    = self._getParamWrite('mcp_frontSetHV')
 
             # Apply new setpoints if needed
-            if newMesh     is not None: self.HVPS.Mesh.setVoltage = newMesh
             if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
             if newRetarter is not None: self.HVPS.Retarder.setVoltage = newRetarter
             if newMagnet   is not None: self.HVPS.Magnet.setVoltage = newMagnet
@@ -411,7 +408,6 @@ class UrsapqManager:
                 self.setMessage("WARNING: MCP Back voltage setpoint rescaled", 30)
 
             # Update setPoint status
-            self.status.tof_meshSetHV       = self.HVPS.Mesh.setVoltage
             self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
             self.status.tof_retarderSetHV   = self.HVPS.Retarder.setVoltage
             self.status.tof_magnetSetHV     = self.HVPS.Magnet.setVoltage
@@ -432,14 +428,12 @@ class UrsapqManager:
             self.status.mcp_phosphorHV  = math.nan
             self.status.mcp_backHV      = math.nan
             self.status.mcp_frontHV     = math.nan
-            self.status.tof_meshHV      = math.nan
             self.status.tof_lensHV      = math.nan
             self.status.tof_retarderHV  = math.nan
             self.status.tof_magnetHV    = math.nan
             self.status.mcp_phosphorSetHV   = math.nan
             self.status.mcp_backSetHV       = math.nan
             self.status.mcp_frontSetHV      = math.nan
-            self.status.tof_meshSetHV       = math.nan
             self.status.tof_lensSetHV       = math.nan
             self.status.tof_retarderSetHV   = math.nan
             self.status.tof_magnetSetHV     = math.nan

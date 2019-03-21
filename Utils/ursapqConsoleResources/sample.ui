@@ -390,7 +390,7 @@ QGroupBox::title {
        <x>15</x>
        <y>195</y>
        <width>286</width>
-       <height>121</height>
+       <height>166</height>
       </rect>
      </property>
      <widget class="QPlainTextEdit" name="pos_x_set">
@@ -423,12 +423,12 @@ QGroupBox::title {
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="moveButton">
+     <widget class="QPushButton" name="moveButtonX">
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>75</y>
-        <width>121</width>
+        <y>60</y>
+        <width>76</width>
         <height>31</height>
        </rect>
       </property>
@@ -439,14 +439,40 @@ QGroupBox::title {
      <widget class="QPushButton" name="stopButton">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>75</y>
-        <width>121</width>
+        <x>15</x>
+        <y>105</y>
+        <width>256</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
        <string>Stop</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButtonY">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButtonZ">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
       </property>
      </widget>
     </widget>

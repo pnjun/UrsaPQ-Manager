@@ -94,7 +94,9 @@ class SampleWindow(ConsoleWindow):
     def setupCallbacks(self):
         self.enableSwitch.clicked.connect(self.oven_enable)
         self.window.setPointsButton.clicked.connect(self.newSetPoints)
-        self.window.moveButton.clicked.connect(self.move_sample)
+        self.window.moveButtonX.clicked.connect(self.move_sample_x)
+        self.window.moveButtonY.clicked.connect(self.move_sample_y)
+        self.window.moveButtonZ.clicked.connect(self.move_sample_z)
         self.window.stopButton.clicked.connect(self.stop_motion)
 
     def update(self):
@@ -116,21 +118,31 @@ class SampleWindow(ConsoleWindow):
         self.ursapq.oven_enable = self.enableSwitch.isChecked()
 
     @Slot()
-    def move_sample(self):
+    def move_sample_x(self):
         try:
             self.ursapq.sample_pos_x_setPoint = float( self.window.pos_x_set.toPlainText() )
         except Exception:
             pass
+        else:
+            self.ursapq.sample_pos_x_enable = True
+
+    @Slot()
+    def move_sample_y(self):
         try:
             self.ursapq.sample_pos_y_setPoint = float( self.window.pos_y_set.toPlainText() )
         except Exception:
             pass
+        else:
+            self.ursapq.sample_pos_y_enable = True
+
+    @Slot()
+    def move_sample_z(self):
         try:
             self.ursapq.sample_pos_z_setPoint = float( self.window.pos_z_set.toPlainText() )
         except Exception:
             pass
-
-        self.ursapq.sample_pos_enable = True
+        else:
+            self.ursapq.sample_pos_z_enable = True        
 
     @Slot()
     def stop_motion(self):
@@ -182,11 +194,9 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.mcp_backSetHV))
         self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorSetHV))
 
-        self.window.tofMesh_act.setText(     '{:.1f}'.format(self.ursapq.tof_meshHV))
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
         self.window.tofLens_act.setText(     '{:.1f}'.format(self.ursapq.tof_lensHV))
         self.window.tofMagnet_act.setText(   '{:.1f}'.format(self.ursapq.tof_magnetHV))
-        self.window.tofMesh_set.setText(     '{:.1f}'.format(self.ursapq.tof_meshSetHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
         self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
         self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
@@ -233,10 +243,6 @@ class SpectrometerWindow(ConsoleWindow):
 
     @Slot()
     def tofSet(self):
-        try:
-            self.ursapq.tof_meshSetHV = float( self.window.tofMesh_in.toPlainText() )
-        except Exception:
-            pass
         try:
             self.ursapq.tof_retarderSetHV = float( self.window.tofRetarder_in.toPlainText() )
         except Exception:
