@@ -265,8 +265,8 @@ class MainWindow(ConsoleWindow):
     def __init__(self, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
         self.ursapq = None
-        self.childWindows = [] # lists of all children windows        
-        
+        self.childWindows = [] # lists of all children windows
+
         self.setupCallbacks()
         self.window.installEventFilter(self)
 
@@ -281,7 +281,7 @@ class MainWindow(ConsoleWindow):
             self.childWindows.append(DataDisplayWindow(self.ursapq, "Pre Vacuum Pressure", "preVacPressure"))
 
         return super(MainWindow, self).eventFilter(obj, event)
-    
+
 
     def setupCallbacks(self):
         self.window.sample_MB.clicked.connect(self.showSample)

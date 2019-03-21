@@ -102,7 +102,6 @@ class ursapqDataHandler:
             for sl in slices[1:]:
                 tofSlice += self.tofTrace[1][sl]
 
-            print(self.macropulse)
             self.status.data_tofSingleShot = tofSlice / len(slices)
 
     def statusUpdateLoop(self):
