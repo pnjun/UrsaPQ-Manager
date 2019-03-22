@@ -32,6 +32,11 @@ class ursapqDataHandler:
         self.manager.connect()
         self.status = self.manager.getStatusNamespace()
 
+        # Init analyis parameters from config file they are not present already
+        self.status.data_filterLvl = config.Data_FilterLevel
+        self.status.data_sliceSize = config.Data_SliceSize
+        self.status.data_sliceOffset = config.Data_SliceOffset
+
         try:
             self.pydoocs = __import__('pydoocs')
         except Exception:
@@ -43,6 +48,8 @@ class ursapqDataHandler:
         self.dataUpdated  = threading.Event() #Event is set every time new data is available
         self.tofTrace = None
         self.laserTrace = None
+        self.triggTrace = None
+        
         self.macropulse = None
         self.timestamp = 0
 
@@ -67,7 +74,7 @@ class ursapqDataHandler:
         Quick and dirty " Average " filter for incoming data. It's fast and does not
         use memory, while performing almost like a moving average
         '''
-        return oldData * config.Data_FilterLevel + newData * (1-config.Data_FilterLevel)
+        return oldData * self.status.data_filterLvl + newData * (1-self.status.data_filterLvl)
 
     #TODO: HANDLE LENGHT CHANGE CASE
     def doocsUpdateLoop(self):
@@ -90,18 +97,22 @@ class ursapqDataHandler:
 
             newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
             newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-
+            newTrigg = self.pydoocs.read(config.Data_DOOCS_Trig)
+            
             self.macropulse = newTof['macropulse']
             self.timestamp  = newTof['timestamp']
 
             try:
-                #self.tofTrace[0] = newTof['data'][:][0]
+                #assert(newTof['data'].T.shape == self.tofTrace.shape) #IF shape changed, reinit variables
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
                 self.laserTrace[1] = self.dataFilter( newLaser['data'].T[1] ,  self.laserTrace[1] )
+                #self.triggTrace[1] = self.dataFilter( newTrigg['data'].T[1] ,  self.triggTrace[1] )
             except TypeError:
                 self.tofTrace  = newTof['data'].T
                 self.laserTrace = newLaser['data'].T
-
+            
+            self.triggTrace = newTrigg['data'].T
+                
             # Notify filter workers that new data is available
             self.dataUpdated.set()
 
@@ -116,15 +127,15 @@ class ursapqDataHandler:
         '''
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
-            triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TofTriggerLevel)
+            triggers = self.getRisingEdges(self.triggTrace[1], config.Data_TriggerVal)
 
-            leftTriggers  = triggers + config.Data_TofTriggerOffset
-            rightTriggers = triggers + config.Data_TofTriggerOffset + config.Data_TofTriggerWindow
+            leftTriggers  = triggers +  self.status.data_sliceOffset
+            rightTriggers = triggers +  self.status.data_sliceOffset + self.status.data_sliceSize
             slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
 
             try:
                 tofSlice = np.array(self.tofTrace[1][slices[0]])
-                for sl in slices[1:]:
+                for sl in slices[1:-1]:
                     tofSlice += self.tofTrace[1][sl]
 
                 self.status.data_tofSingleShot = tofSlice / len(slices)
