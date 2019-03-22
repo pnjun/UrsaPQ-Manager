@@ -1,7 +1,6 @@
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
 from collections import namedtuple
-import matplotlib.pyplot as plt
 import threading
 import traceback
 import math
@@ -36,6 +35,7 @@ class ursapqDataHandler:
         self.status.data_filterLvl = config.Data_FilterLevel
         self.status.data_sliceSize = config.Data_SliceSize
         self.status.data_sliceOffset = config.Data_SliceOffset
+        self.status.data_timeZero = 709.872
 
         try:
             self.pydoocs = __import__('pydoocs')
@@ -60,7 +60,7 @@ class ursapqDataHandler:
         '''
         self.stopEvent.clear()
         threading.Thread(target = self.doocsUpdateLoop).start()
-        threading.Thread(target = self.statusUpdateLoop).start()
+        threading.Thread(target = self.workerLoop).start()
         threading.Thread(target = self.slicerLoop).start()
 
     def stop(self):
@@ -97,22 +97,21 @@ class ursapqDataHandler:
 
             newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
             newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-            newTrigg = self.pydoocs.read(config.Data_DOOCS_Trig)
             
             self.macropulse = newTof['macropulse']
             self.timestamp  = newTof['timestamp']
-
+            
+            #print(self.macropulse)
+            
             try:
                 #assert(newTof['data'].T.shape == self.tofTrace.shape) #IF shape changed, reinit variables
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
                 self.laserTrace[1] = self.dataFilter( newLaser['data'].T[1] ,  self.laserTrace[1] )
-                #self.triggTrace[1] = self.dataFilter( newTrigg['data'].T[1] ,  self.triggTrace[1] )
+
             except TypeError:
                 self.tofTrace  = newTof['data'].T
                 self.laserTrace = newLaser['data'].T
             
-            self.triggTrace = newTrigg['data'].T
-                
             # Notify filter workers that new data is available
             self.dataUpdated.set()
 
@@ -127,7 +126,7 @@ class ursapqDataHandler:
         '''
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
-            triggers = self.getRisingEdges(self.triggTrace[1], config.Data_TriggerVal)
+            triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TriggerVal)
 
             leftTriggers  = triggers +  self.status.data_sliceOffset
             rightTriggers = triggers +  self.status.data_sliceOffset + self.status.data_sliceSize
@@ -140,19 +139,34 @@ class ursapqDataHandler:
 
                 self.status.data_tofSingleShot = tofSlice / len(slices)
             except IndexError:
-                print("No trigger for slicing")
                 self.status.data_tofSingleShot = None
+    
+    def Tof2eV(self, tof, retard):
+        ''' converts time of flight into ectronvolts '''
+        # Constants for conversion:
+        s = 1.7
+        m_over_e = 5.69
 
-    def statusUpdateLoop(self):
+        # UNITS AND ORDERS OF MAGNITUDE DO CHECK OUT
+        return 0.5 * m_over_e * ( s / tof )**2 - retard
+
+    def workerLoop(self):
         '''
         Writes incoming (filtered) data to status namespace. Run in a different thread
         so that doocsUpdateLoop can run as fast as possible
         '''
+            
         #Run until stop event
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
+            
+            #Generate EV from TOF
+            ev_x = self.Tof2eV( self.tofTrace[0] - self.status.data_timeZero, self.status.tof_retarderHV )
+            print(ev_x)
+            #Output data to namespace
             self.status.data_laserTrace = self.laserTrace
-            self.status.data_tofTrace   = self.tofTrace
+            self.status.data_tofTrace   = self.tofTrace       
+            self.status.data_tofEv = ev_x
 
 def main():
     while True:

@@ -7,13 +7,14 @@ class TracePlots:
         self.figure = plt.figure()
         tofTracepl   = self.figure.add_subplot(211)
         laserTracepl = self.figure.add_subplot(212)
-
-        self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+        tofTracepl.set_xlim([0,300])
+        
+        self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofEv, ursapq.data_tofTrace[1])
         self.laserTrace, = laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
         self.figure.show()
 
     def update(self):
-        self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+        self.tofTrace.set_data(ursapq.data_tofEv, ursapq.data_tofTrace[1])
         self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
@@ -28,7 +29,7 @@ class SingleShotPlots:
             self.tofSlice, = tofSlicepl.plot( ursapq.data_tofSingleShot )
             self.figure.show()
         else:
-            pass
+            print("No single shot data")
 
     def update(self):
         try:
