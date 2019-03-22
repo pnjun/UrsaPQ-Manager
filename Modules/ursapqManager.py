@@ -49,7 +49,7 @@ class TempPIDFilter:
 
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
         # the PID out to make it linear in applied power.
-        #print("Filter %f %f %f %f %f" % (t_in, out, self.i ,self.integ, self.lastErr))
+        print("Filter %f %f %f %f %f" % (t_in, out, self.i ,self.integ, self.lastErr))
         return math.sqrt(out)
 
     def reset(self):
@@ -364,6 +364,11 @@ class UrsapqManager:
         # If connection failed, set everything to NaN and reset PID filters
         except Exception as e:
 
+            try:
+                self.ovenPS.allOff()
+            except Exception:
+                pass
+                
             self.status.oven_capPow = math.nan
             self.status.oven_bodyPow = math.nan
             self.status.oven_tipPow = math.nan
