@@ -24,13 +24,19 @@ class SingleShotPlots:
         self.figure = plt.figure()
         tofSlicepl = self.figure.add_subplot(111)
 
-        self.tofSlice, = tofSlicepl.plot( ursapq.data_tofSingleShot )
-        self.figure.show()
+        if ursapq.data_tofSingleShot is not None:
+            self.tofSlice, = tofSlicepl.plot( ursapq.data_tofSingleShot )
+            self.figure.show()
+        else:
+            pass
 
     def update(self):
-        self.tofSlice.set_ydata(ursapq.data_tofSingleShot)
-        self.figure.canvas.draw()
-        self.figure.canvas.flush_events()
+        try:
+            self.tofSlice.set_ydata(ursapq.data_tofSingleShot)
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
+        except Exception:
+            pass
 
 
 if __name__=='__main__':

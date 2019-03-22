@@ -32,24 +32,31 @@ class TempPIDFilter:
         Calculates filter output given current input. Keeps track of time
         elapsed between subsequent calls and adjusts coefficients accordingly
         '''
-        if not self.lastcall:                      # If first call, initialize lastcall to now
-            self.lastcall = datetime.now()
         now = datetime.now()
+        if self.lastcall:
+            dt = (now - self.lastcall).total_seconds() # Get time elapsed since last filter run
+        else:
+            dt = 0                # If first call, use dt = 0 (proportional filter will checl on this)
+        self.lastcall = datetime.now()
 
-        dt = (now - self.lastcall).total_seconds() # Get time elapsed since last filter run
+        # Calculate PID filter output and update internal counters
         err = self.setPoint - t_in
+        self.integ += dt*err*self.i
+        if self.integ < 0:
+            self.integ = 0
+        if dt > 0:
+            prop = self.d / dt * (err - self.lastErr)
+            self.lastErr = err
+        else:
+            prop = 0
 
-        self.integ += dt*err*self.i                       # Calculate PID filter output and update internal counters
-        out = self.p * err + self.integ + self.d / dt * (err - self.lastErr)
-        self.lastErr = err
-        self.lastcall = now
-
+        out = self.p * err + self.integ + prop
         if out < 0:
             out = 0
 
+        print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
         # the PID out to make it linear in applied power.
-        print("Filter %f %f %f %f %f" % (t_in, out, self.i ,self.integ, self.lastErr))
         return math.sqrt(out)
 
     def reset(self):
@@ -368,7 +375,7 @@ class UrsapqManager:
                 self.ovenPS.allOff()
             except Exception:
                 pass
-                
+
             self.status.oven_capPow = math.nan
             self.status.oven_bodyPow = math.nan
             self.status.oven_tipPow = math.nan

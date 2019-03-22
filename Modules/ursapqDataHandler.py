@@ -116,17 +116,21 @@ class ursapqDataHandler:
         '''
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
-            triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TriggerLevel)
+            triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TofTriggerLevel)
 
             leftTriggers  = triggers + config.Data_TofTriggerOffset
             rightTriggers = triggers + config.Data_TofTriggerOffset + config.Data_TofTriggerWindow
             slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
 
-            tofSlice = np.array(self.tofTrace[1][slices[0]])
-            for sl in slices[1:]:
-                tofSlice += self.tofTrace[1][sl]
+            try:
+                tofSlice = np.array(self.tofTrace[1][slices[0]])
+                for sl in slices[1:]:
+                    tofSlice += self.tofTrace[1][sl]
 
-            self.status.data_tofSingleShot = tofSlice / len(slices)
+                self.status.data_tofSingleShot = tofSlice / len(slices)
+            except IndexError:
+                print("No trigger for slicing")
+                self.status.data_tofSingleShot = None
 
     def statusUpdateLoop(self):
         '''
