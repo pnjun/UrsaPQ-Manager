@@ -80,20 +80,17 @@ class OvenPS:
         return OvenPSChannel()
 
 if __name__=='__main__':
-    TEST_CH = 2
-    print("Running test on channel %d" % TEST_CH)
-
     d = OvenPS()
     d.connect()
-    d[TEST_CH].off()
-    d[TEST_CH].setVoltage = 2.22
-    print(d[TEST_CH].setVoltage)
-    print(d[TEST_CH].voltage)
+    d.Body.off()
+    d.Body.setVoltage = 2.22
+    print(d.Body.setVoltage)
+    print(d.Body.voltage)
 
-    d[TEST_CH].on()
+    d.Body.on()
     time.sleep(2)
-    print(d[TEST_CH].voltage)
+    print(d.Body.voltage)
 
-    d[TEST_CH].off()
+    d.Body.off()
     time.sleep(1)
-    print(d[TEST_CH].voltage)
+    print(d.Body.voltage)

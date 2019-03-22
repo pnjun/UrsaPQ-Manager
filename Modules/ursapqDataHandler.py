@@ -118,8 +118,8 @@ class ursapqDataHandler:
             self.dataUpdated.wait()
             triggers = self.getRisingEdges(self.tofTrace[1], config.Data_TriggerLevel)
 
-            leftTriggers  = triggers + config.Data_TriggerOffset
-            rightTriggers = triggers + config.Data_TriggerOffset + config.Data_TriggerWindow
+            leftTriggers  = triggers + config.Data_TofTriggerOffset
+            rightTriggers = triggers + config.Data_TofTriggerOffset + config.Data_TofTriggerWindow
             slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
 
             tofSlice = np.array(self.tofTrace[1][slices[0]])
@@ -140,14 +140,15 @@ class ursapqDataHandler:
             self.status.data_tofTrace   = self.tofTrace
 
 def main():
-    dataHandler = ursapqDataHandler()
-    try:
-        dataHandler.start()
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        dataHandler.stopEvent.set()
-        exit()
+    while True:
+        try:
+            dataHandler = ursapqDataHandler()
+            dataHandler.start()
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            dataHandler.stopEvent.set()
+            exit()
 
 if __name__=='__main__':
     main()

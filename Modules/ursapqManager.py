@@ -39,14 +39,18 @@ class TempPIDFilter:
         dt = (now - self.lastcall).total_seconds() # Get time elapsed since last filter run
         err = self.setPoint - t_in
 
-        self.integ += dt*err                       # Calculate PID filter output and update internal counters
-        out = self.p * err + self.i * self.integ + self.d / dt * (err - self.lastErr)
+        self.integ += dt*err*self.i                       # Calculate PID filter output and update internal counters
+        out = self.p * err + self.integ + self.d / dt * (err - self.lastErr)
         self.lastErr = err
         self.lastcall = now
 
+        if out < 0:
+            out = 0
+
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
         # the PID out to make it linear in applied power.
-        return math.sqrt(abs(out))
+        #print("Filter %f %f %f %f %f" % (t_in, out, self.i ,self.integ, self.lastErr))
+        return math.sqrt(out)
 
     def reset(self):
         self.integ = 0
@@ -107,7 +111,7 @@ class UrsapqManager:
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
         self.HVPS = HVPS()
-        self.RigolPS = RigolPS()
+        #self.RigolPS = RigolPS()
         self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
         #PID filters
@@ -150,10 +154,10 @@ class UrsapqManager:
         self.ovenController()
         self.HVPSController()
 
-        self.RigolController()
-        #self.status.coil_current = math.nan
-        #self.status.coil_setCurrent = math.nan
-        #self.status.coil_enable = False
+        #self.RigolController()
+        self.status.coil_current = math.nan
+        self.status.coil_setCurrent = math.nan
+        self.status.coil_enable = False
 
         if self.doocs:
             self.doocs_stop.clear()
@@ -291,7 +295,7 @@ class UrsapqManager:
     def RigolController(self):
         #Coil current control
         try:
-            raise Exception("RIGOL PS COMMS ARE FUCKED IS FUCKED")
+            raise Exception("RIGOL PS COMMS ARE FUCKED")
 
             self.RigolPS.connect()
             newCoil = self._getParamWrite('coil_setCurrent')
