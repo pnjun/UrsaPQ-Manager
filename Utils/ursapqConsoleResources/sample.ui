@@ -326,9 +326,9 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>90</y>
+       <y>75</y>
        <width>286</width>
-       <height>61</height>
+       <height>46</height>
       </rect>
      </property>
      <widget class="QLabel" name="pos_x">
@@ -381,16 +381,16 @@ QGroupBox::title {
       </rect>
      </property>
      <property name="text">
-      <string>Manipulator position:</string>
+      <string>Manipulator:</string>
      </property>
     </widget>
     <widget class="QWidget" name="widget_2" native="true">
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>195</y>
+       <y>120</y>
        <width>286</width>
-       <height>166</height>
+       <height>106</height>
       </rect>
      </property>
      <widget class="QPlainTextEdit" name="pos_x_set">
@@ -436,19 +436,6 @@ QGroupBox::title {
        <string>Move</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="stopButton">
-      <property name="geometry">
-       <rect>
-        <x>15</x>
-        <y>105</y>
-        <width>256</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Stop</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="moveButtonY">
       <property name="geometry">
        <rect>
@@ -476,17 +463,66 @@ QGroupBox::title {
       </property>
      </widget>
     </widget>
-    <widget class="QLabel" name="label_11">
+    <widget class="QLabel" name="label_12">
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>150</y>
-       <width>226</width>
+       <y>240</y>
+       <width>106</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Manipulator control:</string>
+      <string>Magnet</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="magnet_pos_set">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="magnet_pos">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="magnet_move">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Move</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stopButton">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>315</y>
+       <width>256</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Stop</string>
      </property>
     </widget>
    </widget>

@@ -32,6 +32,9 @@ class UrsaPQ:
         self._manager.connect()
         super(UrsaPQ, self).__setattr__('_status', self._manager.getStatusNamespace() )
 
+        #if config.WriteDoocs: # if true we write data to doocs
+        #    super(UrsaPQ, self).__setattr__('_pydoocs' , __import__('pydoocs'))
+
         try:
             class writeManager(BaseManager): pass
             writeManager.register('getWriteNamespace', proxytype=NamespaceProxy)
@@ -51,12 +54,13 @@ class UrsaPQ:
 
     def __setattr__(self, key, val):
         # Attribute setting is done by setting the variable in the writeStatus
-        # namespace. expManager process will try to act on that reques
-        # attributes named data_* are used for data analysis and can be set directly
-
+        # namespace. expManager process will try to act on that request 
+        
+        # Attributes named data_* are used for data analysis and can be set directly
         if key.startswith("data_"):
             return self._status.__setattr__(key, val)
 
+        # All other attributes are set on the _writeStatus namespace.
         if self._writeStatus is not None:
             return self._writeStatus.__setattr__(key, val)
         else:
@@ -70,7 +74,6 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
 
     ursapq = UrsaPQ()
-    ursapq.coil_enable = False
-    ursapq.coil_setCurrent = 1.3
-    print(ursapq.coil_enable)
-    print(ursapq.coil_current)
+    print(ursapq.magnet_pos_y)
+    
+    
