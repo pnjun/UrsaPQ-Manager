@@ -126,6 +126,12 @@ class UrsapqManager:
         self.CapPID =  TempPIDFilter(*tuple(config.Oven.PID.CapParams),  config.Oven.PID.CapDefSetpoint)
         self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
 
+        #Init data analyis parameters
+        self.status.data_filterLvl = config.Data_FilterLevel
+        self.status.data_sliceSize = config.Data_SliceSize
+        self.status.data_sliceOffset = config.Data_SliceOffset
+        self.status.data_timeZero = config.Data_TimeZero
+
         #System status message initalization
         self.status.statusMessage = ""
         self.status.lastStatusMessage = datetime.now()

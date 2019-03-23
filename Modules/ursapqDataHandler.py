@@ -32,11 +32,6 @@ class ursapqDataHandler:
         self.status = self.manager.getStatusNamespace()
 
         # Init analyis parameters from config file they are not present already
-        self.status.data_filterLvl = config.Data_FilterLevel
-        self.status.data_sliceSize = config.Data_SliceSize
-        self.status.data_sliceOffset = config.Data_SliceOffset
-        self.status.data_timeZero = 709.872
-
         try:
             self.pydoocs = __import__('pydoocs')
         except Exception:
@@ -101,7 +96,7 @@ class ursapqDataHandler:
             self.macropulse = newTof['macropulse']
             self.timestamp  = newTof['timestamp']
             
-            #print(self.macropulse)
+            print(self.macropulse)
             
             try:
                 #assert(newTof['data'].T.shape == self.tofTrace.shape) #IF shape changed, reinit variables
@@ -162,7 +157,7 @@ class ursapqDataHandler:
             
             #Generate EV from TOF
             ev_x = self.Tof2eV( self.tofTrace[0] - self.status.data_timeZero, self.status.tof_retarderHV )
-            print(ev_x)
+
             #Output data to namespace
             self.status.data_laserTrace = self.laserTrace
             self.status.data_tofTrace   = self.tofTrace       
