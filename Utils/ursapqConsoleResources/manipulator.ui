@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sampleWindow</class>
+ <widget class="QMainWindow" name="sampleWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>351</width>
+    <height>403</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>UrsaPQ Remote - Sample</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget{
+	background-color: #FFFFFF;
+}
+
+QLabel {
+	font-size: 12.5pt;
+}
+
+QGroupBox {
+	background-color: #EFEFEF;
+    border: 1px solid gray;
+    border-color: #003959;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+ 	border-top-left-radius: 10px;
+ 	border-bottom-right-radius: 10px;
+    padding: 5px 20px;
+    background-color: #003959;
+    color: rgb(255, 255, 255);
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>15</y>
+      <width>316</width>
+      <height>376</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Manipulator</string>
+    </property>
+    <widget class="QWidget" name="widget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>75</y>
+       <width>286</width>
+       <height>46</height>
+      </rect>
+     </property>
+     <widget class="QLabel" name="pos_x">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pos_y">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pos_z">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>---</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>45</y>
+       <width>226</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Manipulator:</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="widget_2" native="true">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>120</y>
+       <width>286</width>
+       <height>106</height>
+      </rect>
+     </property>
+     <widget class="QPlainTextEdit" name="pos_x_set">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="pos_y_set">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="pos_z_set">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>15</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButtonX">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButtonY">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="moveButtonZ">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>60</y>
+        <width>76</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="label_12">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>240</y>
+       <width>106</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Magnet</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="mag_y_set">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mag_y">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="magnetButton">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>270</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Move</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stopButton">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>315</y>
+       <width>256</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

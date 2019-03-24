@@ -83,39 +83,32 @@ class VacuumWindow(ConsoleWindow):
     def enablePumps(self):
         self.ursapq.pumps_enable = self.pumpsEnable.isChecked()
 
-class SampleWindow(ConsoleWindow):
+class ManipulatorWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
-        super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
-        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.window.ovenEnableBox.addWidget(self.enableSwitch)
+        super(ManipulatorWindow, self).__init__('manipulator.ui', *args, **kvargs)
         self.ursapq = ursapq
         self.setupCallbacks()
-
+        
     def setupCallbacks(self):
-        self.enableSwitch.clicked.connect(self.oven_enable)
-        self.window.setPointsButton.clicked.connect(self.newSetPoints)
-        self.window.moveButtonX.clicked.connect(self.move_sample_x)
+        self.window.magnetButton.clicked.connect(self.move_magnet_y)
         self.window.moveButtonY.clicked.connect(self.move_sample_y)
+        self.window.moveButtonX.clicked.connect(self.move_sample_x)
         self.window.moveButtonZ.clicked.connect(self.move_sample_z)
         self.window.stopButton.clicked.connect(self.stop_motion)
 
     def update(self):
-        self.enableSwitch.setChecked( self.ursapq.oven_enable )
-        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
-        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
-        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
-        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
-        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
-        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
-
+        self.window.mag_y.setText( 'Y = {:.1f}'.format(self.ursapq.magnet_pos_y))
         self.window.pos_x.setText( 'X = {:.1f}'.format(self.ursapq.sample_pos_x))
         self.window.pos_y.setText( 'Y = {:.1f}'.format(self.ursapq.sample_pos_y))
         self.window.pos_z.setText( 'Z = {:.1f}'.format(self.ursapq.sample_pos_z))
-
-    #Callbacks:
-    @Slot()
-    def oven_enable(self):
-        self.ursapq.oven_enable = self.enableSwitch.isChecked()
+        
+        motionlocked = self.ursapq.sample_pos_x_stop or \
+                       self.ursapq.sample_pos_y_stop or \
+                       self.ursapq.sample_pos_z_stop or \
+                       self.ursapq.magnet_pos_y_stop
+            
+        self.window.stopButton.setChecked(motionlocked)
+        self.window.stopButton.setText("Unlock" if motionlocked else "Stop")
 
     @Slot()
     def move_sample_x(self):
@@ -145,8 +138,46 @@ class SampleWindow(ConsoleWindow):
             self.ursapq.sample_pos_z_enable = True
 
     @Slot()
+    def move_magnet_y(self):
+        try:
+            self.ursapq.magnet_pos_y_setPoint = float( self.window.mag_y_set.toPlainText() )
+        except Exception:
+            pass
+        else:
+            self.ursapq.magnet_pos_y_enable = True
+
+    @Slot()
     def stop_motion(self):
-        self.ursapq.sample_pos_stop = True
+        self.ursapq.sample_pos_x_stop = self.window.stopButton.isChecked()
+        self.ursapq.sample_pos_y_stop = self.window.stopButton.isChecked()
+        self.ursapq.sample_pos_z_stop = self.window.stopButton.isChecked()
+        self.ursapq.magnet_pos_y_stop = self.window.stopButton.isChecked()
+        
+class SampleWindow(ConsoleWindow):
+    def __init__(self, ursapq, *args, **kvargs):
+        super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
+        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.window.ovenEnableBox.addWidget(self.enableSwitch)
+        self.ursapq = ursapq
+        self.setupCallbacks()
+
+    def setupCallbacks(self):
+        self.window.setPointsButton.clicked.connect(self.newSetPoints)
+        self.enableSwitch.clicked.connect(self.oven_enable)
+
+    def update(self):
+        self.enableSwitch.setChecked( self.ursapq.oven_enable )
+        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
+        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
+        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
+        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
+        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
+        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
+
+    #Callbacks:
+    @Slot()
+    def oven_enable(self):
+        self.ursapq.oven_enable = self.enableSwitch.isChecked()
 
     @Slot()
     def newSetPoints(self):
@@ -168,10 +199,8 @@ class SpectrometerWindow(ConsoleWindow):
         super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.coilEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
-        self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
         self.ursapq = ursapq
         self.setupCallbacks()
 
@@ -180,15 +209,12 @@ class SpectrometerWindow(ConsoleWindow):
     def setupCallbacks(self):
         self.mcpEnableSwitch.clicked.connect(self.mcpEnable)
         self.tofEnableSwitch.clicked.connect(self.tofEnable)
-        self.coilEnableSwitch.clicked.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
-        self.window.coilSetButton.clicked.connect(self.coilSet)
 
     def update(self):
         self.mcpEnableSwitch.setChecked( self.ursapq.mcp_hvEnable )
         self.tofEnableSwitch.setChecked( self.ursapq.tof_hvEnable )
-        self.coilEnableSwitch.setChecked( self.ursapq.coil_enable )
 
         self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))
@@ -203,9 +229,6 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
         self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
         self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
-
-        self.window.coilCurrent.setText(  '{:.1f}'.format(self.ursapq.coil_current))
-        self.window.coilCurrent_set.setText(  '{:.1f}'.format(self.ursapq.coil_setCurrent))
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
@@ -227,17 +250,6 @@ class SpectrometerWindow(ConsoleWindow):
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
         self.resetTimer = True
-
-    @Slot()
-    def coilEnable(self):
-        self.ursapq.coil_enable = self.coilEnableSwitch.isChecked()
-
-    @Slot()
-    def coilSet(self):
-        try:
-            self.ursapq.coil_setCurrent = float( self.window.coilCurrent_in.toPlainText() )
-        except Exception:
-            pass
 
     @Slot()
     def mcpSet(self):
@@ -283,6 +295,8 @@ class DataDisplayWindow(ConsoleWindow):
 class MainWindow(ConsoleWindow):
     def __init__(self, *args, **kvargs):
         super(MainWindow, self).__init__('main.ui', *args, **kvargs)
+        self.lightSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.window.lightOnBox.addWidget(self.lightSwitch)
         self.ursapq = None
         self.childWindows = [] # lists of all children windows
 
@@ -306,10 +320,15 @@ class MainWindow(ConsoleWindow):
         self.window.sample_MB.clicked.connect(self.showSample)
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
         self.window.spectr_MB.clicked.connect(self.showSpectrometer)
+        self.window.manipulator_MB.clicked.connect(self.showManipulator)
+        self.lightSwitch.clicked.connect(self.lightClick)
 
         self.window.chamberPressure.installEventFilter(self)
         self.window.prevacPressure.installEventFilter(self)
         pass
+
+    def updateManipulator(self):
+        self.lightSwitch.setChecked( self.ursapq.light_enable )
 
     def updateVacuum(self):
         #VACUUM BOX
@@ -354,8 +373,6 @@ class MainWindow(ConsoleWindow):
         self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
-        self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
-        self.window.coilCurrent.setText(  '{:.1f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
@@ -374,6 +391,7 @@ class MainWindow(ConsoleWindow):
             self.updateVacuum()
             self.updateSample()
             self.updateSpectrometer()
+            self.updateManipulator()
         except Exception as e:
             try:
                 self.connect()
@@ -398,6 +416,13 @@ class MainWindow(ConsoleWindow):
             del win
 
     #Callbacks:
+    @Slot()
+    def lightClick(self):
+        self.ursapq.light_enable = self.lightSwitch.isChecked()
+        
+    @Slot()
+    def showManipulator(self):
+        self.childWindows.append(ManipulatorWindow(self.ursapq))
     @Slot()
     def showSample(self):
         self.childWindows.append(SampleWindow(self.ursapq))

@@ -118,7 +118,7 @@ class UrsapqManager:
         self.beckhoff = BeckhoffSys()
         self.ovenPS = OvenPS()
         self.HVPS = HVPS()
-        #self.RigolPS = RigolPS()
+
         self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
         #PID filters
@@ -168,7 +168,6 @@ class UrsapqManager:
         self.ovenController()
         self.HVPSController()
 
-        #self.RigolController()
         self.status.coil_current = math.nan
         self.status.coil_setCurrent = math.nan
         self.status.coil_enable = False
@@ -239,7 +238,6 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY", self.status.magnet_pos_y)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY",  self.status.frame_pos_y)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ",  self.status.frame_pos_x) #DOOCS HAS WRONG NAME FOR FRAMEX
-        #pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.COILCURR"
 
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
@@ -284,6 +282,7 @@ class UrsapqManager:
         # Check if a client requested a change and wirte it out to beckhoff if necessary
         # self.status namespace values are updated to the new value if write is succesful
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('light_enable',       'MAIN.Lamp1_Enable',       pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('sample_pos_x_setPoint',   'MAIN.SampleX_SetPoint', pyads.PLCTYPE_REAL)
@@ -292,51 +291,21 @@ class UrsapqManager:
         self._beckhoffWrite('sample_pos_x_enable',     'MAIN.SampleX_MotionEnable', pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('sample_pos_y_enable',     'MAIN.SampleY_MotionEnable', pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('sample_pos_z_enable',     'MAIN.SampleZ_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_stop',         'MAIN.Sample_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('sample_pos_x_stop',       'MAIN.SampleX_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('sample_pos_y_stop',       'MAIN.SampleY_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('sample_pos_z_stop',       'MAIN.SampleZ_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('magnet_pos_y_setPoint',   'MAIN.MagnetY_SetPoint', pyads.PLCTYPE_REAL)
         self._beckhoffWrite('magnet_pos_y_enable',     'MAIN.MagnetY_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('magnet_pos_stop',         'MAIN.Magnet_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('magnet_pos_y_stop',       'MAIN.MagnetY_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_x_setPoint',    'MAIN.FrameX_SetPoint',  pyads.PLCTYPE_REAL)
         self._beckhoffWrite('frame_pos_y_setPoint',    'MAIN.FrameY_SetPoint',  pyads.PLCTYPE_REAL)
         self._beckhoffWrite('frame_pos_x_enable',      'MAIN.FrameX_MotionEnable', pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_y_enable',      'MAIN.FrameY_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('frame_pos_stop',          'MAIN.Frame_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('frame_pos_x_stop',        'MAIN.FrameX_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('frame_pos_y_stop',        'MAIN.FrameY_MotionStop',   pyads.PLCTYPE_BOOL)
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
-
-    #Manages sample oven tempearture control loop
-    def RigolController(self):
-        #Coil current control
-        try:
-            raise Exception("RIGOL PS COMMS ARE FUCKED")
-
-            self.RigolPS.connect()
-            newCoil = self._getParamWrite('coil_setCurrent')
-            if newCoil is not None: self.RigolPS.Coil.setCurrent = newCoil
-            self.status.coil_current = self.RigolPS.Coil.current
-            self.status.coil_setCurrent = self.RigolPS.Coil.setCurrent
-
-            coilEnable = self._getParamWrite('coil_enable')
-            if coilEnable is not None:
-                if coilEnable:
-                    self.RigolPS.Coil.on()
-                else:
-                    self.RigolPS.Coil.off()
-            self.status.coil_enable = self.RigolPS.isOn()
-
-        except Exception as e:
-            self.status.coil_current = math.nan
-            self.status.coil_setCurrent = math.nan
-            self.status.coil_enable = False
-            self.setMessage("ERROR: Cannot connect to RigolPS (restart it?)")
-
-        # If stopping, switch everything off and reset PID filters
-        if self.controls_stop.is_set():
-            self.RigolPS.Coil.off()
-        else:
-            threading.Timer(config.RigolPS.ControlPeriod, self.RigolController).start()
-
 
     class OvenOFFException(Exception):
         pass

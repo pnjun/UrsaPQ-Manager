@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
-    <height>486</height>
+    <width>423</width>
+    <height>585</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,7 @@ QGroupBox::title {
       <x>15</x>
       <y>15</y>
       <width>391</width>
-      <height>451</height>
+      <height>271</height>
      </rect>
     </property>
     <property name="title">
@@ -284,134 +284,12 @@ QGroupBox::title {
       <string>TOF [V]</string>
      </property>
     </widget>
-    <widget class="QWidget" name="widget_3" native="true">
-     <property name="geometry">
-      <rect>
-       <x>15</x>
-       <y>270</y>
-       <width>361</width>
-       <height>166</height>
-      </rect>
-     </property>
-     <widget class="QWidget" name="verticalLayoutWidget_7">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>46</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="coilEnableBox"/>
-     </widget>
-     <widget class="QLabel" name="label_17">
-      <property name="geometry">
-       <rect>
-        <x>45</x>
-        <y>0</y>
-        <width>166</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Coil Enable</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="coilCurrent_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>75</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_19">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>45</y>
-        <width>76</width>
-        <height>30</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Setpoint</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="coilCurrent_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>75</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="coilSetButton">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>120</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Set</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_18">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>45</y>
-        <width>76</width>
-        <height>30</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Actual</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="coilCurrent">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>75</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_20">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>75</y>
-        <width>106</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Current</string>
-      </property>
-     </widget>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>15</y>
+      <x>15</x>
+      <y>300</y>
       <width>391</width>
       <height>271</height>
      </rect>
@@ -652,19 +530,6 @@ QGroupBox::title {
       <string>MCP [V]</string>
      </property>
     </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>300</y>
-      <width>391</width>
-      <height>166</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Magnet</string>
-    </property>
    </widget>
   </widget>
  </widget>
