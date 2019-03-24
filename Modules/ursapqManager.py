@@ -128,7 +128,7 @@ class UrsapqManager:
 
         #Init data analyis parameters
         self.status.data_filterLvl = config.Data_FilterLevel
-        self.status.data_sicePeriod = config.Data_SlicePeriod  #Period of FEL pulses (in samples, can be float)
+        self.status.data_slicePeriod = config.Data_SlicePeriod #Period of FEL pulses (in samples, can be float)
         self.status.data_sliceSize = config.Data_SliceSize     #Sice of sliced data (in samples, int)
         self.status.data_sliceOffset = config.Data_SliceOffset #How many samples to skip at the begninnig of trace
         self.status.data_skipSlices  = config.Data_SkipSlices  #How many slices to skip for singleShot average
