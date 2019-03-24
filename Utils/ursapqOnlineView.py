@@ -1,6 +1,8 @@
 from ursapqUtils import UrsaPQ
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+from threading import Thread
+from threading import Event
 
 #TOF AND LASER TRACES
 class TracePlots:
@@ -16,18 +18,33 @@ class TracePlots:
         tofTracepl.set_title("ADC TOF TRACE")
         laserTracepl = self.figure.add_subplot(gs[2,0])
         laserTracepl.set_title("LASER TRACE")
-                
+
         self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace, = laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
+        
+        self.stopEvent = Event() #Used to stop background thread when window closes
+        self.figure.canvas.mpl_connect('close_event', self.stopUpdate)
         self.figure.show()
 
-    def update(self):
-        self.figure.text(0.1, 0.9, "laser hit: %f us" % ursapq.data_laserTime, fontsize=17)
-    
-        self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
-        self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
-        self.figure.canvas.draw()
-        self.figure.canvas.flush_events()
+    def startUpdate(self):
+        self.stopEvent.clear()
+        self.thread = Thread(target=self.update, kwargs={'loop_forever':True} ).start()
+        
+    def stopUpdate(self, event):
+        self.stopEvent.set()
+
+    def update(self, loop_forever=False):
+        while not self.stopEvent.is_set():
+            self.figure.text(0.1, 0.9, "laser hit: %f us" % ursapq.data_laserTime, fontsize=17)
+        
+            self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+            self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
+            if not loop_forever:
+                break
+                
+    def draw(self):
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
 
 #SINGLE SHOT AVERAGES
 class SingleShot:
@@ -62,17 +79,30 @@ class SingleShot:
         self.oddSlice,  = oddSlicepl.plot(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
         self.diffSlice, = diffSlicepl.plot( ursapq.data_oddShots[self.xdataId],  
                                             ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
+                                            
+        self.stopEvent = Event() #Used to stop background thread when window closes                                           
+        self.figure.canvas.mpl_connect('close_event', self.stopUpdate)
         self.figure.show()
 
-
-    def update(self):
-        self.evenSlice.set_data( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
-        self.oddSlice.set_data(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
-        self.diffSlice.set_data( ursapq.data_oddShots[self.xdataId],  
-                                 ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
+    def startUpdate(self):
+        self.stopEvent.clear()
+        self.thread = Thread(target=self.update, kwargs={'loop_forever':True} ).start()
         
-        self.figure.canvas.draw()
-        self.figure.canvas.flush_events()
+    def stopUpdate(self, event):
+        self.stopEvent.set()
+
+    def update(self, loop_forever=False):
+        while not self.stopEvent.is_set():
+            self.evenSlice.set_data( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
+            self.oddSlice.set_data(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
+            self.diffSlice.set_data( ursapq.data_oddShots[self.xdataId],  
+                                     ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
+            if not loop_forever:
+                break
+
+    def draw(self):
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
 
 
 if __name__=='__main__':
@@ -82,6 +112,16 @@ if __name__=='__main__':
     ursapq = UrsaPQ()
     traces = TracePlots(ursapq)
     singleshots = SingleShot(ursapq, tof = False) #Set tof to true to plot TOF instead of eV
+    
+    Thread(target=traces.update,      kwargs={'loop_forever':True} ).start()
+    Thread(target=singleshots.update, kwargs={'loop_forever':True} ).start()
+    
     while True:
-        traces.update()
-        singleshots.update()
+        try:
+            traces.draw()
+        except Exception:
+            pass
+        try:
+            singleshots.draw()
+        except Exception:
+            pass

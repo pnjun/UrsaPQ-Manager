@@ -128,8 +128,13 @@ class ursapqDataHandler:
                                           
                 rightTriggers = leftTriggers + self.status.data_sliceSize
                 slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
-                evenSlices = slices[ self.status.data_skipSlices   :-1:2]
-                oddSlices  = slices[ self.status.data_skipSlices+1 :-1:2]
+                
+                if self.status.data_skipSlices % 2 == 0:
+                    evenSlices = slices[ self.status.data_skipSlices   :-1:2]
+                    oddSlices  = slices[ self.status.data_skipSlices+1 :-1:2]
+                else:
+                    evenSlices = slices[ self.status.data_skipSlices+1 :-1:2]  
+                    oddSlices  = slices[ self.status.data_skipSlices   :-1:2]              
                 
                 #Sum up all slices skipping the first self.status.data_skipSlices
                 evenSlice = np.array(self.tofTrace[1][evenSlices[0]])
