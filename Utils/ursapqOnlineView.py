@@ -35,7 +35,7 @@ class TracePlots:
 
     def update(self, loop_forever=False):
         while not self.stopEvent.is_set():
-            self.figure.text(0.1, 0.9, "laser hit: %f us" % ursapq.data_laserTime, fontsize=17)
+            self.figure.text(0.1, 0.9, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
         
             self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
             self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
