@@ -96,18 +96,13 @@ class ursapqDataHandler:
             try:
                 #assert(newTof['data'].T.shape == self.tofTrace.shape) #IF shape changed, reinit variables
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
-                self.laserTrace[1] = self.dataFilter( newLaser['data'].T[1] ,  self.laserTrace[1] )
-
             except TypeError:
                 self.tofTrace  = newTof['data'].T
-                self.laserTrace = newLaser['data'].T
+                
+            self.laserTrace = newLaser['data'].T
                 
             # Notify filter workers that new data is available
             self.dataUpdated.set()
-
-    def getRisingEdges(self, data, trigger):
-        ''' Returns array of indices where a rising edge above trigger value is found in data '''
-        return np.flatnonzero((data[:-1] < trigger) & (data[1:] > trigger))
 
     def Tof2eV(self, tof, retard):
         ''' converts time of flight into ectronvolts '''
@@ -133,13 +128,20 @@ class ursapqDataHandler:
                                           
                 rightTriggers = leftTriggers + self.status.data_sliceSize
                 slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
-
+                evenSlices = slices[ self.status.data_skipSlices   :-1:2]
+                oddSlices  = slices[ self.status.data_skipSlices+1 :-1:2]
                 
                 #Sum up all slices skipping the first self.status.data_skipSlices
-                tofSlice = np.array(self.tofTrace[1][slices[self.status.data_skipSlices]])
-                for sl in slices[self.status.data_skipSlices+1:-1]:
-                    tofSlice += self.tofTrace[1][sl]
-                tofSlice /= len(slices)
+                evenSlice = np.array(self.tofTrace[1][evenSlices[0]])
+                for sl in evenSlices[1:]:
+                    evenSlice += self.tofTrace[1][sl]
+                evenSlice /= len(slices)
+                
+                oddSlice = np.array(self.tofTrace[1][oddSlices[0]])
+                for sl in oddSlices[1:]:
+                    oddSlice += self.tofTrace[1][sl]
+                oddSlice /= len(slices)
+                
                 
                 #Generate tof times and eV data
                 tofTimes = self.tofTrace[0][slices[self.status.data_skipSlices]] -\
@@ -148,10 +150,15 @@ class ursapqDataHandler:
                 eV_Times = self.Tof2eV( tofTimes, self.status.tof_retarderHV )
 
                 #Output arrays
-                self.status.data_SingleShot_tof = np.vstack((tofTimes, tofSlice ))
-                self.status.data_SingleShot_eV =  np.vstack((eV_Times, tofSlice ))
+                self.status.data_evenShots =  np.vstack((tofTimes, eV_Times, evenSlice ))
+                self.status.data_oddShots  =  np.vstack((tofTimes, eV_Times, oddSlice ))
+                
             except Exception as e:
                 print(e)
+ 
+    def getRisingEdges(self, data, trigger):
+        ''' Returns array of indices where a rising edge above trigger value is found in data '''
+        return np.flatnonzero((data[:-1] < trigger) & (data[1:] > trigger))
  
     def workerLoop(self):
         '''
@@ -162,6 +169,13 @@ class ursapqDataHandler:
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()     
            
+            #Find time of arrival of first laser pulse
+            laserhits = self.getRisingEdges(self.laserTrace[1], 200)
+            try:
+                self.status.data_laserTime = self.laserTrace[0][laserhits[0]]          
+            except Exception:
+                self.status.data_laserTime = None
+                   
             #Output data to namespace
             self.status.data_laserTrace = self.laserTrace
             self.status.data_tofTrace   = self.tofTrace       
