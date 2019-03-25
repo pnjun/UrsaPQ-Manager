@@ -50,10 +50,12 @@ class TracePlots:
         
             self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
             self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
+            
             if not loop_forever:
                 break
                 
     def draw(self):
+            self.filterSlider.set_val( ursapq.data_filterLvl )
             self.figure.canvas.draw()
             self.figure.canvas.flush_events()
 
