@@ -1,8 +1,11 @@
 from ursapqUtils import UrsaPQ
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+
 from threading import Thread
 from threading import Event
+
 
 #TOF AND LASER TRACES
 class TracePlots:
@@ -23,9 +26,16 @@ class TracePlots:
         self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace, = laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
         
+        axslid = self.figure.add_axes([0.5, 0.93, 0.4, 0.04])
+        self.filterSlider = Slider(axslid, 'Filter Lvl', 0, 0.9999, valinit=ursapq.data_filterLvl)
+        self.filterSlider.on_changed(self.filterUpdate)
+        
         self.stopEvent = Event() #Used to stop background thread when window closes
         self.figure.canvas.mpl_connect('close_event', self.stopUpdate)
         self.figure.show()
+        
+    def filterUpdate(self,val):
+        ursapq.data_filterLvl = val
 
     def startUpdate(self):
         self.stopEvent.clear()

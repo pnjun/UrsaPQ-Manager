@@ -78,27 +78,23 @@ class ursapqDataHandler:
         #Run until stop event
         while not self.stopEvent.isSet():
             '''try:
-                assert(time.time() - self.timestamp > 0.5)
-                self.newTof = self.pydoocs.read(config.Data_FLASH_TOF, macropulse = self.macropulse + 1)
-                self.newLaser = self.pydoocs.read(config.Data_DOOCS_LASER, macropulse = self.macropulse + 1)
-            except Exception: 
-
-                print("skip")'''
-                
+                newTof = self.pydoocs.read(config.Data_DOOCS_TOF, macropulse = self.macropulse + 1)
+                newLaser = self.pydoocs.read(config.Data_DOOCS_LASER, macropulse = self.macropulse + 1)
+            except Exception: '''
             newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
             newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-           
-            self.macropulse = newTof['macropulse']
-            self.timestamp  = newTof['timestamp']
+                           
+            
+            #self.macropulse = newTof['macropulse']
+            #self.timestamp = newTof['timestamp']
+            #print(self.macropulse)
             
             try:
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
-            except TypeError:
+            except Exception:
                 self.tofTrace  = newTof['data'].T
                 
             self.laserTrace = newLaser['data'].T
-                
-            print(len(self.tofTrace[0]))
                 
             # Notify filter workers that new data is available
             self.dataUpdated.set()
@@ -185,15 +181,13 @@ class ursapqDataHandler:
             self.status.data_tofTrace   = self.tofTrace       
 
 def main():
-    while True:
-        try:
-            dataHandler = ursapqDataHandler()
-            dataHandler.start()
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            dataHandler.stopEvent.set()
-            exit()
+    try:
+        dataHandler = ursapqDataHandler()
+        dataHandler.start()
+        while True:
+            time.sleep(5)
+    except KeyboardInterrupt:
+        dataHandler.stopEvent.set()
 
 if __name__=='__main__':
     main()
