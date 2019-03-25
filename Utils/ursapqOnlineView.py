@@ -18,6 +18,7 @@ class TracePlots:
         tofTracepl.set_title("ADC TOF TRACE")
         laserTracepl = self.figure.add_subplot(gs[2,0])
         laserTracepl.set_title("LASER TRACE")
+        laserTracepl.set_xlim([ ursapq.data_tofTrace[0][0], ursapq.data_tofTrace[0][-1]]) #set laserTrace timeaxis the same as tofTrace
 
         self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace, = laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
@@ -35,7 +36,7 @@ class TracePlots:
 
     def update(self, loop_forever=False):
         while not self.stopEvent.is_set():
-            self.figure.text(0.1, 0.9, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
+            self.figure.text(0.04, 0.93, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
         
             self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
             self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
@@ -63,6 +64,7 @@ class SingleShot:
         gs = gridspec.GridSpec(2, 2) #
     
         self.figure = plt.figure()
+        self.figure.subplots_adjust(right=0.9, top=0.85, hspace=0.6)
         evenSlicepl = self.figure.add_subplot(gs[0,0])
         if not tof: evenSlicepl.set_xlim([0,xmax])
         evenSlicepl.set_title("SINGLE SHOT EVEN")

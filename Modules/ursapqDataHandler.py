@@ -91,15 +91,14 @@ class ursapqDataHandler:
             self.macropulse = newTof['macropulse']
             self.timestamp  = newTof['timestamp']
             
-            #print(self.macropulse)
-            
             try:
-                #assert(newTof['data'].T.shape == self.tofTrace.shape) #IF shape changed, reinit variables
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
             except TypeError:
                 self.tofTrace  = newTof['data'].T
                 
             self.laserTrace = newLaser['data'].T
+                
+            print(len(self.tofTrace[0]))
                 
             # Notify filter workers that new data is available
             self.dataUpdated.set()
