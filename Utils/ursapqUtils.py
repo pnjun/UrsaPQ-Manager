@@ -1,5 +1,9 @@
 from multiprocessing.managers import BaseManager, NamespaceProxy
-from config import config
+
+try:
+    from .config import config
+except Exception:
+    from config import config
 
 class UrsaPQ:
     '''

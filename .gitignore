@@ -1,4 +1,6 @@
 Modules/config.json
 Utils/config.json
+delayscan.py
+Delays_TimeZero_2032/*
 *.pyc
 *.so

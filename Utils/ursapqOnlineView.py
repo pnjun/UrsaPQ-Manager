@@ -75,20 +75,21 @@ class SingleShot:
     
         self.figure = plt.figure()
         self.figure.subplots_adjust(right=0.9, top=0.85, hspace=0.6)
-        evenSlicepl = self.figure.add_subplot(gs[0,0])
-        if not tof: evenSlicepl.set_xlim([0,xmax])
-        evenSlicepl.set_title("SINGLE SHOT EVEN")
+
+        self.evenSlicepl = self.figure.add_subplot(gs[0,0])
+        if not tof: self.evenSlicepl.set_xlim([0,xmax])
+        self.evenSlicepl.set_title("SINGLE SHOT EVEN")
        
-        oddSlicepl = self.figure.add_subplot( gs[0,1])
-        if not tof: oddSlicepl.set_xlim([0,xmax])
-        oddSlicepl.set_title("SINGLE SHOT ODD")       
+        self.oddSlicepl = self.figure.add_subplot( gs[0,1])
+        if not tof: self.oddSlicepl.set_xlim([0,xmax])
+        self.oddSlicepl.set_title("SINGLE SHOT ODD")       
         
         diffSlicepl = self.figure.add_subplot(gs[1,:])
         if not tof: diffSlicepl.set_xlim([0,xmax])
         diffSlicepl.set_title("SINGLE SHOT DIFFERENCE")               
         
-        self.evenSlice, = evenSlicepl.plot( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
-        self.oddSlice,  = oddSlicepl.plot(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
+        self.evenSlice, = self.evenSlicepl.plot( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
+        self.oddSlice,  = self.oddSlicepl.plot(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
         self.diffSlice, = diffSlicepl.plot( ursapq.data_oddShots[self.xdataId],  
                                             ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
                                             
@@ -105,8 +106,13 @@ class SingleShot:
 
     def update(self, loop_forever=False):
         while not self.stopEvent.is_set():
+            #self.evenSlicepl.set_ylim(np.nanmin(ursapq.data_evenShots[2]),np.nanmax(ursapq.data_evenShots[2]))
+            #self.evenSlicepl.set_xlim(np.nanmin(ursapq.data_evenShots[self.xdataID]),np.nanmax(ursapq.data_evenShots[self.xdataID]))
             self.evenSlice.set_data( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
+            #print(ursapq.data_evenShots[self.xdataId].min(),ursapq.data_evenShots[self.xdataId].max())
+            
             self.oddSlice.set_data(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
+            #self.oddSlicepl.set_ylim([np.nanmin(ursapq.data_oddShots[2]),np.nanmax(ursapq.data_oddShots[2])])
             self.diffSlice.set_data( ursapq.data_oddShots[self.xdataId],  
                                      ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
             if not loop_forever:
@@ -120,10 +126,11 @@ class SingleShot:
 if __name__=='__main__':
     import time
     import matplotlib.pyplot as plt
+    import numpy as np
 
     ursapq = UrsaPQ()
     traces = TracePlots(ursapq)
-    singleshots = SingleShot(ursapq, tof = False) #Set tof to true to plot TOF instead of eV
+    singleshots = SingleShot(ursapq, tof = False,xmax=500) #Set tof to true to plot TOF instead of eV
     
     Thread(target=traces.update,      kwargs={'loop_forever':True} ).start()
     Thread(target=singleshots.update, kwargs={'loop_forever':True} ).start()
