@@ -25,23 +25,25 @@ class TracePlots:
 
         self.tofTrace,   = tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace, = laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
+        self.laserTime =  self.figure.text(0.04, 0.93, "", fontsize=17)
+        
         
         axslid = self.figure.add_axes([0.5, 0.93, 0.4, 0.04])
-        self.filterSlider = Slider(axslid, 'Filter Lvl', 0, 0.9999, valinit=ursapq.data_filterLvl)
+        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 1, 120, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
         
         self.figure.show()
         
     def filterUpdate(self,val):
-        ursapq.data_filterLvl = val
+        ursapq.data_filterTau = val
 
     def update(self):
-        self.figure.text(0.04, 0.93, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
+        self.laserTime.set_text("laser hit @ %s" % str(ursapq.data_laserTime))
     
         self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
 
-        self.filterSlider.set_val( ursapq.data_filterLvl )
+        self.filterSlider.set_val( ursapq.data_filterTau )
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
 
