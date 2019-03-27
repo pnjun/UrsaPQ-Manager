@@ -41,6 +41,7 @@ class ursapqDataHandler:
 
         # Data
         self.dataUpdated  = threading.Event() #Event is set every time new data is available
+        self.updateFreq = 0
         self.tofTrace = None
         self.laserTrace = None
         self.triggTrace = None
@@ -66,14 +67,15 @@ class ursapqDataHandler:
         Quick and dirty " Average " filter for incoming data. It's fast and does not
         use memory, while performing almost like a moving average
         '''
-        return oldData * self.status.data_filterLvl + newData * (1-self.status.data_filterLvl)
+        lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
+        return oldData * lvl + newData * (1-lvl)
 
     #TODO: HANDLE LENGHT CHANGE CASE
     def doocsUpdateLoop(self):
         '''
         Keeps reading data from DOOCS and filters it as it comes in.
         The commented part should make it so that it takes in all data sequentially,
-        but the ifs slow it down too much. Might need to rewrite it with try...except
+        but the ifs slow it down too much.
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
@@ -83,11 +85,13 @@ class ursapqDataHandler:
             except Exception: '''
             newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
             newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-                           
-            
-            #self.macropulse = newTof['macropulse']
-            #self.timestamp = newTof['timestamp']
-            #print(self.macropulse)
+          
+            self.macropulse = newTof['macropulse']                 
+            try:
+                self.updateFreq =  0.01 * 1/(newTof['timestamp'] - self.timestamp) + 0.99 * self.updateFreq
+            except Exception:
+                pass
+            self.timestamp = newTof['timestamp']
             
             try:
                 self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
@@ -177,6 +181,7 @@ class ursapqDataHandler:
                 self.status.data_laserTime = None
                    
             #Output data to namespace
+            self.status.data_updateFreq = self.updateFreq
             self.status.data_laserTrace = self.laserTrace
             self.status.data_tofTrace   = self.tofTrace       
 

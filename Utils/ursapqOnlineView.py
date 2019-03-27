@@ -30,34 +30,20 @@ class TracePlots:
         self.filterSlider = Slider(axslid, 'Filter Lvl', 0, 0.9999, valinit=ursapq.data_filterLvl)
         self.filterSlider.on_changed(self.filterUpdate)
         
-        self.stopEvent = Event() #Used to stop background thread when window closes
-        self.figure.canvas.mpl_connect('close_event', self.stopUpdate)
         self.figure.show()
         
     def filterUpdate(self,val):
         ursapq.data_filterLvl = val
 
-    def startUpdate(self):
-        self.stopEvent.clear()
-        self.thread = Thread(target=self.update, kwargs={'loop_forever':True} ).start()
-        
-    def stopUpdate(self, event):
-        self.stopEvent.set()
+    def update(self):
+        self.figure.text(0.04, 0.93, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
+    
+        self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
+        self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
 
-    def update(self, loop_forever=False):
-        while not self.stopEvent.is_set():
-            self.figure.text(0.04, 0.93, "laser hit @ %s" % str(ursapq.data_laserTime) , fontsize=17)
-        
-            self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
-            self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
-            
-            if not loop_forever:
-                break
-                
-    def draw(self):
-            self.filterSlider.set_val( ursapq.data_filterLvl )
-            self.figure.canvas.draw()
-            self.figure.canvas.flush_events()
+        self.filterSlider.set_val( ursapq.data_filterLvl )
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
 
 #SINGLE SHOT AVERAGES
 class SingleShot:
@@ -95,34 +81,21 @@ class SingleShot:
         self.diffSlice, = diffSlicepl.plot( ursapq.data_oddShots[self.xdataId],  
                                             ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
                                             
-        self.stopEvent = Event() #Used to stop background thread when window closes                                           
-        self.figure.canvas.mpl_connect('close_event', self.stopUpdate)
         self.figure.show()
 
-    def startUpdate(self):
-        self.stopEvent.clear()
-        self.thread = Thread(target=self.update, kwargs={'loop_forever':True} ).start()
+    def update(self):
+        #self.evenSlicepl.set_ylim(np.nanmin(ursapq.data_evenShots[2]),np.nanmax(ursapq.data_evenShots[2]))
+        #self.evenSlicepl.set_xlim(np.nanmin(ursapq.data_evenShots[self.xdataID]),np.nanmax(ursapq.data_evenShots[self.xdataID]))
+        self.evenSlice.set_data( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
+        #print(ursapq.data_evenShots[self.xdataId].min(),ursapq.data_evenShots[self.xdataId].max())
         
-    def stopUpdate(self, event):
-        self.stopEvent.set()
+        self.oddSlice.set_data(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
+        #self.oddSlicepl.set_ylim([np.nanmin(ursapq.data_oddShots[2]),np.nanmax(ursapq.data_oddShots[2])])
+        self.diffSlice.set_data( ursapq.data_oddShots[self.xdataId],  
+                                 ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
 
-    def update(self, loop_forever=False):
-        while not self.stopEvent.is_set():
-            #self.evenSlicepl.set_ylim(np.nanmin(ursapq.data_evenShots[2]),np.nanmax(ursapq.data_evenShots[2]))
-            #self.evenSlicepl.set_xlim(np.nanmin(ursapq.data_evenShots[self.xdataID]),np.nanmax(ursapq.data_evenShots[self.xdataID]))
-            self.evenSlice.set_data( ursapq.data_evenShots[self.xdataId], ursapq.data_evenShots[2] )
-            #print(ursapq.data_evenShots[self.xdataId].min(),ursapq.data_evenShots[self.xdataId].max())
-            
-            self.oddSlice.set_data(  ursapq.data_oddShots[self.xdataId],  ursapq.data_oddShots[2] )
-            #self.oddSlicepl.set_ylim([np.nanmin(ursapq.data_oddShots[2]),np.nanmax(ursapq.data_oddShots[2])])
-            self.diffSlice.set_data( ursapq.data_oddShots[self.xdataId],  
-                                     ursapq.data_evenShots[2] - ursapq.data_oddShots[2])
-            if not loop_forever:
-                break
-
-    def draw(self):
-            self.figure.canvas.draw()
-            self.figure.canvas.flush_events()
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
 
 
 if __name__=='__main__':
@@ -134,15 +107,7 @@ if __name__=='__main__':
     traces = TracePlots(ursapq)
     singleshots = SingleShot(ursapq, tof = False,xmax=500) #Set tof to true to plot TOF instead of eV
     
-    Thread(target=traces.update,      kwargs={'loop_forever':True} ).start()
-    Thread(target=singleshots.update, kwargs={'loop_forever':True} ).start()
-    
     while True:
-        try:
-            traces.draw()
-        except Exception:
-            pass
-        try:
-            singleshots.draw()
-        except Exception:
-            pass
+        traces.update()
+        singleshots.update()
+ 

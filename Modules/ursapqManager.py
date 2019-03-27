@@ -127,7 +127,7 @@ class UrsapqManager:
         self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
 
         #Init data analyis parameters
-        self.status.data_filterLvl = config.Data_FilterLevel
+        self.status.data_filterTau = config.Data_FilterTau
         self.status.data_slicePeriod = config.Data_SlicePeriod #Period of FEL pulses (in samples, can be float)
         self.status.data_sliceSize = config.Data_SliceSize     #Sice of sliced data (in samples, int)
         self.status.data_sliceOffset = config.Data_SliceOffset #How many samples to skip at the begninnig of trace
