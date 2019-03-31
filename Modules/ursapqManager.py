@@ -131,7 +131,8 @@ class UrsapqManager:
         self.status.data_slicePeriod = config.Data_SlicePeriod #Period of FEL pulses (in samples, can be float)
         self.status.data_sliceSize = config.Data_SliceSize     #Sice of sliced data (in samples, int)
         self.status.data_sliceOffset = config.Data_SliceOffset #How many samples to skip at the begninnig of trace
-        self.status.data_skipSlices  = config.Data_SkipSlices  #How many slices to skip for singleShot average
+        self.status.data_skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
+        self.status.data_skipSlicesEnd  = config.Data_SkipSlicesEnd  #How many slices to skip for singleShot average at the end
 
         #System status message initalization
         self.status.statusMessage = ""

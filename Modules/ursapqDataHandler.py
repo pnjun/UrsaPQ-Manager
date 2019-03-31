@@ -85,8 +85,15 @@ class ursapqDataHandler:
             except Exception: '''
             newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
             newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-          
+            newGmd = self.pydoocs.read(config.Data_DOOCS_GMD)['data'].T[1]
+ 
             self.macropulse = newTof['macropulse']                 
+            
+            try:
+                self.GMDTrace = self.dataFilter( newGmd  ,  self.GMDTrace )
+            except Exception:
+                self.GMDTrace = newGmd           
+            
             try:
                 self.updateFreq =  0.01 * 1/(newTof['timestamp'] - self.timestamp) + 0.99 * self.updateFreq
             except Exception:
@@ -128,22 +135,27 @@ class ursapqDataHandler:
                 rightTriggers = leftTriggers + self.status.data_sliceSize
                 slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
                 
+                # Slices of slices array. Two groups of slices ('even' or 'odd')
+                slices_set1 = slice(self.status.data_skipSlices  , self.status.data_skipSlicesEnd, 2)
+                slices_set2 = slice(self.status.data_skipSlices+1, self.status.data_skipSlicesEnd, 2)
+
+                # List of slices for tof trace slicing, even and odd might get swapped depending on skipslices parity
                 if self.status.data_skipSlices % 2 == 0:
-                    evenSlices = slices[ self.status.data_skipSlices   :-1:2]
-                    oddSlices  = slices[ self.status.data_skipSlices+1 :-1:2]
+                    evenSlices = zip( slices[ slices_set1 ], self.GMDTrace[ slices_set1 ] )
+                    oddSlices  = zip( slices[ slices_set2 ], self.GMDTrace[ slices_set2 ] )
                 else:
-                    evenSlices = slices[ self.status.data_skipSlices+1 :-1:2]  
-                    oddSlices  = slices[ self.status.data_skipSlices   :-1:2]              
-                
+                    oddSlices  = zip( slices[ slices_set1 ], self.GMDTrace[ slices_set1 ] )
+                    evenSlices = zip( slices[ slices_set2 ], self.GMDTrace[ slices_set2 ] )  
+                    
                 #Sum up all slices skipping the first self.status.data_skipSlices
-                evenSlice = np.array(self.tofTrace[1][evenSlices[0]])
-                for sl in evenSlices[1:]:
-                    evenSlice += self.tofTrace[1][sl]
+                evenSlice = np.zeros( self.status.data_sliceSize )
+                for sl, gmd in evenSlices:
+                    evenSlice += self.tofTrace[1][sl] / gmd
                 evenSlice /= len(slices)
                 
-                oddSlice = np.array(self.tofTrace[1][oddSlices[0]])
-                for sl in oddSlices[1:]:
-                    oddSlice += self.tofTrace[1][sl]
+                oddSlice = np.zeros( self.status.data_sliceSize )
+                for sl, gmd in oddSlices:
+                    oddSlice += self.tofTrace[1][sl] / gmd 
                 oddSlice /= len(slices)
                 
                 
