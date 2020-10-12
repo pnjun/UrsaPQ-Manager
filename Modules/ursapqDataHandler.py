@@ -83,9 +83,12 @@ class ursapqDataHandler:
                 newTof = self.pydoocs.read(config.Data_DOOCS_TOF, macropulse = self.macropulse + 1)
                 newLaser = self.pydoocs.read(config.Data_DOOCS_LASER, macropulse = self.macropulse + 1)
             except Exception: '''
-            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
-            newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-            newGmd = self.pydoocs.read(config.Data_DOOCS_GMD)['data'].T[1]
+            try:
+                newGmd = self.pydoocs.read(config.Data_DOOCS_GMD)['data'].T[1]
+                newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
+                newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
+            except Exception:
+                continue    # If readout fails try again
  
             self.macropulse = newTof['macropulse']                 
             
@@ -151,11 +154,13 @@ class ursapqDataHandler:
                 evenSlice = np.zeros( self.status.data_sliceSize )
                 for sl, gmd in evenSlices:
                     evenSlice += self.tofTrace[1][sl] / gmd
+                    #evenSlice += self.tofTrace[1][sl]
                 evenSlice /= len(slices)
                 
                 oddSlice = np.zeros( self.status.data_sliceSize )
                 for sl, gmd in oddSlices:
-                    oddSlice += self.tofTrace[1][sl] / gmd 
+                    oddSlice += self.tofTrace[1][sl] / gmd
+                    #evenSlice += self.tofTrace[1][sl]
                 oddSlice /= len(slices)
                 
                 
@@ -170,7 +175,7 @@ class ursapqDataHandler:
                 self.status.data_oddShots  =  np.vstack((tofTimes, eV_Times, oddSlice ))
                 
             except Exception as e:
-                print(e)
+                print("SlicerLoop: ", e)
  
     def getRisingEdges(self, data, trigger):
         ''' Returns array of indices where a rising edge above trigger value is found in data '''
@@ -186,8 +191,8 @@ class ursapqDataHandler:
             self.dataUpdated.wait()     
            
             #Find time of arrival of first laser pulse
-            laserhits = self.getRisingEdges(self.laserTrace[1], 200)
             try:
+                laserhits = self.getRisingEdges(self.laserTrace[1], 200)
                 self.status.data_laserTime = self.laserTrace[0][laserhits[0]]          
             except Exception:
                 self.status.data_laserTime = None

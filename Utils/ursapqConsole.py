@@ -337,9 +337,16 @@ class MainWindow(ConsoleWindow):
         self.window.prevacValves.setText( '{} ({})'.format(
                                            "Open" if self.ursapq.preVacValve_isOpen else "Closed",
                                            "Locked" if self.ursapq.preVacValve_lock else "Auto" ))
-        self.window.pumpStatus.setText(  '{} ({})'.format(
-                                           "Running" if self.ursapq.pumps_areON else "Stopped",
-                                           "Auto" if self.ursapq.pumps_enable else "Locked" ))
+        if not self.ursapq.pumps_areON:
+            pump_status = "Stopped"
+        elif self.ursapq.pumps_normalOp:
+            pump_status = "Running"
+        else:
+            pump_status = "Starting"
+
+        self.window.pumpStatus.setText(  '{} ({})'.format( 
+                                          pump_status,
+                                          "Auto" if self.ursapq.pumps_enable else "Locked" ))
         #Update status label
         if self.ursapq.preVac_OK:
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_WARNING)

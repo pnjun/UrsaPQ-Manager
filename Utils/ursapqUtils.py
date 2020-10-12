@@ -11,7 +11,7 @@ class UrsaPQ:
     After connection the experimental parameters can be read and set as attributes of the instance. Since parameter setting is done on the remote server, setting attemps might not have immediate effect or might be discarded completelyself.
 
     Examples:
-    exp = UrsaPQ(<IP>, <port>, <authkey>)
+    exp = UrsaPQ()
     print( exp.ovenEnable ) # prints oven enable status
     exp.ovenEnable = True   # tries to enable oven, might not succeed
                             # check exp.ovenEnable to test
