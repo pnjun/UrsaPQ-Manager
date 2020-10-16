@@ -20,6 +20,8 @@ The following hardware components are managed by the PLC:
 
 ### Functions
 The system automatically controls the turbopumps start/stop sequence depending on the prevacuum line pressure. There is an additional enable signal that needs to be manually set through the ursapqManager server. 
+Note: At the moment the large turbopump is not integraded in the PLC control system due to a non-standard interface. It must be manually started and stopped with the onboard buttons.
+
 It reads out temperature and pressure values and makes them available to users through the ursapqManager server process. Motion controls commands can also be sent to the PLC that will handle the stepper motor controls.
 
 ### Safety 
