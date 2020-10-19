@@ -18,7 +18,22 @@ class ursapqDataHandler:
         Data is taken from doocs and processed here for fast display and analysis
 
         One thread reads data from doocs
+        
+        Config params:
+          "Data_DOOCS_TOF"   : address of tof trace
+          "Data_DOOCS_Trig"  : address of trigger trace (not used)
+          "Data_DOOCS_GMD"   : addres of GMD
+          "Data_DOOCS_LASER" : address of laser trace
+          "Data_FilterTau"   : default value for low pass tau,
+          "Data_SlicePeriod" : rep rate of FEL in samples (float beacuse FLASH and ADC are not in sync),
+          "Data_SliceSize"   : lenght of a single shot tof trace,
+          "Data_SliceOffset" : samples to skip before starting slicing (time zero setting),
+          "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
+          "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
+          "Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)   
+          "Data_Jacobian"      : set to 1 to use jacobian normalization   
         '''
+        
         self.port = config.UrsapqServer_Port
         self.authkey = config.UrsapqServer_AuthKey.encode('ascii')
 
@@ -32,6 +47,14 @@ class ursapqDataHandler:
         self.status = self.manager.getStatusNamespace()
 
         # Init analyis parameters from config file they are not present already
+        self.status.data_filterTau = config.Data_FilterTau
+        
+        self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
+        self.skipSlicesEnd  = config.Data_SkipSlicesEnd  #How many slices to skip for singleShot average at the end   
+        
+        if self.skipSlices % 2 != 0 or self.skipSlicesEnd % 2 != 0:
+            raise ValueError("skipSlices must be even")
+        
         try:
             self.pydoocs = __import__('pydoocs')
         except Exception:
@@ -42,6 +65,8 @@ class ursapqDataHandler:
         # Data
         self.dataUpdated  = threading.Event() #Event is set every time new data is available
         self.updateFreq = 0
+        self.macropulse = 0
+        self.timestamp = time.time()
         self.tofTrace = None
         self.laserTrace = None
         self.triggTrace = None
@@ -69,8 +94,73 @@ class ursapqDataHandler:
         '''
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return oldData * lvl + newData * (1-lvl)
+        
+    def updateTofTraces(self):
+        ''' gets new traces from DOOCS, returns True if fetch was successful '''
+        
+        # Try pulling new TOF traces from DOOCS
+        try:
+            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
+            newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
+            
+            if newTof['macropulse'] == self.macropulse: #if we got the same data twice, return false (we dont want to process the same data twice)
+                return False
+                
+            self.macropulse = newTof['macropulse'] 
+            
+            self.updateFreq = (  0.01 * 1/(newTof['timestamp'] - self.timestamp) 
+                               + 0.99 * self.updateFreq)
+            self.timestamp = newTof['timestamp']
+        except Exception as error:
+            traceback.print_exc()
+            return False
+        
+        #Two types of online data: Low passed ('moving average') and accumulated
+        
+        #Low pass:
+        #This is run in a separate try...except so that tofTrace gets reinitialized 
+        #if the lenght of newTof changes due to DOOCS reconfiguration
+        try:
+            self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
+        except Exception as error:
+            traceback.print_exc()
+            self.tofTrace  = newTof['data'].T
+            
+        #Accumulate data:
+        try:
+            self.tofAccumulator[1] += newTof['data'].T[1]
+            self.tofAccumulatorCount += 1
+        except Exception as error:
+            traceback.print_exc()
+            self.tofAccumulator  = newTof['data'].T  
+            self.tofAccumulatorCount = 1
+            
+        return True
+            
+    def updateGmd(self):
+        #Pull gmd from DOOCS
+        try:
+            newGmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
+                                       macropulse = self.macropulse)['data'].T[1]
+        except Exception as error:
+            print("Error getting GMD. Check that GMD monitor is active or disable GMD normalization")
+            traceback.print_exc()   
+            return
+            
+        # Same as above, try...except to reinitialize if number of shots changes                                                                    
+        try:                                              
+            self.GMDTrace = self.dataFilter( newGmd  ,  self.GMDTrace )
+        except Exception as error:
+            traceback.print_exc()
+            self.GMDTrace = newGmd
+    
+    def updateLaserTrace(self):
+        try:
+            self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
+                                                macropulse = self.macropulse)['data'].T
+        except Exception as error:
+            traceback.print_exc()
 
-    #TODO: HANDLE LENGHT CHANGE CASE
     def doocsUpdateLoop(self):
         '''
         Keeps reading data from DOOCS and filters it as it comes in.
@@ -79,36 +169,16 @@ class ursapqDataHandler:
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
-            '''try:
-                newTof = self.pydoocs.read(config.Data_DOOCS_TOF, macropulse = self.macropulse + 1)
-                newLaser = self.pydoocs.read(config.Data_DOOCS_LASER, macropulse = self.macropulse + 1)
-            except Exception: '''
-            try:
-                newGmd = self.pydoocs.read(config.Data_DOOCS_GMD)['data'].T[1]
-                newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
-                newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
-            except Exception:
-                continue    # If readout fails try again
- 
-            self.macropulse = newTof['macropulse']                 
+            print("doocs update")
+            if not self.updateTofTraces():
+                continue
             
-            try:
-                self.GMDTrace = self.dataFilter( newGmd  ,  self.GMDTrace )
-            except Exception:
-                self.GMDTrace = newGmd           
-            
-            try:
-                self.updateFreq =  0.01 * 1/(newTof['timestamp'] - self.timestamp) + 0.99 * self.updateFreq
-            except Exception:
-                pass
-            self.timestamp = newTof['timestamp']
-            
-            try:
-                self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
-            except Exception:
-                self.tofTrace  = newTof['data'].T
-                
-            self.laserTrace = newLaser['data'].T
+            if config.Data_GmdNorm:
+                self.updateGmd()
+            else:
+                self.GMDTrace = None       
+
+            self.updateLaserTrace()
                 
             # Notify filter workers that new data is available
             self.dataUpdated.set()
@@ -122,6 +192,32 @@ class ursapqDataHandler:
         # UNITS AND ORDERS OF MAGNITUDE DO CHECK OUT
         return 0.5 * m_over_e * ( s / tof )**2 - retard
 
+    def stack_slices(self, array, startIdx, sliceLen):
+        all_idx = startIdx[:, None] + np.arange(sliceLen)
+        return array[all_idx] 
+        
+    def sliceAverage(self, tofTrace, gmdTrace = None):
+        ''' 
+            Get a long tof trace, slices it in pieces and returns the 
+            average of the even and odd slices.
+            Gmd normalization if gmdTrace is given 
+        '''
+        #Calculate chopping points for slicing
+        sliceStartIdx  = np.arange(config.Data_SliceOffset, len(tofTrace), 
+                                   config.Data_SlicePeriod).astype(int)
+                         
+        stackedTraces = self.stack_slices(tofTrace, sliceStartIdx, config.Data_SliceSize)                      
+                          
+        if gmdTrace is not None:
+            raise NotImplementedError("lol")
+        else:                        
+            #Sum up all slices skipping the first self.skipSlices
+            evenSlice = stackedTraces[::2].mean(axis=0)
+            oddSlice  = stackedTraces[1::2].mean(axis=0)
+            
+        return evenSlice, oddSlice                        
+     
+
     def slicerLoop(self):
         '''
         Sllices self.tofTrace in individual pieces (each piece is a x-ray pulse) and averages
@@ -129,57 +225,25 @@ class ursapqDataHandler:
         '''
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
-            try:
-                #Calculate left and right chopping point for slicing
-                leftTriggers  = np.arange(self.status.data_sliceOffset,
-                                                  len(self.tofTrace[0]), 
-                                                  self.status.data_slicePeriod).astype(int)
-                                          
-                rightTriggers = leftTriggers + self.status.data_sliceSize
-                slices = [slice(a,b) for a,b in zip(leftTriggers, rightTriggers)]
-                
-                # Slices of slices array. Two groups of slices ('even' or 'odd')
-                slices_set1 = slice(self.status.data_skipSlices  , self.status.data_skipSlicesEnd, 2)
-                slices_set2 = slice(self.status.data_skipSlices+1, self.status.data_skipSlicesEnd, 2)
-
-                # List of slices for tof trace slicing, even and odd might get swapped depending on skipslices parity
-                if self.status.data_skipSlices % 2 == 0:
-                    evenSlices = zip( slices[ slices_set1 ], self.GMDTrace[ slices_set1 ] )
-                    oddSlices  = zip( slices[ slices_set2 ], self.GMDTrace[ slices_set2 ] )
-                else:
-                    oddSlices  = zip( slices[ slices_set1 ], self.GMDTrace[ slices_set1 ] )
-                    evenSlices = zip( slices[ slices_set2 ], self.GMDTrace[ slices_set2 ] )  
-                    
-                #Sum up all slices skipping the first self.status.data_skipSlices
-                evenSlice = np.zeros( self.status.data_sliceSize )
-                for sl, gmd in evenSlices:
-                    evenSlice += self.tofTrace[1][sl] / gmd
-                    #evenSlice += self.tofTrace[1][sl]
-                evenSlice /= len(slices)
-                
-                oddSlice = np.zeros( self.status.data_sliceSize )
-                for sl, gmd in oddSlices:
-                    oddSlice += self.tofTrace[1][sl] / gmd
-                    #evenSlice += self.tofTrace[1][sl]
-                oddSlice /= len(slices)
-                
-                
-                #Generate tof times and eV data
-                tofTimes = self.tofTrace[0][slices[self.status.data_skipSlices]] -\
-                           self.tofTrace[0][slices[self.status.data_skipSlices].start]
-                #Generate EV from TOF
-                eV_Times = self.Tof2eV( tofTimes, self.status.tof_retarderHV )
-
-                #Output arrays
-                self.status.data_evenShots =  np.vstack((tofTimes, eV_Times, evenSlice ))
-                self.status.data_oddShots  =  np.vstack((tofTimes, eV_Times, oddSlice ))
-                
+            
+            try:       
+                evenSlice, oddSlice = self.sliceAverage(self.tofTrace[1])
             except Exception as e:
-                print("SlicerLoop: ", e)
- 
-    def getRisingEdges(self, data, trigger):
-        ''' Returns array of indices where a rising edge above trigger value is found in data '''
-        return np.flatnonzero((data[:-1] < trigger) & (data[1:] > trigger))
+                traceback.print_exc()   
+                
+             #Generate tof times and eV data
+            tofTimes = self.tofTrace[0,:config.Data_SliceSize] -\
+                       self.tofTrace[0,0]
+                       
+            #Generate EV from TOF
+            eV_Times = self.Tof2eV( tofTimes, self.status.tof_retarderHV )   
+                
+            #Output arrays
+            self.status.data_evenShots =  np.vstack((tofTimes, eV_Times, evenSlice ))
+            self.status.data_oddShots  =  np.vstack((tofTimes, eV_Times, oddSlice ))
+            
+            print("Slicer")
+           
  
     def workerLoop(self):
         '''
@@ -188,14 +252,8 @@ class ursapqDataHandler:
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
-            self.dataUpdated.wait()     
-           
-            #Find time of arrival of first laser pulse
-            try:
-                laserhits = self.getRisingEdges(self.laserTrace[1], 200)
-                self.status.data_laserTime = self.laserTrace[0][laserhits[0]]          
-            except Exception:
-                self.status.data_laserTime = None
+
+            self.dataUpdated.wait()    
                    
             #Output data to namespace
             self.status.data_updateFreq = self.updateFreq
