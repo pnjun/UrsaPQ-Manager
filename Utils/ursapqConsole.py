@@ -1,7 +1,7 @@
 import sys
 import os
 import time
-from ursapqUtils import UrsaPQ
+from ursapq_api import UrsaPQ
 from ursapqConsoleResources.switch import Switch
 
 

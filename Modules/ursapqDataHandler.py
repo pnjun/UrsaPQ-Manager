@@ -31,6 +31,7 @@ class ursapqDataHandler:
           "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
           "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
           "Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)   
+          "Data_Invert"        : set to 1 to invert y axis of data
           "Data_Jacobian"      : set to 1 to use jacobian normalization   
         '''
         
@@ -47,7 +48,8 @@ class ursapqDataHandler:
         self.status = self.manager.getStatusNamespace()
 
         # Init analyis parameters from config file they are not present already
-        self.status.data_filterTau = config.Data_FilterTau
+        self.status.data_filterTau = config.Data_FilterTau   # Tau in seconds of the low pass filter on evenShots and oddShots
+        self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
         self.skipSlicesEnd  = config.Data_SkipSlicesEnd  #How many slices to skip for singleShot average at the end   
@@ -115,6 +117,9 @@ class ursapqDataHandler:
             return False
         
         #Two types of online data: Low passed ('moving average') and accumulated
+        
+        if config.Data_Invert:
+            newTof['data'].T[1] *= -1
         
         #Low pass:
         #This is run in a separate try...except so that tofTrace gets reinitialized 
@@ -251,11 +256,16 @@ class ursapqDataHandler:
               
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
+                self.status.data_AccumulatorCount = self.tofAccumulatorCount
                
                 self.status.data_updateFreq = self.updateFreq
                 self.status.data_laserTrace = self.laserTrace
-                self.status.data_tofTrace   = self.tofTrace   
-                  
+                self.status.data_tofTrace   = self.tofTrace
+                
+                if self.status.data_clearAccumulator:
+                    self.tofAccumulatorCount = None  # Will throw TypeError in updateTofTraces and reset the accumulator
+                    self.status.data_clearAccumulator = False
+                                   
             except Exception as e:
                 traceback.print_exc()   
                 

@@ -1,4 +1,4 @@
-from ursapqUtils import UrsaPQ
+from ursapq_api import UrsaPQ
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
@@ -38,7 +38,7 @@ class TracePlots:
         ursapq.data_filterTau = val
 
     def update(self):
-        self.updateFreq.set_text(f"Update Freq {ursapq.data_updateFreq:.1f}Hz")
+        self.updateFreq.set_text( f"Update Freq {ursapq.data_updateFreq:.1f}Hz" )
     
         self.tofTrace.set_data(ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace.set_data(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
