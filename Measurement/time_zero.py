@@ -9,13 +9,14 @@ from ursapq_api import UrsaPQ
 
 #Time zero estimate
 TIME_ZERO = 1670.4
-INTEG_TIME = 10    #seconds, per bin
-RANDOMIZE  = True
+INTEG_TIME = 2    #seconds, per bin
+RANDOMIZE  = False
+OUTFOLDER  = "./data/"
 
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-delays = np.arange(-0.2, 2, 0.05)
+delays = np.arange(-0.1, 0.3, 0.1)
 
 #***************** CODE BEGINS ****************
 
@@ -43,7 +44,7 @@ with su.Run('time_zero') as run_id:
     plot.set_title(f"Time Zero {run_id}")
     
     for n in scan_order:
-        print(f"Scanning delay {delays[n]:.3f}")
+        print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
         
         #Set the desired delay stage position 
         su.set_delay(delays[n], TIME_ZERO)
@@ -60,11 +61,18 @@ with su.Run('time_zero') as run_id:
         #Wait for INTEG_TIME while updating the preview
         su.DataPreview.update_wait(updatef, INTEG_TIME)
         
-print(f"End of scan!")
+#Setup output folder
+from pathlib import Path
+Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
+out_fname = f"time_zero_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}.npz"
 
 #Write out data
-out_fname = f"time_zero_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}.npz"
-numpy.savez("data/" + out_fname, delays=delays, evs=evs, data=data)
+np.savez(OUTFOLDER + out_fname, delays=delays, evs=evs, data=data)
+
+print(f"End of scan!")
+print(f"Saved file as {out_fname}")
+
+
 
 
 

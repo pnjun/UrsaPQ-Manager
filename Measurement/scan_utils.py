@@ -75,13 +75,12 @@ class DataPreview:
                     
     #use this method to call update_data() every repTime secs until totTime is elapsed
     @staticmethod
-    def update_wait(func, tot_time, rep_time = 2):
+    def update_wait(func, tot_time, rep_time = 1):
         end_time = time.time() + tot_time
         
         while time.time() < end_time:
             func()
-            time.sleep(rep_time)
-    
+            time.sleep(rep_time)    
     
 class bcol:
     HEADER = '\033[95m'
