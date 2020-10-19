@@ -19,14 +19,12 @@ runtypes = { 'time_zero'    : 0,
             }
 
 def set_delay(delay, TIME_ZERO):
-    print(f"set delay {delay}")
     temp_delay = TIME_ZERO - delay
     
 def get_delay():
     return temp_delay
     
 def set_energy(energy):
-    print(f"set energy {delay}")
     temp_energy = energy
     
 def get_energy():
@@ -52,13 +50,18 @@ class DataPreview:
     def __init__(self, xAx, yAx, data, diff=True, sliceX = None):
         self.sliceX = sliceX
         self.fig = plt.figure()
+        self.ax  = self.fig.add_subplot(1, 1, 1)
         self.diff = diff
+        
         colormap = 'bwr' if self.diff else 'bone_r'
-        self.img = plt.pcolormesh(xAx[self.sliceX], yAx, data[:,self.sliceX], shading='nearest', cmap=colormap)
+        self.img = self.ax.pcolormesh(xAx[self.sliceX], yAx, data[:,self.sliceX], shading='nearest', cmap=colormap)
         self.fig.show()
         
+    def set_title(self, title):
+        self.fig.suptitle(title, fontsize=16)    
+        
     def update_data(self, data):
-        self.img.set_array(data[:,self.sliceX])
+        self.img.set_array(data[:,self.sliceX].ravel())
         
         if self.diff:
             cmax = np.max(np.abs(data[:,self.sliceX]))
@@ -66,6 +69,9 @@ class DataPreview:
         else:
             cmax = np.max(data[:,self.sliceX])
             self.img.set_clim(vmin=0, vmax=cmax)
+        
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
                     
     #use this method to call update_data() every repTime secs until totTime is elapsed
     @staticmethod
