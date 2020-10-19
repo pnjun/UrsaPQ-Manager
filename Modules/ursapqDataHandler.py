@@ -78,8 +78,7 @@ class ursapqDataHandler:
         '''
         self.stopEvent.clear()
         threading.Thread(target = self.doocsUpdateLoop).start()
-        threading.Thread(target = self.workerLoop).start()
-        threading.Thread(target = self.slicerLoop).start()
+        threading.Thread(target = self.updateLoop).start()
 
     def stop(self):
         '''
@@ -169,7 +168,7 @@ class ursapqDataHandler:
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
-            print("doocs update")
+
             if not self.updateTofTraces():
                 continue
             
@@ -180,9 +179,9 @@ class ursapqDataHandler:
 
             self.updateLaserTrace()
                 
-            # Notify filter workers that new data is available
+            # Notify filter worker that new data is available
             self.dataUpdated.set()
-
+            
     def Tof2eV(self, tof, retard):
         ''' converts time of flight into ectronvolts '''
         # Constants for conversion:
@@ -216,36 +215,16 @@ class ursapqDataHandler:
             oddSlice  = stackedTraces[1::2].mean(axis=0)
             
         return evenSlice, oddSlice                        
-     
-
-    def slicerLoop(self):
-        '''
-        Sllices self.tofTrace in individual pieces (each piece is a x-ray pulse) and averages
-        All slices togheter. Stores result in status.data_tofSingleShot
-        '''
-        while not self.stopEvent.isSet():
-            self.dataUpdated.wait()
-            
-            try:       
-                evenSlice, oddSlice = self.sliceAverage(self.tofTrace[1])
-            except Exception as e:
-                traceback.print_exc()   
-                
-             #Generate tof times and eV data
-            tofTimes = self.tofTrace[0,:config.Data_SliceSize] -\
-                       self.tofTrace[0,0]
-                       
-            #Generate EV from TOF
-            eV_Times = self.Tof2eV( tofTimes, self.status.tof_retarderHV )   
-                
-            #Output arrays
-            self.status.data_evenShots =  np.vstack((tofTimes, eV_Times, evenSlice ))
-            self.status.data_oddShots  =  np.vstack((tofTimes, eV_Times, oddSlice ))
-            
-            print("Slicer")
-           
- 
-    def workerLoop(self):
+    
+    def getTofsAndEvs(self, tofAxis):
+        #Generate tof times and eV data
+        tofs = tofAxis[:config.Data_SliceSize] - tofAxis[0]
+                   
+        #Generate EV from TOF
+        evs = self.Tof2eV( tofs, self.status.tof_retarderHV )    
+        return tofs, evs 
+             
+    def updateLoop(self):
         '''
         Writes incoming data to status namespace. Run in a different thread
         so that doocsUpdateLoop can run as fast as possible
@@ -253,13 +232,33 @@ class ursapqDataHandler:
         #Run until stop event
         while not self.stopEvent.isSet():
 
-            self.dataUpdated.wait()    
-                   
-            #Output data to namespace
-            self.status.data_updateFreq = self.updateFreq
-            self.status.data_laserTrace = self.laserTrace
-            self.status.data_tofTrace   = self.tofTrace       
-
+            self.dataUpdated.wait()
+            self.dataUpdated.clear()
+    
+            try:       
+                evenLowPass, oddLowPass = self.sliceAverage(self.tofTrace[1], self.GMDTrace)
+                
+                evenAcc, oddAcc = self.sliceAverage(self.tofAccumulator[1], self.GMDTrace)
+                evenAcc /= self.tofAccumulatorCount #slightly thread usafe (as tofAccumulatorCount could be update after sliceAverage returns)
+                oddAcc  /= self.tofAccumulatorCount #but worst case it's out by 1-2 shots out of hundreds
+                       
+                tofs, evs = self.getTofsAndEvs(self.tofTrace[0])
+                    
+                #Output arrays
+                self.status.data_axis = np.vstack((tofs, evs))
+                self.status.data_evenShots =  evenLowPass
+                self.status.data_oddShots  =  oddLowPass
+              
+                self.status.data_evenAccumulator =  evenAcc 
+                self.status.data_oddAccumulator  =  oddAcc
+               
+                self.status.data_updateFreq = self.updateFreq
+                self.status.data_laserTrace = self.laserTrace
+                self.status.data_tofTrace   = self.tofTrace   
+                  
+            except Exception as e:
+                traceback.print_exc()   
+                
 def main():
     try:
         dataHandler = ursapqDataHandler()
