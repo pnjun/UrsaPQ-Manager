@@ -18,8 +18,11 @@ runtypes = { 'time_zero'    : 0,
              'other'        : 5 
             }
 
-def set_delay(delay, TIME_ZERO):
-    temp_delay = TIME_ZERO - delay
+def set_delay(delay, time_zero = None):
+    if time_zero:
+        temp_delay = time_zero - delay
+    else:
+        temp_delay = delay
     
 def get_delay():
     return temp_delay

@@ -7,19 +7,21 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 
+#Time zero estimate
+TIME_ZERO = 1670.4
 INTEG_TIME = 10    #seconds, per bin
-RANDOMIZE  = False
+RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-delays = np.arange(1600, 1601, 0.1)
+delays = np.arange(-0.1, 0.3, 0.1)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {su.bcol.YELLOW}Time Zero{su.bcol.ENDC} Scan")
-print(f"{su.bcol.RED}{su.bcol.BOLD}Have you started the DAQ?{su.bcol.ENDC}")
+print(f"Starting {su.bcol.YELLOW}Delay Scan{su.bcol.ENDC} Scan")
+print(f"{su.bcol.RED}{su.bcol.BOLD}Is the DAQ running?{su.bcol.ENDC}")
 print()
 
 exp = UrsaPQ()
@@ -38,14 +40,14 @@ scan_order = np.arange(delays.shape[0])
 if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
     
-with su.Run('time_zero') as run_id:
-    plot.set_title(f"Time Zero {run_id}")
+with su.Run('delay') as run_id:
+    plot.set_title(f"Delay Scan {run_id}")
     
     for n in scan_order:
         print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
         
         #Set the desired delay stage position 
-        su.set_delay(delays[n])
+        su.set_delay(delays[n], TIME_ZERO)
         
         #Reset accumulator for online preview
         exp.data_clearAccumulator = True
@@ -62,7 +64,7 @@ with su.Run('time_zero') as run_id:
 #Setup output folder
 from pathlib import Path
 Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
-out_fname = f"time_zero_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}.npz"
+out_fname = f"delay_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}.npz"
 
 #Write out data
 np.savez(OUTFOLDER + out_fname, delays=delays, evs=evs, data=data)
