@@ -8,7 +8,9 @@ from ursapq_api import UrsaPQ
 #**************** SETUP PARAMETERS ************
 
 #Time zero estimate
-TIME_ZERO = 1670.4
+TIME_ZERO  = 2919.5
+PARK_DELAY = 2930
+
 INTEG_TIME = 10    #seconds, per bin
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
@@ -47,7 +49,7 @@ with su.Run('delay') as run_id:
         print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
         
         #Set the desired delay stage position 
-        su.set_delay(delays[n], TIME_ZERO)
+        su.set_delay(delays[n], TIME_ZERO, PARK_DELAY)
         
         #Reset accumulator for online preview
         exp.data_clearAccumulator = True

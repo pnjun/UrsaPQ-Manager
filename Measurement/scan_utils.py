@@ -24,7 +24,7 @@ runtypes = { 'time_zero'    : 0,
 
 def set_delay(delay, time_zero = None, park_position=None):
     if park_position:
-        pydoocs.write(DOOCS_DELAY_SET, new_delay)     
+        pydoocs.write(DOOCS_DELAY_SET, park_position)     
         time.sleep(DELAY_PARK_WAIT_TIME)
 
     if time_zero:
@@ -45,7 +45,6 @@ def set_energy(energy):
 def get_energy():
     #TODO
     pass
-    
     
 class Run:
     def __init__(self, runtype):
