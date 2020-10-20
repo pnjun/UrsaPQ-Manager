@@ -1,13 +1,15 @@
 UrsaPQ - Control and online data display
 ======
 
-The utils contained in the Utils folder allow for remote control of the experiment and for online viewing of the aquired data. To control the setup, use the `ursapqConsole.py` GUI. To view the online data, use `ursapqOnlineView.py`.  
+The utils contained in the Utils folder allow for remote control of the experiment and for online viewing of the aquired data. To control the setup, 
+use the `ursapqConsole.py` GUI. To view the online data, use `ursapqOnlineView.py`.  
 
 Python API are available for programmatic control of the experiment. See the TBA docs page for more info.
 
 
 ## Install
-If using one of the desy user console computers, skip this part. Everything is already installed for fl24user. See the "Desy User consoles" docs page for usage info.
+If using one of the desy user console computers, skip this part. Everything is already installed for fl24user. See the "Desy User consoles" docs page 
+for usage info.
 
 Clone this repo and create a config.json file in the `Utils/` folder with the following info. This will give read only access.
 ```
@@ -43,9 +45,11 @@ Run the program with:
 
 `python3 ursapqOnlineView.py`
 
-Two windows will appear. One window contains the TOF traces from the MCP in the chamber and the trace from the optical laser. The other window will display a single shot spectras for even and odd (pumped and umpumped) shots and a difference spectrum (even-odd).
+Two windows will appear. One window contains the TOF traces from the MCP in the chamber and the trace from the optical laser. The other window will 
+display a single shot spectras for even and odd (pumped and umpumped) shots and a difference spectrum (even-odd).
 
-The slider can be used to control how much averaging should be done. Incoming data gets filtered with a lorenzian low pass filter, the slider value is the time constant of the lorentzian in seconds. Higher values lead to less noise but slower response to changes. Low values for quick response but more noise.
+The slider can be used to control how much averaging should be done. Incoming data gets filtered with a lorenzian low pass filter, the slider value 
+is the time constant of the lorentzian in seconds. Higher values lead to less noise but slower response to changes. Low values for quick response but more noise.
 
 By default the single shot plots show the X axis as electron volts. Run `python3 ursapqOnlineView.py --tof` to see the time of flight instead.
 
