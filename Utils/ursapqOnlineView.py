@@ -2,6 +2,7 @@ from ursapq_api import UrsaPQ
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+import sys
 
 from threading import Thread
 from threading import Event
