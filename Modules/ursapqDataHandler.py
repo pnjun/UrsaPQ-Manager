@@ -94,7 +94,7 @@ class ursapqDataHandler:
         use memory, while performing almost like a moving average
         '''
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
-        return oldData * lvl + newData * (1-lvl)
+        return (oldData * lvl) + (newData * (1-lvl))
         
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
@@ -109,8 +109,8 @@ class ursapqDataHandler:
                 
             self.macropulse = newTof['macropulse'] 
             
-            self.updateFreq = (  0.01 * 1/(newTof['timestamp'] - self.timestamp) 
-                               + 0.99 * self.updateFreq)
+            self.updateFreq = (  0.03 * 1/(newTof['timestamp'] - self.timestamp) 
+                               + 0.97 * self.updateFreq)
             self.timestamp = newTof['timestamp']
         except Exception as error:
             traceback.print_exc()
@@ -128,7 +128,7 @@ class ursapqDataHandler:
             self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
         except Exception as error:
             traceback.print_exc()
-            self.tofTrace  = newTof['data'].T
+            self.tofTrace  = newTof['data'].T.copy()
             
         #Accumulate data:
         try:
@@ -136,7 +136,7 @@ class ursapqDataHandler:
             self.tofAccumulatorCount += 1
         except Exception as error:
             traceback.print_exc()
-            self.tofAccumulator  = newTof['data'].T  
+            self.tofAccumulator  = newTof['data'].T.copy()
             self.tofAccumulatorCount = 1
             
         return True
@@ -162,6 +162,7 @@ class ursapqDataHandler:
         try:
             self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
                                                 macropulse = self.macropulse)['data'].T
+                                                
         except Exception as error:
             traceback.print_exc()
 
@@ -173,10 +174,9 @@ class ursapqDataHandler:
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
-
             if not self.updateTofTraces():
                 continue
-            
+                
             if config.Data_GmdNorm:
                 self.updateGmd()
             else:
@@ -198,7 +198,7 @@ class ursapqDataHandler:
 
     def stack_slices(self, array, startIdx, sliceLen):
         all_idx = startIdx[:, None] + np.arange(sliceLen)
-        return array[all_idx] 
+        return array[all_idx]
         
     def sliceAverage(self, tofTrace, gmdTrace = None):
         ''' 
@@ -207,7 +207,8 @@ class ursapqDataHandler:
             Gmd normalization if gmdTrace is given 
         '''
         #Calculate chopping points for slicing
-        sliceStartIdx  = np.arange(config.Data_SliceOffset, len(tofTrace), 
+        sliceStartIdx  = np.arange(config.Data_SliceOffset, 
+                                    len(tofTrace)-config.Data_SlicePeriod, 
                                    config.Data_SlicePeriod).astype(int)
                          
         stackedTraces = self.stack_slices(tofTrace, sliceStartIdx, config.Data_SliceSize)                      
@@ -236,7 +237,6 @@ class ursapqDataHandler:
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
-
             self.dataUpdated.wait()
             self.dataUpdated.clear()
     
@@ -263,7 +263,8 @@ class ursapqDataHandler:
                 self.status.data_tofTrace   = self.tofTrace
                 
                 if self.status.data_clearAccumulator:
-                    self.tofAccumulatorCount = None  # Will throw TypeError in updateTofTraces and reset the accumulator
+                    # Will throw TypeError in updateTofTraces and reset the accumulator
+                    self.tofAccumulatorCount = None  
                     self.status.data_clearAccumulator = False
                                    
             except Exception as e:
