@@ -14,7 +14,7 @@ OUTFOLDER  = "./data/"
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-delays = np.arange(1600, 1601, 0.1)
+delays = np.arange(2919, 2920, 0.1)
 
 #***************** CODE BEGINS ****************
 

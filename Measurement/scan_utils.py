@@ -6,9 +6,13 @@ import numpy as np
 
 DOOCS_RUNID   = 'FLASH.UTIL/STORE/URSAPQ/RUN.ID'
 DOOCS_RUNTYPE = 'FLASH.UTIL/STORE/URSAPQ/RUN.TYPE'
-
-DOOCS_DELAY  = 'ASD'
+DOOCS_DELAY_SET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSITION_SET.WR'
+DOOCS_DELAY_GET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSITION.RD'
 DOOCS_UNDUL  = 'ASD'
+
+DELAY_DRIVE_WAIT_TIME  = 1  # How long to wait for motor to move after setting delay
+DELAY_PARK_WAIT_TIME   = 2  # How long to wait for motor to move into parking position
+
 
 runtypes = { 'time_zero'    : 0,
              'delay'        : 1,
@@ -18,20 +22,30 @@ runtypes = { 'time_zero'    : 0,
              'other'        : 5 
             }
 
-def set_delay(delay, time_zero = None):
+def set_delay(delay, time_zero = None, park_position=None):
+    if park_position:
+        pydoocs.write(DOOCS_DELAY_SET, new_delay)     
+        time.sleep(DELAY_PARK_WAIT_TIME)
+
     if time_zero:
-        temp_delay = time_zero - delay
+        new_delay = time_zero - delay 
     else:
-        temp_delay = delay
+        new_delay = delay
+        
+    pydoocs.write(DOOCS_DELAY_SET, new_delay)
+    time.sleep(DELAY_DRIVE_WAIT_TIME)
     
 def get_delay():
-    return temp_delay
+    return pydoocs.read(DOOCS_DELAY_GET)['data']
     
 def set_energy(energy):
-    temp_energy = energy
+    #TODO
+    pass
     
 def get_energy():
-    return temp_energy
+    #TODO
+    pass
+    
     
 class Run:
     def __init__(self, runtype):
