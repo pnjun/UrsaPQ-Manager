@@ -42,3 +42,22 @@ Logs can be seen using:
 The soruce code for the server process is located in ~/ExpManager/Modules/. The server script is ursapqManager.py
 
 # Configuration
+
+Configuration of the analysis parameters can be done by editing `Modules/config.json`. The service must be restarted for the changes to take effect. Data analysis parameters are prefixed with "Data_". All other parameters are used by the Manager service and should not be modified.
+
+```
+"Data_DOOCS_TOF"   : DOOCS address of tof trace
+"Data_DOOCS_Trig"  : DOOCSaddress of trigger trace (not used)
+"Data_DOOCS_GMD"   : DOOCS addres of GMD
+"Data_DOOCS_LASER" : DOOCS address of laser trace
+"Data_FilterTau"   : default value for low pass tau,
+"Data_SlicePeriod" : rep rate of FEL in samples (float beacuse FLASH and ADC are not in sync),
+"Data_SliceSize"   : lenght of a single shot in samples
+"Data_SliceOffset" : samples to skip before starting slicing (time zero setting),
+"Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
+"Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
+"Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)     *** NOT WORKING ***
+"Data_Invert"        : set to 1 to invert y axis of data
+"Data_Jacobian"      : set to 1 to use jacobian normalization                                          *** NOT WORKING ***
+```
+
