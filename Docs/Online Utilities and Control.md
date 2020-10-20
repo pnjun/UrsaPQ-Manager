@@ -49,3 +49,17 @@ The slider can be used to control how much averaging should be done. Incoming da
 
 By default the single shot plots show the X axis as electron volts. Run `python3 ursapqOnlineView.py --tof` to see the time of flight instead.
 
+# Cameras
+Cameras can be viewed directly from the unix server, or by connecting to it via ssh using:
+
+`ssh experimental@131.169.215.77 -X`
+
+## Webcams
+To view the two webcams, use `guvcview -d /dev/video1` and `guvcview -d /dev/video0`. 
+
+## Telescope
+To view the telescope camera, you can run pylon viewer with: `/opt/pylon/bin/pylonviewer`. Click on the name of the camera in the drop down menu and then press the video icon on the toolbar to start streaming the images.
+
+The default image is rotated upside down. You can turn it by selecting the "bottom up" option in the advanced options. I suggest you also turn on auto exposure and auto white balance.
+
+
