@@ -49,7 +49,8 @@ Two windows will appear. One window contains the TOF traces from the MCP in the 
 display a single shot spectras for even and odd (pumped and umpumped) shots and a difference spectrum (even-odd).
 
 The slider can be used to control how much averaging should be done. Incoming data gets filtered with a lorenzian low pass filter, the slider value 
-is the time constant of the lorentzian in seconds. Higher values lead to less noise but slower response to changes. Low values for quick response but more noise.
+is the time constant of the lorentzian in seconds. Higher values lead to less noise but slower response to changes. Low values for quick response but more 
+noise.
 
 By default the single shot plots show the X axis as electron volts. Run `python3 ursapqOnlineView.py --tof` to see the time of flight instead.
 
