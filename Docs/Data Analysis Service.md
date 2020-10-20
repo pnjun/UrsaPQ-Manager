@@ -54,8 +54,8 @@ Configuration of the analysis parameters can be done by editing `Modules/config.
 "Data_DOOCS_LASER" : DOOCS address of laser trace
 "Data_FilterTau"   : default value for low pass tau,
 "Data_SlicePeriod" : rep rate of FEL in samples (float beacuse FLASH and ADC are not in sync),
-"Data_SliceSize"   : lenght of a single shot in samples
-"Data_SliceOffset" : samples to skip before starting slicing (time zero setting),
+"Data_SliceSize"   : lenght of a single shot in samples (longer values give more low ekin data)
+"Data_SliceOffset" : samples to skip before starting slicing (use for time zero on single shot traces),
 "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
 "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
 "Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)  ** NOT WORKING **
