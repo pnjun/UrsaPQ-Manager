@@ -17,23 +17,9 @@ class ursapqDataHandler:
         Connects to the manager and uploads processed data for online display.
         Data is taken from doocs and processed here for fast display and analysis
 
-        One thread reads data from doocs
-        
-        Config params:
-          "Data_DOOCS_TOF"   : address of tof trace
-          "Data_DOOCS_Trig"  : address of trigger trace (not used)
-          "Data_DOOCS_GMD"   : addres of GMD
-          "Data_DOOCS_LASER" : address of laser trace
-          "Data_FilterTau"   : default value for low pass tau,
-          "Data_SlicePeriod" : rep rate of FEL in samples (float beacuse FLASH and ADC are not in sync),
-          "Data_SliceSize"   : lenght of a single shot tof trace,
-          "Data_SliceOffset" : samples to skip before starting slicing (time zero setting),
-          "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
-          "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
-          "Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)   
-          "Data_Invert"        : set to 1 to invert y axis of data
-          "Data_Jacobian"      : set to 1 to use jacobian normalization   
-        '''
+        One thread reads data from doocs the other processes the data and uploads
+        it to clients
+        ''' 
         
         self.port = config.UrsapqServer_Port
         self.authkey = config.UrsapqServer_AuthKey.encode('ascii')
