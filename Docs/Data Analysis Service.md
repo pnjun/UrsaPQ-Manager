@@ -16,8 +16,10 @@ data_oddShots           Single shot unpumped data, low passed and averaged over 
 data_evenAccumulator    Single shot pumped data, averaged since last accumulator clear instruction
 data_oddAccumulator     Single shot unpumped data, averaged since last accumulator clear instruction
 data_AccumulatorCount   Number of macrobunches averaged to create even and odd accumulators
-data_axis               TOF and EKIN axis labels for data_evenShots, data_oddShots, data_evenAccumulator and data_oddAccumulator
-data_updateFreq         The frequency in Hz at which the server is able to pull data from doocs. 10Hz means every macrobunch is processed.
+data_axis               TOF and EKIN axis labels for data_evenShots, data_oddShots, data_evenAccumulator 
+                        and data_oddAccumulator
+data_updateFreq         The frequency in Hz at which the server is able to pull data from doocs. 
+                        10Hz means every macrobunch is processed.
 ```
 
 Online control is done by setting these parameters:
@@ -56,8 +58,8 @@ Configuration of the analysis parameters can be done by editing `Modules/config.
 "Data_SliceOffset" : samples to skip before starting slicing (time zero setting),
 "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
 "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
-"Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)     *** NOT WORKING ***
+"Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)  ** NOT WORKING **
 "Data_Invert"        : set to 1 to invert y axis of data
-"Data_Jacobian"      : set to 1 to use jacobian normalization                                          *** NOT WORKING ***
+"Data_Jacobian"      : set to 1 to use jacobian normalization                                       ** NOT WORKING **
 ```
 
