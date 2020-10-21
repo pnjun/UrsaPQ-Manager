@@ -20,7 +20,8 @@ class RunType:
     energy       = 2
     uvPower      = 3
     delay_energy = 4
-    other        = 5 
+    retardation  = 5
+    other        = 100 
 
 def set_delay(delay, time_zero = None, park_position=None):
     if park_position:
