@@ -1,4 +1,4 @@
-import scan_utils as su
+from scan_utils import *
 import numpy as np
 import sys
 from datetime import datetime
@@ -18,8 +18,8 @@ delays = np.arange(2919, 2920, 0.1)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {su.bcol.YELLOW}Time Zero{su.bcol.ENDC} Scan")
-print(f"{su.bcol.RED}{su.bcol.BOLD}Have you started the DAQ?{su.bcol.ENDC}")
+print(f"Starting {TermCol.YELLOW}Time Zero{TermCol.ENDC} Scan")
+print(f"{TermCol.RED}{TermCol.BOLD}Have you started the DAQ?{TermCol.ENDC}")
 print()
 
 exp = UrsaPQ()
@@ -33,7 +33,7 @@ data[:] = np.NaN
 
 #Setup preview window
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
-plot = su.DataPreview(evs, delays, data, sliceX = ev_slice)
+plot = DataPreview(evs, delays, data, sliceX = ev_slice)
 
 #Generate random permutation
 scan_order = np.arange(delays.shape[0])
@@ -41,14 +41,14 @@ if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
 
 try:
-    with su.Run(su.RunType.time_zero) as run_id:
+    with Run(RunType.time_zero) as run_id:
         plot.set_title(f"Run {run_id} - Time Zero")
         
         for n in scan_order:
             print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
             
             #Set the desired delay stage position 
-            su.set_delay(delays[n])
+            set_delay(delays[n])
             
             #Reset accumulator for online preview
             exp.data_clearAccumulator = True
@@ -60,7 +60,7 @@ try:
                 plot.update_data(data)
                 
             #Wait for INTEG_TIME while updating the preview
-            su.DataPreview.update_wait(updatef, INTEG_TIME)
+            DataPreview.update_wait(updatef, INTEG_TIME)
             
 except KeyboardInterrupt:
     print()
