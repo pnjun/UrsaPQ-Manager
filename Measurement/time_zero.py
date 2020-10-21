@@ -41,7 +41,7 @@ if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
 
 try:
-    with su.Run('time_zero') as run_id:
+    with su.Run(su.RunType.time_zero) as run_id:
         plot.set_title(f"Run {run_id} - Time Zero")
         
         for n in scan_order:

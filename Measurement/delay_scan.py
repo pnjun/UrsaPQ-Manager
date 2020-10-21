@@ -45,7 +45,7 @@ if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
 
 try:
-    with su.Run('delay') as run_id:
+    with su.Run(su.RunType.delay) as run_id:
         plot.set_title(f"Run {run_id} - Delay Scan")
         
         for n in scan_order:

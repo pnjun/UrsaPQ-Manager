@@ -14,13 +14,13 @@ DELAY_DRIVE_WAIT_TIME  = 1  # How long to wait for motor to move after setting d
 DELAY_PARK_WAIT_TIME   = 2  # How long to wait for motor to move into parking position
 
 
-runtypes = { 'time_zero'    : 0,
-             'delay'        : 1,
-             'energy'       : 2,
-             'uvPower'      : 3,
-             'delay_energy' : 4,
-             'other'        : 5 
-            }
+class RunType:
+    time_zero    = 0
+    delay        = 1
+    energy       = 2
+    uvPower      = 3
+    delay_energy = 4
+    other        = 5 
 
 def set_delay(delay, time_zero = None, park_position=None):
     if park_position:
@@ -48,10 +48,7 @@ def get_energy():
     
 class Run:
     def __init__(self, runtype):
-        try:
-            self.type = runtypes[runtype]
-        except KeyError as exc:
-            raise ValueError("Invalid run type") from exc
+        self.type = runtype
             
     def __enter__(self):
         newId = pydoocs.read(DOOCS_RUNID)['data'] + 1
