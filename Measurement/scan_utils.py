@@ -62,7 +62,11 @@ class Run:
 
 class DataPreview:
     def __init__(self, xAx, yAx, data, diff=True, sliceX = None):
-        self.sliceX = sliceX
+        if not sliceX:
+            self.sliceX = slice(None, None)
+        else:
+            self.sliceX = sliceX
+        
         self.fig = plt.figure()
         self.ax  = self.fig.add_subplot(1, 1, 1)
         self.diff = diff
@@ -85,7 +89,8 @@ class DataPreview:
             self.img.set_clim(vmin=-cmax, vmax=cmax)
         else:
             cmax = np.nanmax(data[:,self.sliceX])
-            self.img.set_clim(vmin=0, vmax=cmax)
+            cmin = np.nanmin(data[:,self.sliceX])
+            self.img.set_clim(vmin=cmin, vmax=cmax)
         
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()

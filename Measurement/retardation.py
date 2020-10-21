@@ -7,14 +7,14 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 
-INTEG_TIME = 20    #seconds, per bin
+INTEG_TIME = 10    #seconds, per bin
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-retarders = -np.arange(0, 100, 5)
+retarders = -np.arange(0, 105, 5)
 
 #***************** CODE BEGINS ****************
 
@@ -27,13 +27,12 @@ startDate = datetime.now()
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
-evs    = exp.data_axis[1]
-data = np.empty((retarders.shape[0], evs.shape[0]))
+tof    = exp.data_axis[0]
+data = np.empty((retarders.shape[0], tof.shape[0]))
 data[:] = np.NaN
 
 #Setup preview window
-ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
-plot = DataPreview(evs, retarders, data, sliceX = ev_slice, diff=False)
+plot = DataPreview(tof, retarders, data, diff=False)
 
 #Generate random permutation
 scan_order = np.arange(retarders.shape[0])
@@ -48,8 +47,8 @@ try:
             print(f"Scanning retarder: {retarders[n]:.3f}", end= "\r")
             
             #Set the desired retardation stage position 
-            exp.tof_retarderHV = retarders[n]
-            
+            exp.tof_retarderSetHV = retarders[n]
+            time.sleep(5)
             #Reset accumulator for online preview
             exp.data_clearAccumulator = True
             
@@ -78,7 +77,7 @@ if interrupted:
     out_fname += "_stopped"
 
 #Write out data
-np.savez(out_fname + ".npz", delays=delays, evs=evs, data=data)
+np.savez(out_fname + ".npz", retarders=retarders, tof=tof, data=data)
 plot.save_figure(out_fname + ".png")
 
 print(f"Data saved as {out_fname}")
