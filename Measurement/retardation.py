@@ -33,7 +33,7 @@ data[:] = np.NaN
 
 #Setup preview window
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
-plot = DataPreview(evs, retarders, data, sliceX = ev_slice)
+plot = DataPreview(evs, retarders, data, sliceX = ev_slice, diff=False)
 
 #Generate random permutation
 scan_order = np.arange(retarders.shape[0])
