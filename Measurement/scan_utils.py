@@ -75,15 +75,18 @@ class DataPreview:
         
     def set_title(self, title):
         self.fig.suptitle(title, fontsize=16)    
+    
+    def save_figure(self, fname):
+        self.fig.savefig(fname, dpi=1200)
         
     def update_data(self, data):
         self.img.set_array(data[:,self.sliceX].ravel())
         
         if self.diff:
-            cmax = np.max(np.abs(data[:,self.sliceX]))
+            cmax = np.nanmax(np.abs(data[:,self.sliceX]))
             self.img.set_clim(vmin=-cmax, vmax=cmax)
         else:
-            cmax = np.max(data[:,self.sliceX])
+            cmax = np.nanmax(data[:,self.sliceX])
             self.img.set_clim(vmin=0, vmax=cmax)
         
         self.fig.canvas.draw()

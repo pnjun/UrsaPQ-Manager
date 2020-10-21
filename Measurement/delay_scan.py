@@ -30,8 +30,10 @@ exp = UrsaPQ()
 startDate = datetime.now()
 
 #Output array
+#NaN initialization in case scan is stopped before all data is acquired
 evs    = exp.data_axis[1]
-data = np.zeros((delays.shape[0], evs.shape[0]))
+data = np.empty((delays.shape[0], evs.shape[0]))
+data[:] = np.NaN
 
 #Setup preview window
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
@@ -41,38 +43,50 @@ plot = su.DataPreview(evs, delays, data, sliceX = ev_slice)
 scan_order = np.arange(delays.shape[0])
 if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
-    
-with su.Run('delay') as run_id:
-    plot.set_title(f"Delay Scan {run_id}")
-    
-    for n in scan_order:
-        print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
+
+try:
+    with su.Run('delay') as run_id:
+        plot.set_title(f"Run {run_id} - Delay Scan")
         
-        #Set the desired delay stage position 
-        su.set_delay(delays[n], TIME_ZERO, PARK_DELAY)
-        
-        #Reset accumulator for online preview
-        exp.data_clearAccumulator = True
-        
-        #Set up preview updater 
-        def updatef():
-            diff_data = exp.data_evenAccumulator - exp.data_oddAccumulator
-            data[n] = diff_data
-            plot.update_data(data)
+        for n in scan_order:
+            print(f"Scanning delay: {delays[n]:.3f}", end= "\r")
             
-        #Wait for INTEG_TIME while updating the preview
-        su.DataPreview.update_wait(updatef, INTEG_TIME)
-        
+            #Set the desired delay stage position 
+            su.set_delay(delays[n], TIME_ZERO, PARK_DELAY)
+            
+            #Reset accumulator for online preview
+            exp.data_clearAccumulator = True
+            
+            #Set up preview updater 
+            def updatef():
+                diff_data = exp.data_evenAccumulator - exp.data_oddAccumulator
+                data[n] = diff_data
+                plot.update_data(data)
+                
+            #Wait for INTEG_TIME while updating the preview
+            su.DataPreview.update_wait(updatef, INTEG_TIME)
+            
+except KeyboardInterrupt:
+    print()
+    print("Scan Stopped")
+    interrupted = True
+else:
+    print()
+    print(f"End of scan!")
+    interrupted = False
+
 #Setup output folder
 from pathlib import Path
 Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
-out_fname = f"delay_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}.npz"
+out_fname = OUTFOLDER + f"delay_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
+if interrupted:
+    out_fname += "_stopped"
 
 #Write out data
-np.savez(OUTFOLDER + out_fname, delays=delays, evs=evs, data=data)
+np.savez(out_fname + ".npz", delays=delays, evs=evs, data=data)
+plot.save_figure(out_fname + ".png")
 
-print(f"End of scan!")
-print(f"Saved file as {out_fname}")
+print(f"Data saved as {out_fname}")
 
 
 
