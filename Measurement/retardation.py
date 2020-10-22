@@ -11,6 +11,8 @@ TIME_ZERO = 1456.6
 INTEG_TIME = 15    #seconds, per bin
 DELAY      = 2     #ps
 WAVEPLATE  = 25
+POLARIZ    = 's'
+
 RANDOMIZE  = True
 
 OUTFOLDER  = "./data/"
@@ -31,6 +33,7 @@ startDate = datetime.now()
 
 set_waveplate(WAVEPLATE)
 set_delay(DELAY, TIME_ZERO)
+set_polarization(POLARIZ)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

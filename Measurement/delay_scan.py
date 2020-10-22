@@ -9,6 +9,7 @@ from ursapq_api import UrsaPQ
 #Time zero estimate
 TIME_ZERO  = 1456.6
 PARK_DELAY = 1470
+POLARIZ    = 's'
 
 INTEG_TIME = 10    #seconds, per bin
 WAVEPLATE  = 25
@@ -26,7 +27,7 @@ delays = np.arange(-0.1, 0.3, 0.1)
 
 print(f"Starting {TermCol.YELLOW}Delay{TermCol.ENDC} Scan")
 print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
-print(f"Time to scan {INTEG_TIME*delays.shape[0]} s")
+print(f"Time to scan {INTEG_TIME*delays.shape[0]/60} mins")
 print()
 
 exp = UrsaPQ()
@@ -34,6 +35,7 @@ startDate = datetime.now()
 
 exp.tof_retarderSetHV = RETARDER
 set_waveplate(WAVEPLATE)
+set_polarization(POLARIZ)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

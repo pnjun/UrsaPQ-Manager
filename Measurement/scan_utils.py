@@ -10,6 +10,8 @@ DOOCS_DELAY_SET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSIT
 DOOCS_DELAY_GET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSITION.RD'
 DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
 DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
+DOOCS_POLARIZ       = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/FPOS.SET'
+DOOCS_POLARIZ_EN    = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/CMD'
 DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/GROUP.FLASH2/USER.E_PHOTON.SP'
 
 DELAY_DRIVE_WAIT_TIME  = 1  # How long to wait for motor to move after setting delay
@@ -21,7 +23,7 @@ class RunType:
     delay        = 1
     energy       = 2
     uvPower      = 3
-    delay_energy = 4
+    tr_energy    = 4
     retardation  = 5
     other        = 100 
 
@@ -45,6 +47,17 @@ def set_waveplate(wp):
     
 def set_energy(energy):
     pydoocs.write(DOOCS_UNDULATOR, energy)
+
+def set_polarization(pol):
+    if pol == 'p':
+        angle = 45
+    elif pol == 's':
+        angle = 0
+    else:
+        raise ValueError("polarization must be either s or p")
+    pydoocs.write(DOOCS_POLARIZ, angle)
+    pydoocs.write(DOOCS_POLARIZ_EN, 1)
+    time.sleep(2)
 
 
 class Run:

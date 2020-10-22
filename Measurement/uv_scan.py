@@ -11,6 +11,7 @@ TIME_ZERO = 1456.6
 INTEG_TIME = 25    #seconds, per bin
 DELAY      = 2     #ps
 RETARDER = 20 
+POLARIZ    = 's'
 
 RANDOMIZE  = True
 
@@ -25,7 +26,7 @@ waveplate = np.arange(0., 45.1, 2)
 
 print(f"Starting {TermCol.YELLOW}UV Power{TermCol.ENDC} Scan")
 print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
-print(f"Time to scan {INTEG_TIME*waveplate.shape[0]}s")
+print(f"Time to scan {INTEG_TIME*waveplate.shape[0]/60} mins")
 print()
 
 exp = UrsaPQ()
@@ -33,6 +34,7 @@ startDate = datetime.now()
 
 exp.tof_retarderSetHV = RETARDER
 set_delay(DELAY, TIME_ZERO)
+set_polarization(POLARIZ)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
