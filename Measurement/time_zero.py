@@ -6,24 +6,31 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
+INTEG_TIME = 25    #seconds, per bin
+WAVEPLATE  = 25
+RETARDER   = 20 
 
-INTEG_TIME = 10    #seconds, per bin
-RANDOMIZE  = False
+RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-delays = np.arange(2919, 2920, 0.1)
+#Rough time zero at 1456.388
+delays = np.arange(1456, 1457.1, 0.05)
 
 #***************** CODE BEGINS ****************
 
 print(f"Starting {TermCol.YELLOW}Time Zero{TermCol.ENDC} Scan")
 print(f"{TermCol.RED}{TermCol.BOLD}Have you started the DAQ?{TermCol.ENDC}")
+print(f"Time to scan {INTEG_TIME*delays.shape[0]} s")
 print()
 
 exp = UrsaPQ()
 startDate = datetime.now()
+
+exp.tof_retarderSetHV = RETARDER
+set_waveplate(WAVEPLATE)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
@@ -35,7 +42,6 @@ data[:] = np.NaN
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
 plot = DataPreview(evs, delays, data, sliceX = ev_slice)
 
-#Generate random permutation
 scan_order = np.arange(delays.shape[0])
 if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)

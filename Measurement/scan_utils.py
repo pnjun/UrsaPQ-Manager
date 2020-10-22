@@ -8,7 +8,9 @@ DOOCS_RUNID   = 'FLASH.UTIL/STORE/URSAPQ/RUN.ID'
 DOOCS_RUNTYPE = 'FLASH.UTIL/STORE/URSAPQ/RUN.TYPE'
 DOOCS_DELAY_SET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSITION_SET.WR'
 DOOCS_DELAY_GET  = 'FLASH.SYNC/LASER.LOCK.EXP/FLASH2.PPL1.OSC1/FMC0.MD22.0.POSITION.RD'
-DOOCS_UNDUL  = 'ASD'
+DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
+DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
+DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/GROUP.FLASH2/USER.E_PHOTON.SP'
 
 DELAY_DRIVE_WAIT_TIME  = 1  # How long to wait for motor to move after setting delay
 DELAY_PARK_WAIT_TIME   = 2  # How long to wait for motor to move into parking position
@@ -32,21 +34,19 @@ def set_delay(delay, time_zero = None, park_position=None):
         new_delay = time_zero - delay 
     else:
         new_delay = delay
-        
+
     pydoocs.write(DOOCS_DELAY_SET, new_delay)
     time.sleep(DELAY_DRIVE_WAIT_TIME)
-    
-def get_delay():
-    return pydoocs.read(DOOCS_DELAY_GET)['data']
+        
+def set_waveplate(wp):
+    pydoocs.write(DOOCS_WAVEPLATE, wp)
+    pydoocs.write(DOOCS_WAVEPLATE_EN, 1)
+    time.sleep(1)   
     
 def set_energy(energy):
-    #TODO
-    pass
-    
-def get_energy():
-    #TODO
-    pass
-    
+    pydoocs.write(DOOCS_UNDULATOR, energy)
+
+
 class Run:
     def __init__(self, runtype):
         self.type = runtype
@@ -68,6 +68,7 @@ class DataPreview:
             self.sliceX = sliceX
         
         self.fig = plt.figure()
+        self.fig.canvas.set_window_title('Online Scan Preview')
         self.ax  = self.fig.add_subplot(1, 1, 1)
         self.diff = diff
         

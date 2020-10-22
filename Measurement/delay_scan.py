@@ -6,12 +6,14 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-
 #Time zero estimate
-TIME_ZERO  = 2919.5
-PARK_DELAY = 2930
+TIME_ZERO  = 1456.6
+PARK_DELAY = 1470
 
 INTEG_TIME = 10    #seconds, per bin
+WAVEPLATE  = 25
+RETARDER   = 20 
+
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
@@ -22,12 +24,16 @@ delays = np.arange(-0.1, 0.3, 0.1)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Delay Scan{TermCol.ENDC} Scan")
+print(f"Starting {TermCol.YELLOW}Delay{TermCol.ENDC} Scan")
 print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
+print(f"Time to scan {INTEG_TIME*delays.shape[0]} s")
 print()
 
 exp = UrsaPQ()
 startDate = datetime.now()
+
+exp.tof_retarderSetHV = RETARDER
+set_waveplate(WAVEPLATE)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

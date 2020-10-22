@@ -6,70 +6,75 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-TIME_ZERO = 1456.6
+#Time zero estimate
+TIME_ZERO  = 1456.4
+DELAY      = 2
 
 INTEG_TIME = 15    #seconds, per bin
-DELAY      = 2     #ps
 WAVEPLATE  = 25
-RANDOMIZE  = True
+RETARDER   = 30 
 
+RANDOMIZE  = True
 OUTFOLDER  = "./data/"
+
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-retarders = -np.arange(20, 81, 2.5)
+energies = np.arange(150., 175, 1)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Retardation Scan{TermCol.ENDC} Scan")
+print(f"Starting {TermCol.YELLOW}Photon Energy{TermCol.ENDC} Scan")
 print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
-print(f"Time to scan {INTEG_TIME*retarders.shape[0]/ 60} min")
+print(f"Time to scan {INTEG_TIME*energies.shape[0]} s")
 print()
 
 exp = UrsaPQ()
 startDate = datetime.now()
 
+exp.tof_retarderSetHV = RETARDER
 set_waveplate(WAVEPLATE)
 set_delay(DELAY, TIME_ZERO)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
-tof    = exp.data_axis[0]
-data = np.empty((retarders.shape[0], tof.shape[0]))
-data[:] = np.NaN
+evs = exp.data_axis[1]
+
+data        = np.empty((energies.shape[0], evs.shape[0]))
+data[:]     = np.NaN
+dataEven    = np.empty((energies.shape[0], evs.shape[0]))
+dataEven[:] = np.NaN
+dataOdd     = np.empty((energies.shape[0], evs.shape[0]))
+dataOdd[:]  = np.NaN
+
 
 #Setup preview window
-plot = DataPreview(tof, retarders, data)
+ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
+plot = DataPreview(evs, energies, data, sliceX = ev_slice)
 
 #Generate random permutation
-scan_order = np.arange(retarders.shape[0])
+scan_order = np.arange(energies.shape[0])
 if RANDOMIZE:
     scan_order = np.random.permutation(scan_order)
 
 try:
-    with Run(RunType.retardation) as run_id:
-        plot.set_title(f"Run {run_id} - Retardation Scan")
+    with Run(RunType.energy) as run_id:
+        plot.set_title(f"Run {run_id} - Energy Scan")
         
         for n in scan_order:
-            print(f"Scanning retarder: {retarders[n]:.3f}", end= "\r")
+            print(f"Scanning energy: {energies[n]:.3f}", end= "\r")
             
-            #Set the desired retardation stage position 
-            exp.tof_retarderSetHV = retarders[n]
-            
-            #Wait for voltage 
-            tries = 0
-            while (np.abs(exp.tof_retarderSetHV - exp.tof_retarderHV) > 0.5) and (tries < 5):
-                time.sleep(1)
-                tries += 1
+            #Set the desired delay stage position 
+            set_energy(energies[n])
             
             #Reset accumulator for online preview
             exp.data_clearAccumulator = True
             
             #Set up preview updater 
             def updatef():
-                databin = exp.data_evenAccumulator - exp.data_oddAccumulator
-                data[n] = databin
-                    
+                dataEven[n] = exp.data_evenAccumulator
+                dataOdd[n]  = exp.data_oddAccumulator
+                data[n]     = dataEven[n] - dataOdd[n]
                 plot.update_data(data)
                 
             #Wait for INTEG_TIME while updating the preview
@@ -87,15 +92,23 @@ else:
 #Setup output folder
 from pathlib import Path
 Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
-out_fname = OUTFOLDER + f"retarder_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
+out_fname = OUTFOLDER + f"energy_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
 if interrupted:
     out_fname += "_stopped"
 
 #Write out data
-np.savez(out_fname + ".npz", retarders=retarders, tof=tof, data=data)
+np.savez(out_fname + ".npz", energies=energies, evs=evs, dataEven=dataEven, dataOdd=dataOdd)
 plot.save_figure(out_fname + ".png")
 
 print(f"Data saved as {out_fname}")
+
+
+
+
+
+
+
+
 
 
 
