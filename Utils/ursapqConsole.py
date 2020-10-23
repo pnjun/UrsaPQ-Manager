@@ -8,6 +8,7 @@ from ursapqConsoleResources.switch import Switch
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QPushButton, QLineEdit
 from PySide2.QtCore import QFile, QObject, QTimer, Slot, QEvent
+from PySide2.QtGui import QPixmap
 
 UI_BASEPATH = '/ursapqConsoleResources/'
 #style
@@ -88,6 +89,10 @@ class ManipulatorWindow(ConsoleWindow):
         super(ManipulatorWindow, self).__init__('manipulator.ui', *args, **kvargs)
         self.ursapq = ursapq
         self.setupCallbacks()
+        
+        local_dir = os.path.dirname(os.path.abspath(__file__))
+        bgPixmap = QPixmap(local_dir + UI_BASEPATH + "manipulators.png")
+        self.window.background.setPixmap(bgPixmap)
         
     def setupCallbacks(self):
         self.window.magnetButton.clicked.connect(self.move_magnet_y)
