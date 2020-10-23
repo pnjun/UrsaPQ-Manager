@@ -23,8 +23,7 @@ retarders = -np.arange(20, 81, 2.5)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Retardation Scan{TermCol.ENDC} Scan")
-print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
+print(f"Starting {TermCol.YELLOW}{TermCol.BOLD}Retardation Scan{TermCol.ENDC} Scan")
 print(f"Time to scan {INTEG_TIME*retarders.shape[0]/ 60} min")
 print()
 

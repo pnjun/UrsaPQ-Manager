@@ -13,6 +13,7 @@ DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
 DOOCS_POLARIZ       = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/FPOS.SET'
 DOOCS_POLARIZ_EN    = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/CMD'
 DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/GROUP.FLASH2/USER.E_PHOTON.SP'
+DOOCS_DAQ           = 'TTF2.DAQ/DQM/SVR.FL2USER1/DQMFSTAT'
 
 class RunType:
     time_zero    = 0
@@ -76,10 +77,14 @@ class Run:
     def __init__(self, runtype):
         self.type = runtype
             
-    def __enter__(self):
+    def __enter__(self, skipDAQ = False):
+        if pydoocs.read(DOOCS_DAQ)['data'] != 1 and not skipDAQ:
+            raise Exception("Start the DAQ, you stupid fuck!")
+            
         newId = pydoocs.read(DOOCS_RUNID)['data'] + 1
         pydoocs.write(DOOCS_RUNID, newId)
         pydoocs.write(DOOCS_RUNTYPE, self.type)
+                
         return newId
         
     def __exit__(self, exc_type, value, traceback):

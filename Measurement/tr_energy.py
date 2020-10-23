@@ -7,7 +7,7 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.35
+TIME_ZERO  = 1456.5
 PARK_DELAY = 1475.
 
 INTEG_TIME = 30    #seconds, per bin
@@ -26,12 +26,13 @@ PLOTROI = (100,175) #Integration region for online plot
 energies    = np.arange(162., 170.1, 0.5) 
 #delaysList  = [ np.arange(-0.3, 0.61, 0.1), 
 #                np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) ]
-delays = np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) #np.concatenate(delaysList)
+#delays = np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) #np.concatenate(delaysList)
+delays = np.arange(-0.3, 0.61, 0.05)
+
                 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Time Resolved Energy{TermCol.ENDC} Scan")
-print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
+print(f"Starting {TermCol.YELLOW}{TermCol.BOLD}Time Resolved Energy{TermCol.ENDC} Scan")
 print(f"Time to scan {INTEG_TIME*energies.shape[0]*delays.shape[0]/60} mins")
 print()
 

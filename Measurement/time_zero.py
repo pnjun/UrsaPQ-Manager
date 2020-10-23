@@ -6,7 +6,7 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-INTEG_TIME = 60    #seconds, per bin
+INTEG_TIME = 30    #seconds, per bin
 WAVEPLATE  = 45
 RETARDER   = 90 
 POLARIZ    = 'p'
@@ -19,12 +19,11 @@ PLOTMAX = 200 #Upper val of ev scale
 
 #Delays array
 #Rough time zero at 1456.388
-delays = np.arange(1456.0, 1456.8, 0.05)
+delays = np.arange(1456.25, 1456.71, 0.025)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Time Zero{TermCol.ENDC} Scan")
-print(f"{TermCol.RED}{TermCol.BOLD}Have you started the DAQ?{TermCol.ENDC}")
+print(f"Starting {TermCol.YELLOW}{TermCol.BOLD}Time Zero{TermCol.ENDC} Scan")
 print(f"Time to scan {INTEG_TIME*delays.shape[0]/60:.1f} mins")
 print()
 

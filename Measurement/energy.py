@@ -7,11 +7,11 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.4
+TIME_ZERO  = 1456.5
 DELAY      = 0.0
 
-INTEG_TIME = 30    #seconds, per bin
-WAVEPLATE  = 30
+INTEG_TIME = 120    #seconds, per bin
+WAVEPLATE  = 16
 RETARDER   = 90 
 POLARIZ    = 'p'
 
@@ -25,8 +25,7 @@ energies = np.arange(157., 170.1, 0.5)
 
 #***************** CODE BEGINS ****************
 
-print(f"Starting {TermCol.YELLOW}Photon Energy{TermCol.ENDC} Scan")
-print(f"{TermCol.RED}{TermCol.BOLD}Is the DAQ running?{TermCol.ENDC}")
+print(f"Starting {TermCol.YELLOW}{TermCol.BOLD}Photon Energy{TermCol.ENDC} Scan")
 print(f"Time to scan {INTEG_TIME*energies.shape[0]/60} mins")
 print()
 
