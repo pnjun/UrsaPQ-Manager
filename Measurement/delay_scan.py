@@ -7,13 +7,13 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.6
+TIME_ZERO  = 1456.4
 PARK_DELAY = 1470
-POLARIZ    = 's'
+POLARIZ    = 'p'
 
-INTEG_TIME = 10    #seconds, per bin
-WAVEPLATE  = 25
-RETARDER   = 20 
+INTEG_TIME = 30    #seconds, per bin
+WAVEPLATE  = 30
+RETARDER   = 90 
 
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
@@ -21,7 +21,7 @@ OUTFOLDER  = "./data/"
 PLOTMAX = 300 #Upper val of ev scale 
 
 #Delays array
-delays = np.arange(-0.1, 0.3, 0.1)
+delays = np.arange(-10, 300.01, 10.)
 
 #***************** CODE BEGINS ****************
 

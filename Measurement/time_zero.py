@@ -6,19 +6,20 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-INTEG_TIME = 25    #seconds, per bin
-WAVEPLATE  = 25
-RETARDER   = 20 
-POLARIZ    = 's'
+INTEG_TIME = 60    #seconds, per bin
+WAVEPLATE  = 45
+RETARDER   = 90 
+POLARIZ    = 'p'
+PHOTON_EN  = 175
 
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
-PLOTMAX = 300 #Upper val of ev scale 
+PLOTMAX = 200 #Upper val of ev scale 
 
 #Delays array
 #Rough time zero at 1456.388
-delays = np.arange(1456, 1457.1, 0.05)
+delays = np.arange(1456.0, 1456.8, 0.05)
 
 #***************** CODE BEGINS ****************
 
@@ -33,6 +34,7 @@ startDate = datetime.now()
 exp.tof_retarderSetHV = RETARDER
 set_waveplate(WAVEPLATE)
 set_polarization(POLARIZ)
+set_energy(PHOTON_EN)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

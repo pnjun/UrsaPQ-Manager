@@ -7,23 +7,27 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.5
-PARK_DELAY = 1470
+TIME_ZERO  = 1456.35
+PARK_DELAY = 1475.
 
 INTEG_TIME = 30    #seconds, per bin
-WAVEPLATE  = 25
-RETARDER   = 30 
-POLARIZ    = 's'
+WAVEPLATE  = 16
+RETARDER   = 90 
+POLARIZ    = 'p'
 
-RANDOMIZE  = True
+RANDOMIZE_ENERGY  = True
+RANDOMIZE_DELAY   = True
+
 OUTFOLDER  = "./data/"
 
-PLOTROI = (120,160) #Integration region for online plot 
+PLOTROI = (100,175) #Integration region for online plot 
 
 #Delays array
-energies = np.arange(155., 170.1, 1)
-delays = np.arange(-0.1, 0.3, 0.1)
-
+energies    = np.arange(162., 170.1, 0.5) 
+#delaysList  = [ np.arange(-0.3, 0.61, 0.1), 
+#                np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) ]
+delays = np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) #np.concatenate(delaysList)
+                
 #***************** CODE BEGINS ****************
 
 print(f"Starting {TermCol.YELLOW}Time Resolved Energy{TermCol.ENDC} Scan")
@@ -56,17 +60,23 @@ dataOdd[:]  = np.NaN
 plot = DataPreview(energies, delays, data)
 
 #Generate scan order sequence
-X,Y = np.meshgrid(np.arange(energies.shape[0]),np.arange(delays.shape[0]))
+e_idx = np.arange(energies.shape[0])
+d_idx = np.arange(delays.shape[0])
+if RANDOMIZE_ENERGY:
+    e_idx = np.random.permutation(e_idx)
+if RANDOMIZE_DELAY:
+    d_idx = np.random.permutation(d_idx)
+
+X,Y = np.meshgrid(e_idx,d_idx)
 scan_order = np.array([X.flatten(),Y.flatten()]).T
 
-#Generate random permutation
-if RANDOMIZE:
-    scan_order = np.random.permutation(scan_order)
+#Setup output folder
+from pathlib import Path
+Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
 
-print(ROI)
-exit()
 try:
     with Run(RunType.tr_energy) as run_id:
+        out_fname = OUTFOLDER + f"trEnergy_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
         plot.set_title(f"Run {run_id} - Time Resolved Energy Scan")
         
         for e, d in scan_order:
@@ -81,13 +91,18 @@ try:
             
             #Set up preview updater 
             def updatef():
-                dataEven[n] = exp.data_evenAccumulator
-                dataOdd[n]  = exp.data_oddAccumulator
-                data[n]     = (dataEven[n] - dataOdd[n])[:,:,ROI].sum(axis=2)
+                dataEven[d,e] = exp.data_evenAccumulator
+                dataOdd[d,e]  = exp.data_oddAccumulator
+                data[d,e]     = (dataEven[d,e] - dataOdd[d,e])[ROI].sum()
                 plot.update_data(data)
                 
             #Wait for INTEG_TIME while updating the preview
             DataPreview.update_wait(updatef, INTEG_TIME)
+            
+            #Save partials
+            np.savez(out_fname + "_part.npz", energies=energies, delays=delays, evs=evs,  
+                                              dataEven=dataEven, dataOdd=dataOdd)
+            plot.save_figure(out_fname + "_part.png")
             
 except KeyboardInterrupt:
     print()
@@ -98,10 +113,6 @@ else:
     print(f"End of scan!")
     interrupted = False
 
-#Setup output folder
-from pathlib import Path
-Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
-out_fname = OUTFOLDER + f"trEnergy_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
 if interrupted:
     out_fname += "_stopped"
 

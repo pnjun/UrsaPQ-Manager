@@ -14,10 +14,6 @@ DOOCS_POLARIZ       = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/FPOS.SET'
 DOOCS_POLARIZ_EN    = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/CMD'
 DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/GROUP.FLASH2/USER.E_PHOTON.SP'
 
-DELAY_DRIVE_WAIT_TIME  = 1  # How long to wait for motor to move after setting delay
-DELAY_PARK_WAIT_TIME   = 2  # How long to wait for motor to move into parking position
-
-
 class RunType:
     time_zero    = 0
     delay        = 1
@@ -27,18 +23,33 @@ class RunType:
     retardation  = 5
     other        = 100 
 
-def set_delay(delay, time_zero = None, park_position=None):
-    if park_position:
-        pydoocs.write(DOOCS_DELAY_SET, park_position)     
-        time.sleep(DELAY_PARK_WAIT_TIME)
+def get_delay():
+    return pydoocs.read(DOOCS_DELAY_GET)['data']
+    
+def wait_delay(delay):
+    while abs( delay - get_delay() ) > 0.05:
+        time.sleep(0.1)   
 
+def set_delay(delay, time_zero = None, park_position=None):
+    #correct for time zero setting if given
     if time_zero:
         new_delay = time_zero - delay 
     else:
         new_delay = delay
 
+    #if already there, don't move
+    old_sp = pydoocs.read(DOOCS_DELAY_SET)['data']
+    if abs( old_sp - new_delay ) < 0.001:
+        return
+
+    #Move to park position if one is given
+    if park_position:
+        pydoocs.write(DOOCS_DELAY_SET, park_position)     
+        wait_delay(park_position)
+
+    #Finally...
     pydoocs.write(DOOCS_DELAY_SET, new_delay)
-    time.sleep(DELAY_DRIVE_WAIT_TIME)
+    wait_delay(new_delay)
         
 def set_waveplate(wp):
     pydoocs.write(DOOCS_WAVEPLATE, wp)
@@ -47,7 +58,8 @@ def set_waveplate(wp):
     
 def set_energy(energy):
     pydoocs.write(DOOCS_UNDULATOR, energy)
-
+    time.sleep(1)  
+    
 def set_polarization(pol):
     if pol == 'p':
         angle = 45
@@ -70,8 +82,12 @@ class Run:
         pydoocs.write(DOOCS_RUNTYPE, self.type)
         return newId
         
-    def __exit__(self, type, value, traceback):
-        pydoocs.write(DOOCS_RUNTYPE, -1)
+    def __exit__(self, exc_type, value, traceback):
+        if exc_type:
+            pydoocs.write(DOOCS_RUNTYPE, -2) #Exit with error
+        else:
+            pydoocs.write(DOOCS_RUNTYPE, -1) #Exit finished
+
 
 class DataPreview:
     def __init__(self, xAx, yAx, data, diff=True, sliceX = None):
