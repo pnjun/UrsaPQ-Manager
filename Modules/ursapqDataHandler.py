@@ -87,13 +87,16 @@ class ursapqDataHandler:
         
         # Try pulling new TOF traces from DOOCS
         try:
-            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)
-            newLaser = self.pydoocs.read(config.Data_DOOCS_LASER)
+            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)           
             
             if newTof['macropulse'] == self.macropulse: #if we got the same data twice, return false (we dont want to process the same data twice)
                 return False
                 
             self.macropulse = newTof['macropulse'] 
+            
+            if config.Data_GmdNorm:
+                newGmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
+                                           macropulse = self.macropulse)['data'].T[1]            
             
             self.updateFreq = (  0.03 * 1/(newTof['timestamp'] - self.timestamp) 
                                + 0.97 * self.updateFreq)
@@ -102,11 +105,11 @@ class ursapqDataHandler:
             traceback.print_exc()
             return False
         
-        #Two types of online data: Low passed ('moving average') and accumulated
-        
         if config.Data_Invert:
             newTof['data'].T[1] *= -1
-        
+                
+        #Two types of online data: Low passed ('moving average') and accumulated
+       
         #Low pass:
         #This is run in a separate try...except so that tofTrace gets reinitialized 
         #if the lenght of newTof changes due to DOOCS reconfiguration
@@ -118,32 +121,16 @@ class ursapqDataHandler:
             
         #Accumulate data:
         try:
-            self.tofAccumulator[1] += newTof['data'].T[1]
-            self.tofAccumulatorCount += 1
+            self.tofAccumulator[1] += newTof['data'].T[1] 
+            self.accumulatorCount += 1
+            if config.Data_GmdNorm: self.gmdAccumulator += newGmd.mean()
         except Exception as error:
             traceback.print_exc()
-            self.tofAccumulator  = newTof['data'].T.copy()
-            self.tofAccumulatorCount = 1
-            
+            self.tofAccumulator  = newTof['data'].T.copy() #Rest tof accumulator
+            self.accumulatorCount = 1
+            if config.Data_GmdNorm: self.gmdAccumulator = newGmd.mean() 
         return True
-            
-    def updateGmd(self):
-        #Pull gmd from DOOCS
-        try:
-            newGmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
-                                       macropulse = self.macropulse)['data'].T[1]
-        except Exception as error:
-            print("Error getting GMD. Check that GMD monitor is active or disable GMD normalization")
-            traceback.print_exc()   
-            return
-            
-        # Same as above, try...except to reinitialize if number of shots changes                                                                    
-        try:                                              
-            self.GMDTrace = self.dataFilter( newGmd  ,  self.GMDTrace )
-        except Exception as error:
-            traceback.print_exc()
-            self.GMDTrace = newGmd
-    
+                           
     def updateLaserTrace(self):
         try:
             self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
@@ -162,11 +149,6 @@ class ursapqDataHandler:
         while not self.stopEvent.isSet():
             if not self.updateTofTraces():
                 continue
-                
-            if config.Data_GmdNorm:
-                self.updateGmd()
-            else:
-                self.GMDTrace = None       
 
             self.updateLaserTrace()
                 
@@ -186,7 +168,7 @@ class ursapqDataHandler:
         all_idx = startIdx[:, None] + np.arange(sliceLen)
         return array[all_idx]
         
-    def sliceAverage(self, tofTrace, gmdTrace = None):
+    def sliceAverage(self, tofTrace):
         ''' 
             Get a long tof trace, slices it in pieces and returns the 
             average of the even and odd slices.
@@ -198,13 +180,10 @@ class ursapqDataHandler:
                                    config.Data_SlicePeriod).astype(int)
                          
         stackedTraces = self.stack_slices(tofTrace, sliceStartIdx, config.Data_SliceSize)                      
-                          
-        if gmdTrace is not None:
-            raise NotImplementedError("lol")
-        else:                        
-            #Sum up all slices skipping the first self.skipSlices
-            evenSlice = stackedTraces[::2].mean(axis=0)
-            oddSlice  = stackedTraces[1::2].mean(axis=0)
+                                        
+        #Sum up all slices skipping the first self.skipSlices
+        evenSlice = stackedTraces[::2].mean(axis=0)
+        oddSlice  = stackedTraces[1::2].mean(axis=0)
             
         return evenSlice, oddSlice                        
     
@@ -227,12 +206,17 @@ class ursapqDataHandler:
             self.dataUpdated.clear()
     
             try:       
-                evenLowPass, oddLowPass = self.sliceAverage(self.tofTrace[1], self.GMDTrace)
+                evenLowPass, oddLowPass = self.sliceAverage(self.tofTrace[1])
                 
-                evenAcc, oddAcc = self.sliceAverage(self.tofAccumulator[1], self.GMDTrace)
-                evenAcc /= self.tofAccumulatorCount #slightly thread usafe (as tofAccumulatorCount could be update after sliceAverage returns)
-                oddAcc  /= self.tofAccumulatorCount #but worst case it's out by 1-2 shots out of hundreds
+                evenAcc, oddAcc = self.sliceAverage(self.tofAccumulator[1])
+                evenAcc /= self.accumulatorCount #slightly thread usafe (as accumulatorCount could be update after sliceAverage returns)
+                oddAcc  /= self.accumulatorCount #but worst case it's out by 1-2 shots out of hundreds
                        
+                if config.Data_GmdNorm:
+                    gmd = self.gmdAccumulator / self.accumulatorCount
+                    evenAcc /= gmd
+                    oddAcc  /= gmd
+                                           
                 tofs, evs = self.getTofsAndEvs(self.tofTrace[0])
                     
                 #Output arrays
@@ -242,15 +226,15 @@ class ursapqDataHandler:
               
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
-                self.status.data_AccumulatorCount = self.tofAccumulatorCount
+                self.status.data_AccumulatorCount = self.accumulatorCount
                
                 self.status.data_updateFreq = self.updateFreq
                 self.status.data_laserTrace = self.laserTrace
                 self.status.data_tofTrace   = self.tofTrace
                 
                 if self.status.data_clearAccumulator:
-                    # Will throw TypeError in updateTofTraces and reset the accumulator
-                    self.tofAccumulatorCount = None  
+                    # Will throw TypeError in updateTofTraces and reset the accumulators
+                    self.accumulatorCount = None  
                     self.status.data_clearAccumulator = False
                                    
             except Exception as e:
