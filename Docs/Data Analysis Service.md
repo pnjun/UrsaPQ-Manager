@@ -22,6 +22,8 @@ data_updateFreq         The frequency in Hz at which the server is able to pull 
                         10Hz means every macrobunch is processed.
 ```
 
+GMD normalization can be activated for the accumulated traces by setting the corresponding flag in the configuration file (see below). The low passed traces are not normalized.
+
 Online control is done by setting these parameters:
 ``` 
 data_filterTau          Time constant of lorenzian low pass filter for filtered data
@@ -58,7 +60,7 @@ Configuration of the analysis parameters can be done by editing `Modules/config.
 "Data_SliceOffset" : samples to skip before starting slicing (use for time zero on single shot traces),
 "Data_SkipSlices"    : slices to skip at the beginning of each bunch train: must be even,
 "Data_SkipSlicesEnd" : slices to skip at the end of each bunch train: must be even  
-"Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot)  ** NOT WORKING **
+"Data_GmdNorm"       : set to 1 to use gmd normalization (long time trends only, not shot to shot) 
 "Data_Invert"        : set to 1 to invert y axis of data
 "Data_Jacobian"      : set to 1 to use jacobian normalization                                       ** NOT WORKING **
 ```
