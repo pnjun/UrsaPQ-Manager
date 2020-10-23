@@ -180,12 +180,17 @@ class ursapqDataHandler:
                                    config.Data_SlicePeriod).astype(int)
                          
         stackedTraces = self.stack_slices(tofTrace, sliceStartIdx, config.Data_SliceSize)                      
-                                        
+        
+        #Sikp traces
+        numTraces = stackedTraces.shape[0]
+        start = config.Data_SkipSlices
+        end   = numTraces - config.Data_SkipSlicesEnd    
+                                 
         #Sum up all slices skipping the first self.skipSlices
-        evenSlice = stackedTraces[::2].mean(axis=0)
-        oddSlice  = stackedTraces[1::2].mean(axis=0)
+        evenSlice = stackedTraces[start:end:2].mean(axis=0)
+        oddSlice  = stackedTraces[start+1:end+1:2].mean(axis=0)
             
-        return evenSlice, oddSlice                        
+        return evenSlice, oddSlice, end-start                        
     
     def getTofsAndEvs(self, tofAxis):
         #Generate tof times and eV data
@@ -206,9 +211,9 @@ class ursapqDataHandler:
             self.dataUpdated.clear()
     
             try:       
-                evenLowPass, oddLowPass = self.sliceAverage(self.tofTrace[1])
+                evenLowPass, oddLowPass, traceCount = self.sliceAverage(self.tofTrace[1])
                 
-                evenAcc, oddAcc = self.sliceAverage(self.tofAccumulator[1])
+                evenAcc, oddAcc, traceCount = self.sliceAverage(self.tofAccumulator[1])
                 evenAcc /= self.accumulatorCount #slightly thread usafe (as accumulatorCount could be update after sliceAverage returns)
                 oddAcc  /= self.accumulatorCount #but worst case it's out by 1-2 shots out of hundreds
                        
@@ -223,6 +228,7 @@ class ursapqDataHandler:
                 self.status.data_axis = np.vstack((tofs, evs))
                 self.status.data_evenShots =  evenLowPass
                 self.status.data_oddShots  =  oddLowPass
+                self.status.data_traceNum = traceCount
               
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
