@@ -106,7 +106,7 @@ class ursapqDataHandler:
             return False
         
         if config.Data_Invert:
-            newTof['data'].T[1] *= -1
+            newTof['data'].T[1] *= -1      
                 
         #Two types of online data: Low passed ('moving average') and accumulated
        
@@ -185,6 +185,8 @@ class ursapqDataHandler:
         numTraces = stackedTraces.shape[0]
         start = config.Data_SkipSlices
         end   = numTraces - config.Data_SkipSlicesEnd    
+                                 
+        stackedTraces -= stackedTraces.mean(axis=1)[:,None]                                
                                  
         #Sum up all slices skipping the first self.skipSlices
         evenSlice = stackedTraces[start:end:2].mean(axis=0)
