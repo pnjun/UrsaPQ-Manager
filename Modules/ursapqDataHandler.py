@@ -186,7 +186,8 @@ class ursapqDataHandler:
         start = config.Data_SkipSlices
         end   = numTraces - config.Data_SkipSlicesEnd    
                                  
-        stackedTraces -= stackedTraces.mean(axis=1)[:,None]                                
+        bg = np.percentile(stackedTraces, 15, axis=1)
+        stackedTraces -= bg[:,None]                                
                                  
         #Sum up all slices skipping the first self.skipSlices
         evenSlice = stackedTraces[start:end:2].mean(axis=0)
