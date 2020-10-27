@@ -7,12 +7,12 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.5
+TIME_ZERO  = 1456.85
 PARK_DELAY = 1475.
 
-INTEG_TIME = 30    #seconds, per bin
+INTEG_TIME = 60    #seconds, per bin
 WAVEPLATE  = 16
-RETARDER   = 90 
+RETARDER   = 10 
 POLARIZ    = 'p'
 
 RANDOMIZE_ENERGY  = True
@@ -20,14 +20,14 @@ RANDOMIZE_DELAY   = True
 
 OUTFOLDER  = "./data/"
 
-PLOTROI = (100,175) #Integration region for online plot 
+PLOTROI = (80,153) #Integration region for online plot 
 
 #Delays array
-energies    = np.arange(162., 170.1, 0.5) 
-#delaysList  = [ np.arange(-0.3, 0.61, 0.1), 
-#                np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) ]
-#delays = np.array([0.8, 1, 2, 5, 10, 20, 50, 100, 200, 500]) #np.concatenate(delaysList)
-delays = np.arange(-0.3, 0.61, 0.05)
+energies    = np.arange(216.5, 226.1, 0.5) 
+#delaysList  = [ [-0.3], np.arange(-0.2, 0.41, 0.05), [0.5, 0.6 ,0.7]]
+#delays = np.concatenate(delaysList)
+delays = np.array([1, 2, 5, 10, 20, 50, 100]) 
+#delays = np.arange(-0.3, 0.71, 0.1)
 
                 
 #***************** CODE BEGINS ****************

@@ -8,9 +8,9 @@ from ursapq_api import UrsaPQ
 #**************** SETUP PARAMETERS ************
 INTEG_TIME = 30    #seconds, per bin
 WAVEPLATE  = 45
-RETARDER   = 90 
+RETARDER   = 10 
 POLARIZ    = 'p'
-PHOTON_EN  = 175
+PHOTON_EN  = 225
 
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
@@ -19,7 +19,7 @@ PLOTMAX = 200 #Upper val of ev scale
 
 #Delays array
 #Rough time zero at 1456.388
-delays = np.arange(1456.25, 1456.71, 0.025)
+delays = np.arange(1456.5, 1457.2, 0.05)
 
 #***************** CODE BEGINS ****************
 

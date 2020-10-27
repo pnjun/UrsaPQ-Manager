@@ -22,6 +22,7 @@ class RunType:
     uvPower      = 3
     tr_energy    = 4
     retardation  = 5
+    coil         = 6
     other        = 100 
 
 def get_delay():
