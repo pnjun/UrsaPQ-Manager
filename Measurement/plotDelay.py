@@ -5,7 +5,7 @@ import sys
 print("Usage: plotDelay.py <filename>")
 print()
 
-INTEGROI = (120,160) #Integration region for online plot 
+INTEGROI = (92,105) #Integration region for online plot 
 
 fin = np.load(sys.argv[1])
 
