@@ -147,6 +147,7 @@ class UrsapqManager:
             print(timeout)
             threading.Timer(timeout, self.setMessage, [self.status.statusMessage] ).start()
 
+        print(f"Server Message: {msg}")
         self.status.statusMessage = msg
         self.status.lastStatusMessage = datetime.now()
 
@@ -483,10 +484,8 @@ def main():
     expManager = UrsapqManager()
 
     while True:
-        print("Attempting to start server...")
         try:
             expManager.start()
-            print("Server started.")
             while True:
                 expManager.updateStatus()
                 time.sleep(config.UrsapqServer_UpdatePeriod)

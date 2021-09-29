@@ -29,8 +29,12 @@ class HVPS:
 
     def connect(self):
         #Scan all serials looking for matching device name
-        self.posSerial.port = list(list_ports.grep(self.posName))[0][0]
-        self.negSerial.port = list(list_ports.grep(self.negName))[0][0]
+        try:
+            self.posSerial.port = list(list_ports.grep(self.posName))[0][0]
+            self.negSerial.port = list(list_ports.grep(self.negName))[0][0]
+        except IndexError:
+            raise Exception("Cannot find HVPS, is it on?")
+        
         if not self.posSerial.is_open:
             self.posSerial.open()
         if not self.negSerial.is_open:
