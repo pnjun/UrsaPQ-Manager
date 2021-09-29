@@ -6,6 +6,7 @@ import threading
 import traceback
 import math
 import time
+import serial
 
 from OvenPS import OvenPS
 from RigolPS import RigolPS
@@ -344,9 +345,9 @@ class UrsapqManager:
 
             try:
                 self.ovenPS.allOff()
-            except Exception:
+            except serial.serialutil.SerialException:
                 pass
-
+                
             self.status.oven_capPow = math.nan
             self.status.oven_bodyPow = math.nan
             self.status.oven_tipPow = math.nan
@@ -368,7 +369,11 @@ class UrsapqManager:
 
         # If stopping, switch everything off and reset PID filters
         if self.controls_stop.is_set():
-            self.ovenPS.allOff()
+            try:
+                self.ovenPS.allOff()
+            except serial.serialutil.SerialException:
+                pass
+                
             self.TipPID.reset()
             self.CapPID.reset()
             self.BodyPID.reset()
