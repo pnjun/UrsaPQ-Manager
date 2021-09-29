@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <GVL Name="PARAM" Id="{6f413186-3019-438f-b971-619073c2961a}" ParameterList="True">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	PreVac_Ok_Threshold  : REAL := 2.5E0;   // mBar
+	MainVac_Ok_Threshold : REAL := 2E-6;    // mBar
+	TurboStart_Threshold : REAL := 2E0;     // mBar
+
+	PenningMix_Start : REAL := 6E-3; //mBar (Enable penning and mixes the pirani with penning vals)
+	PenningMix_End   : REAL := 6E-4; //mBar (Stops mixing and uses penning only)
+        
+	Sample_Movement_Speed: REAL := 2;
+	Frame_Movement_Speed : REAL := 0.2;
+	
+	Oven_MaxTemp : INT := 2000; // 200 deg C
+	HVPS_SafetyLoop_Current : INT := 15000;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

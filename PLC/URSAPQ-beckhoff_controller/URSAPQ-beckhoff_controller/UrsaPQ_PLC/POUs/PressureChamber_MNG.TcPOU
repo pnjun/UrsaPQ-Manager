@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.16">
+  <POU Name="PressureChamber_MNG" Id="{689935d6-62b8-48d5-a1ed-4f695bb63735}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PressureChamber_MNG
+VAR_INPUT
+	penningInt : INT;
+	piraniInt : INT;
+END_VAR
+VAR_OUTPUT
+	penningON : BOOL;
+	pressureOut: REAL;
+END_VAR
+VAR
+	voltage : REAL;
+	penningPressure: REAL;
+	piraniPressure: REAL;
+	mix: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[piraniPressure := ConvertPressure_Pirani(piraniInt);
+
+IF piraniPressure > PARAM.PenningMix_Start THEN
+	pressureOut := piraniPressure;
+	penningON := FALSE;
+ELSE
+	penningON := TRUE;
+	penningPressure := ConvertPressure_Penning(penningInt);
+	mix := ( piraniPressure - PARAM.PenningMix_End ) / (PARAM.PenningMix_Start - PARAM.PenningMix_End);
+	IF mix < 0 THEN
+		mix := 0;
+	END_IF
+	pressureOut := mix * piraniPressure + ( 1 - mix) * penningPressure;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="PressureChamber_MNG">
+      <LineId Id="58" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="168" Count="2" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="166" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.16">
+  <POU Name="ConvertPressure_Penning" Id="{bd74ec83-25a0-4e21-8bfb-573394af58f7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION ConvertPressure_Penning : REAL
+VAR_INPUT
+	penningInt: INT;
+END_VAR
+VAR
+	voltage: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//IF voltage < 1.5 OR NOT enabled THEN
+//	ConvertPressure_Penning := -1; //ERROR (SENSOR DISCONNECTED??)
+//ELSE
+//	IF voltage > 9.6 THEN
+//		voltage := 9.6;
+//	END_IF
+//	ConvertPressure_Penning := EXPT(10, ( voltage - 12.86 ) / 1.33 ); // voltage to mbars (formula from Leybold penningvac manual)
+//END_IF
+
+//Pfeiffer Penning routine
+voltage :=  penningInt / 3276.8;
+
+IF voltage < 2.0 THEN
+	ConvertPressure_Penning := 1000; //ERROR (SENSOR DISCONNECTED??)
+ELSE
+	IF voltage > 8.6 THEN
+		voltage := 8.6;
+	END_IF
+	ConvertPressure_Penning := EXPT(10, ( 1.25 * voltage - 12.75 )); // voltage to mbars (formula from Pfeiffer penningvac IKR 270 manual)
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="ConvertPressure_Penning">
+      <LineId Id="205" Count="18" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

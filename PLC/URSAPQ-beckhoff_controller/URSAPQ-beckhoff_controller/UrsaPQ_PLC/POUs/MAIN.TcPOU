@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="MAIN" Id="{bebe6b61-023e-4d51-b092-c239fd7bc0f8}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR		
+	//INPUTS
+	PrePump_Pressure_Int AT %I* : INT;
+	Chamber_Penning_Int  AT %I* : INT;
+	Chamber_Pirani_Int   AT %I* : INT;	
+	Sample_BodyTemp      AT %I* : INT;					// Oven temperatures in 0.01 degC
+	Sample_CapTemp       AT %I* : INT;
+	Sample_TipTemp       AT %I* : INT;	
+	Magnet_Temp          AT %I* : INT;
+	
+	MTurbo1_NO AT %I*   : BOOL;		//Normal Operation relays
+	MTurbo2_NO AT %I*   : BOOL;
+	MTurboTOF_NO AT %I* : BOOL;	
+	MTurbo1_ERR AT %I*   : BOOL;	//Eorror relays
+	MTurbo2_ERR AT %I*   : BOOL;
+	MTurboTOF_ERR AT %I* : BOOL;		
+	
+	
+	//OUTPUTS
+	Penning_Enable AT %Q* : BOOL;
+	OvenPS_Relay AT %Q* : BOOL;
+	MPreVac_Valve AT %Q*: BOOL;
+	TOFPreVac_Valve AT %Q* : BOOL;
+	MPreVac2_Valve AT %Q* : BOOL;
+
+	MTurbo1_ON AT %Q*   : BOOL;		//Normal Operation relays
+	MTurbo2_ON AT %Q*   : BOOL;
+	MTurboTOF_ON AT %Q* : BOOL;	
+	
+	FlashInterlock AT %Q* : BOOL;	
+	HVPS_ON AT %Q* : INT;
+	
+	Lamp1_Enable AT %Q* : BOOL;
+	
+	//ADS inputs: CONTROL PARAMETERS (PLC reads values and acts accordignly, ADS clients should set these values)
+	OvenPS_Enable :     BOOL := FALSE;		// Enables Oven power supply (if vacuum ok)
+	Pumps_Enable :      BOOL := FALSE;      // Start pumping sequence
+	PreVac_Valve_Lock : BOOL := FALSE;		// Ovverides auto valves and close prevac valves
+	
+	SampleX_MotionEnable : BOOL := FALSE;     // Motion enables and setpoints input
+	SampleY_MotionEnable : BOOL := FALSE;  	
+	SampleZ_MotionEnable : BOOL := FALSE;  	
+	SampleX_MotionStop    : BOOL := FALSE;
+	SampleY_MotionStop    : BOOL := FALSE;
+	SampleZ_MotionStop    : BOOL := FALSE;
+	
+	FrameX_MotionEnable  : BOOL := FALSE;
+	FrameY_MotionEnable  : BOOL := FALSE;
+	FrameX_MotionStop     : BOOL := FALSE;
+	FrameY_MotionStop     : BOOL := FALSE;
+	
+	MagnetY_MotionEnable : BOOL := FALSE;
+	MagnetY_MotionStop    : BOOL := FALSE;
+	
+	SampleX_SetPoint : REAL := 0;
+	SampleY_SetPoint : REAL := 0;
+	SampleZ_SetPoint : REAL := 0;
+	FrameX_SetPoint  : REAL := 0;
+	FrameY_SetPoint  : REAL := 0;
+	MagnetY_SetPoint  : REAL := 0;
+	
+	//ADS outputs: READ ONLY (PLC updates them at every cycle, ADS clients should just read)
+	Chamber_Pressure : REAL;				// Main chamber pressure in mBars
+	PreVac_Pressure  : REAL;                // PrePump line pressure
+	PreVacValves_Open: BOOL;	            // Are valves open?
+
+	TurboPump_ON: BOOL;
+	TurboError: BOOL;	
+	Turbo_NO:    BOOL;
+	
+	//Other vars
+	PreVac_OK :  BOOL;						// Good prevacuum 
+	MainVac_OK : BOOL;
+	MainVac_TurboOK : BOOL;
+	Oven_OverTEMP: BOOL;
+	Pressure_Chamber_Manager: PressureChamber_MNG;
+	
+	//MOTION 
+	manageAx_SampleX: manageAxis;
+	manageAx_SampleY: manageAxis;
+	manageAx_SampleZ: manageAxis;
+	manageAx_FrameX: manageAxis;
+	manageAx_FrameY: manageAxis;
+	manageAx_MagnetY: manageAxis;	
+		
+	FrameX : AXIS_REF;
+	FrameY : AXIS_REF;
+	SampleZ : AXIS_REF;
+	SampleX : AXIS_REF;
+	SampleY : AXIS_REF;
+	MagnetY : AXIS_REF;
+	
+	SampleX_Fw_End AT %I* : BOOL; // Limit switches
+	SampleX_Bw_End AT %I* : BOOL;
+	SampleY_Fw_End AT %I* : BOOL;
+	SampleY_Bw_End AT %I* : BOOL; 
+	SampleZ_Fw_End AT %I* : BOOL;
+	SampleZ_Bw_End AT %I* : BOOL;  
+	
+	FrameX_Fw_End AT %I* : BOOL;
+	FrameX_Bw_End AT %I* : BOOL; 
+	FrameY_Fw_End AT %I* : BOOL;
+	FrameY_Bw_End AT %I* : BOOL; 
+	
+	MagnetY_Fw_End AT %I* : BOOL;
+	MagnetY_Bw_End AT %I* : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//*** PROCESS INPUTS ***
+//Get pressures in mbar (from ADC value)
+Pressure_Chamber_Manager(penningInt := Chamber_Penning_Int, piraniInt := Chamber_Pirani_Int, penningOn => Penning_enable, pressureOut => Chamber_Pressure);
+PreVac_Pressure := ConvertPressure_Pirani(PrePump_Pressure_Int);
+
+//*** MOTION ***
+//Move axes
+manageAx_SampleX(axis := SampleX, setPoint := SampleX_SetPoint, speed := PARAM.Sample_Movement_Speed, 
+		 enable := SampleX_MotionEnable, stop:= SampleX_MotionStop, fwLimit := SampleX_Fw_End, bwLimit := SampleX_Bw_End);
+		 
+manageAx_SampleY(axis := SampleY, setPoint := SampleY_SetPoint, speed := PARAM.Sample_Movement_Speed, 
+		 enable := SampleY_MotionEnable, stop:= SampleY_MotionStop, fwLimit := SampleY_Fw_End, bwLimit := SampleY_Bw_End);	 
+
+manageAx_SampleZ(axis := SampleZ, setPoint := SampleZ_SetPoint, speed := PARAM.Sample_Movement_Speed, 
+		 enable := SampleZ_MotionEnable, stop:= SampleZ_MotionStop, fwLimit := SampleZ_Fw_End, bwLimit := SampleZ_Bw_End);
+		 
+manageAx_FrameX(axis := FrameX,  setPoint := FrameX_SetPoint,  speed := PARAM.Frame_Movement_Speed , 
+		 enable := FrameX_MotionEnable, stop:= FrameX_MotionStop, fwLimit := FrameX_Fw_End,  bwLimit := FrameX_Bw_End);
+
+manageAx_FrameY(axis := FrameY,  setPoint := FrameY_SetPoint,  speed := PARAM.Frame_Movement_Speed , 
+		 enable := FrameY_MotionEnable, stop:= FrameY_MotionStop, fwLimit := FrameY_Fw_End,  bwLimit := FrameY_Bw_End);
+		 
+manageAx_MagnetY(axis := MagnetY, setPoint := MagnetY_SetPoint, speed := PARAM.Sample_Movement_Speed, 
+		 enable := MagnetY_MotionEnable, stop:= MagnetY_MotionStop, fwLimit := MagnetY_Fw_End, bwLimit := MagnetY_Bw_End);
+		 
+		 
+//*** SAFETY CHECKS ***
+// Compute status variables
+Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_CapTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp; //Prevent overtemp of oven
+TurboError 		:= MTurbo1_ERR OR MTurbo2_ERR OR MTurboTOF_ERR;
+Turbo_NO         := MTurboTOF_NO AND MTurbo2_NO; 
+MainVac_OK      := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.MainVac_Ok_Threshold; // Negative pressure means sensor error or sensor disconnected
+MainVac_TurboOK := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.TurboStart_Threshold;
+PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_Threshold;
+
+
+// Decide actions based on status
+PreVacValves_Open := NOT PreVac_Valve_Lock AND ( PreVac_OK OR NOT MainVac_TurboOK );
+TurboPump_ON := PreVac_Ok AND Pumps_Enable AND MainVac_TurboOK AND NOT TurboError;
+OvenPS_Relay := OvenPS_Enable AND NOT Oven_OverTEMP;
+
+// Actuate outputs (when one action controls more than one output)
+MPreVac_Valve   := PreVacValves_Open;
+MPreVac2_Valve  := PreVacValves_Open;
+TOFPreVac_Valve := PreVacValves_Open;
+MTurbo1_ON := TurboPump_ON;
+MTurbo2_ON := TurboPump_ON;
+MTurboTOF_ON := TurboPump_ON;
+
+IF MainVac_OK AND Turbo_NO THEN
+	FlashInterlock := TRUE;
+	HVPS_ON := PARAM.HVPS_SafetyLoop_Current;
+ELSE
+	FlashInterlock := FALSE;
+	HVPS_ON := 0;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="14" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="517" Count="0" />
+      <LineId Id="910" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="518" Count="0" />
+      <LineId Id="969" Count="0" />
+      <LineId Id="971" Count="0" />
+      <LineId Id="970" Count="0" />
+      <LineId Id="954" Count="0" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="520" Count="0" />
+      <LineId Id="956" Count="0" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="521" Count="0" />
+      <LineId Id="610" Count="0" />
+      <LineId Id="613" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="948" Count="1" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="1079" Count="0" />
+      <LineId Id="294" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="1078" Count="0" />
+      <LineId Id="438" Count="0" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="310" Count="0" />
+      <LineId Id="440" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="433" Count="1" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="703" Count="0" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="706" Count="0" />
+      <LineId Id="704" Count="0" />
+      <LineId Id="707" Count="2" />
+      <LineId Id="705" Count="0" />
+      <LineId Id="702" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

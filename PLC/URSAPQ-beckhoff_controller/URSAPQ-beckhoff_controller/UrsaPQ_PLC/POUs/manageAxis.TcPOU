@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="manageAxis" Id="{18e24768-e13d-4e7a-b265-fad413a177b4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK manageAxis
+VAR_IN_OUT
+	axis: AXIS_REF;
+	enable: BOOL;
+	stop : BOOL;
+END_VAR
+VAR_INPUT
+	speed: REAL;
+	fwLimit: BOOL;
+	bwLimit: BOOL;
+	setPoint : REAL;
+END_VAR
+VAR
+	mcPower : MC_Power;
+	mcAbs : MC_MoveAbsolute;
+	mcHalt : MC_Halt;
+	mcStop : MC_Stop;
+	mcSetPos : MC_SetPosition;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Takes an axis and a set point and gives the appropriate commands to the NC task to move the motor
+
+// Enable / Disable motion based on enable state and limit switches status
+mcPower( Axis:= axis, Enable:= TRUE,
+	     Enable_Positive:= NOT fwLimit, Enable_Negative:= NOT bwLimit, Override:= 100);
+		 
+// Reset position if a end switch is set ('homing function')
+//mcSetPos(Axis := axis, Execute := bwLimit, Position := 0);
+
+// Move if new setpoint is requested		 
+IF enable THEN     // If current set point is different from input value, trigger enable rising edge for MC_MoveAbsolute
+	mcHalt (Axis:= axis, Execute := TRUE);  // Halts eventual motion command still in progress
+	mcAbs(  Axis:= axis, Execute:= TRUE,    // Starts new motion
+		    Position:= setPoint, Velocity:= speed);
+	enable := FALSE;
+ELSE										      // Bring enable down while waiting for next movement
+	mcAbs(  Axis:= axis, Execute:= FALSE,
+		    Position:= setPoint, Velocity:= speed);
+END_IF			
+
+
+mcStop (Axis:= axis, Execute := stop);  // Used to stop motion 
+]]></ST>
+    </Implementation>
+    <LineIds Name="manageAxis">
+      <LineId Id="20" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="21" Count="2" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="166" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="28" Count="2" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="147" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

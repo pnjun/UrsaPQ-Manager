@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.16">
+  <POU Name="ConvertPressure_Pirani" Id="{2621c2f5-03e6-4670-936e-08e506e53fd5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION ConvertPressure_Pirani : REAL
+VAR_INPUT
+	pressureInt : INT;
+END_VAR
+VAR
+	voltage: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[voltage :=  pressureInt / 3276.8;
+
+IF voltage < 0.5 THEN
+	ConvertPressure_Pirani := 1000; //ERROR (SENSOR DISCONNECTED??)
+ELSE
+	ConvertPressure_Pirani := EXPT(10, ( voltage - 6.143 ) / 1.286 ); // Converts ADC integer to mbars (formula from thermovac manual)
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="ConvertPressure_Pirani">
+      <LineId Id="31" Count="1" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="46" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
