@@ -409,25 +409,37 @@ class UrsapqManager:
             self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
             self.status.mcp_backHV      = self.HVPS.Back.voltage
             self.status.mcp_frontHV     = self.HVPS.Front.voltage
-            self.status.tof_lensHV      = self.HVPS.Lens.voltage
+            self.status.mcp_ionHV       = self.HVPS.Ion.voltage
+            
+            self.status.tof_middleHV    = self.HVPS.Middle.voltage
             self.status.tof_retarderHV  = self.HVPS.Retarder.voltage
-            self.status.tof_magnetHV    = self.HVPS.Magnet.voltage
+            self.status.tof_meshHV      = self.HVPS.Mesh.voltage
+            self.status.tof_extractorHV  = self.HVPS.Extractor.voltage
+            self.status.tof_driftHV      = self.HVPS.Drift.voltage
 
             # Read in write requests for voltage setpoints
-            newLens     = self._getParamWrite('tof_lensSetHV')
-            newRetarter = self._getParamWrite('tof_retarderSetHV')
-            newMagnet   = self._getParamWrite('tof_magnetSetHV')
+            newMiddle     = self._getParamWrite('tof_middleHV')
+            newRetarter   = self._getParamWrite('tof_retarderSetHV')
+            newMesh       = self._getParamWrite('tof_meshHV')
+            newExtractor  = self._getParamWrite('tof_extractorHV')
+            newDrift      = self._getParamWrite('tof_driftHV')            
+            
             newPhosphor = self._getParamWrite('mcp_phosphorSetHV')
             newBack     = self._getParamWrite('mcp_backSetHV')
             newFront    = self._getParamWrite('mcp_frontSetHV')
+            newIon    = self._getParamWrite('mcp_ionHV')
 
             # Apply new setpoints if needed
-            if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
-            if newRetarter is not None: self.HVPS.Retarder.setVoltage = newRetarter
-            if newMagnet   is not None: self.HVPS.Magnet.setVoltage = newMagnet
-            if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
-            if newBack     is not None: self.HVPS.Back.setVoltage = newBack
-            if newFront    is not None: self.HVPS.Front.setVoltage = newFront
+            if newMiddle     is not None: self.HVPS.Middle.setVoltage = newMiddle
+            if newRetarter   is not None: self.HVPS.Retarder.setVoltage = newRetarter
+            if newMesh       is not None: self.HVPS.Mesh.setVoltage = newMesh
+            if newExtractor  is not None: self.HVPS.Extractor.setVoltage = newExtractor            
+            if newDrift      is not None: self.HVPS.Drift.setVoltage = newDrift           
+            
+            if newPhosphor   is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
+            if newBack       is not None: self.HVPS.Back.setVoltage = newBack
+            if newFront      is not None: self.HVPS.Front.setVoltage = newFront
+            if newIon        is not None: self.HVPS.Ion.setVoltage = newIon
 
             #prevent MCP overvoltage by limiting back-front deltaV
             #Must be done after others setpoints have been loaded
@@ -437,14 +449,22 @@ class UrsapqManager:
             if self.HVPS.Back.setVoltage > self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV:
                 self.HVPS.Back.setVoltage = self.HVPS.Front.setVoltage + config.HVPS.MaxFrontBackDeltaV
                 self.setMessage("WARNING: MCP Back voltage setpoint rescaled", 30)
+            if self.HVPS.Phosphor.setVoltage < self.HVPS.Back.setVoltage:
+                self.HVPS.Phosphor.setVoltage = self.HVPS.Back.setVoltage
+                self.setMessage("WARNING: MCP Phosphor voltage setpoint rescaled", 30)
 
             # Update setPoint status
-            self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
-            self.status.tof_retarderSetHV   = self.HVPS.Retarder.setVoltage
-            self.status.tof_magnetSetHV     = self.HVPS.Magnet.setVoltage
+            self.status.tof_middleSetHV    = self.HVPS.Middle.setVoltage
+            self.status.tof_retarderSetHV  = self.HVPS.Retarder.setVoltage
+            self.status.tof_meshSetHV      = self.HVPS.Mesh.setVoltage
+            self.status.tof_extracorSetHV  = self.HVPS.Extractor.setVoltage
+            self.status.tof_driftSetHV     = self.HVPS.Drift.setVoltage            
+            
+            
             self.status.mcp_phosphorSetHV   = self.HVPS.Phosphor.setVoltage
             self.status.mcp_backSetHV       = self.HVPS.Back.setVoltage
             self.status.mcp_frontSetHV      = self.HVPS.Front.setVoltage
+            self.status.mcp_ionSetHV        = self.HVPS.Ion.setVoltage
 
             if self.HVPS.tofEnable and self.HVPS.mcpEnable:
                 self.status.HV_Status = "OK"
@@ -458,18 +478,26 @@ class UrsapqManager:
         except Exception:
             self.status.mcp_hvEnable = False
             self.status.tof_hvEnable = False
+            self.status.mcp_ionHV       = math.nan
             self.status.mcp_phosphorHV  = math.nan
             self.status.mcp_backHV      = math.nan
             self.status.mcp_frontHV     = math.nan
-            self.status.tof_lensHV      = math.nan
+            self.status.tof_middleHV    = math.nan
             self.status.tof_retarderHV  = math.nan
-            self.status.tof_magnetHV    = math.nan
+            self.status.tof_meshHV      = math.nan
+            self.status.tof_extracorHV  = math.nan
+            self.status.tof_driftHV     = math.nan
+            
+            self.status.mcp_ionSetHV        = math.nan
             self.status.mcp_phosphorSetHV   = math.nan
             self.status.mcp_backSetHV       = math.nan
             self.status.mcp_frontSetHV      = math.nan
-            self.status.tof_lensSetHV       = math.nan
+            self.status.tof_middleSetHV     = math.nan
             self.status.tof_retarderSetHV   = math.nan
-            self.status.tof_magnetSetHV     = math.nan
+            self.status.tof_meshSetHV       = math.nan
+            self.status.tof_extracorSetHV  = math.nan
+            self.status.tof_driftSetHV     = math.nan
+                       
             self.status.HV_Status = "ERROR"
             self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate", 5)
             print(traceback.format_exc())
