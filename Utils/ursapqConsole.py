@@ -156,48 +156,7 @@ class ManipulatorWindow(ConsoleWindow):
         self.ursapq.sample_pos_x_stop = self.window.stopButton.isChecked()
         self.ursapq.sample_pos_y_stop = self.window.stopButton.isChecked()
         self.ursapq.sample_pos_z_stop = self.window.stopButton.isChecked()
-        self.ursapq.magnet_pos_y_stop = self.window.stopButton.isChecked()
-        
-class SampleWindow(ConsoleWindow):
-    def __init__(self, ursapq, *args, **kvargs):
-        super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
-        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.window.ovenEnableBox.addWidget(self.enableSwitch)
-        self.ursapq = ursapq
-        self.setupCallbacks()
-
-    def setupCallbacks(self):
-        self.window.setPointsButton.clicked.connect(self.newSetPoints)
-        self.enableSwitch.clicked.connect(self.oven_enable)
-
-    def update(self):
-        self.enableSwitch.setChecked( self.ursapq.oven_enable )
-        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
-        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
-        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
-        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
-        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
-        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
-
-    #Callbacks:
-    @Slot()
-    def oven_enable(self):
-        self.ursapq.oven_enable = self.enableSwitch.isChecked()
-
-    @Slot()
-    def newSetPoints(self):
-        try:
-            self.ursapq.oven_bodySetPoint = float( self.window.bodySetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_tipSetPoint = float( self.window.tipSetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_capSetPoint = float( self.window.capSetPoint_in.toPlainText() )
-        except Exception:
-            pass
+        self.ursapq.magnet_pos_y_stop = self.window.stopButton.isChecked()      
 
 class SpectrometerWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
@@ -224,16 +183,23 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
+        self.window.mcpItof_act.setText(   '{:.1f}'.format(self.ursapq.mcp_ionHV))
         self.window.mcpFront_set.setText(  '{:.1f}'.format(self.ursapq.mcp_frontSetHV))
         self.window.mcpBack_set.setText(   '{:.1f}'.format(self.ursapq.mcp_backSetHV))
         self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorSetHV))
-
+        self.window.mcpItof_set.setText(   '{:.1f}'.format(self.ursapq.mcp_ionSetHV))
+        
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        self.window.tofLens_act.setText(     '{:.1f}'.format(self.ursapq.tof_lensHV))
-        self.window.tofMagnet_act.setText(   '{:.1f}'.format(self.ursapq.tof_magnetHV))
+        self.window.tofMiddle_act.setText(     '{:.1f}'.format(self.ursapq.tof_middleHV))
+        self.window.tofMesh_act.setText(   '{:.1f}'.format(self.ursapq.tof_meshHV))
+        self.window.tofExtractor_act.setText(   '{:.1f}'.format(self.ursapq.tof_extractorHV))
+        self.window.tofDrift_act.setText(   '{:.1f}'.format(self.ursapq.tof_driftHV))
+        
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
-        self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
-        self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
+        self.window.tofMiddle_set.setText(     '{:.1f}'.format(self.ursapq.tof_middleSetHV))
+        self.window.tofMesh_set.setText(   '{:.1f}'.format(self.ursapq.tof_meshSetHV))
+        self.window.tofExtractor_set.setText(   '{:.1f}'.format(self.ursapq.tof_extractorSetHV))
+        self.window.tofDrift_set.setText(   '{:.1f}'.format(self.ursapq.tof_driftSetHV))
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
@@ -270,6 +236,10 @@ class SpectrometerWindow(ConsoleWindow):
             self.ursapq.mcp_phosphorSetHV = float( self.window.mcpPhos_in.toPlainText() )
         except Exception:
             pass
+        try:
+            self.ursapq.mcp_ionSetHV = float( self.window.mcpItof_in.toPlainText() )
+        except Exception:
+            pass
 
     @Slot()
     def tofSet(self):
@@ -278,14 +248,22 @@ class SpectrometerWindow(ConsoleWindow):
         except Exception:
             pass
         try:
-            self.ursapq.tof_lensSetHV = float( self.window.tofLens_in.toPlainText() )
+            self.ursapq.tof_meshSetHV = float( self.window.tofMesh_in.toPlainText() )
         except Exception:
             pass
         try:
-            self.ursapq.tof_magnetSetHV = float( self.window.tofMagnet_in.toPlainText() )
+            self.ursapq.tof_middleSetHV = float( self.window.tofMiddle_in.toPlainText() )
         except Exception:
             pass
-
+        try:
+            self.ursapq.tof_extractorSetHV = float( self.window.tofExtractor_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.tof_driftSetHV = float( self.window.tofDrift_in.toPlainText() )
+        except Exception:
+            pass
+            
 class DataDisplayWindow(ConsoleWindow):
     def __init__(self, ursapq, title, varname, *args, **kvargs):
         super(DataDisplayWindow, self).__init__('dataDisplay.ui', *args, **kvargs)
@@ -322,7 +300,6 @@ class MainWindow(ConsoleWindow):
 
 
     def setupCallbacks(self):
-        self.window.sample_MB.clicked.connect(self.showSample)
         self.window.vacuum_MB.clicked.connect(self.showVacuum)
         self.window.spectr_MB.clicked.connect(self.showSpectrometer)
         self.window.manipulator_MB.clicked.connect(self.showManipulator)
@@ -364,28 +341,17 @@ class MainWindow(ConsoleWindow):
         if self.ursapq.preVac_OK and self.ursapq.mainVac_OK:
             self.window.vacuum_SL.setStyleSheet(BG_COLOR_OK)
 
-    def updateSample(self):
-        self.window.bodyTemp.setText( '{:.1f}'.format(self.ursapq.sample_bodyTemp) )
-        self.window.capTemp.setText(  '{:.1f}'.format(self.ursapq.sample_capTemp) )
-        self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
-
-        #Update status label
-        self.window.ovenStatus.setText(self.ursapq.oven_PIDStatus)
-
-        if self.ursapq.oven_PIDStatus == "OK":
-            self.window.sample_SL.setStyleSheet(BG_COLOR_OK)
-        elif self.ursapq.oven_PIDStatus == "TRACKING":
-            self.window.sample_SL.setStyleSheet(BG_COLOR_WARNING)
-        elif self.ursapq.oven_PIDStatus == "OFF":
-            self.window.sample_SL.setStyleSheet(BG_COLOR_OFF)
-        else:
-            self.window.sample_SL.setStyleSheet(BG_COLOR_ERROR)
-
     def updateSpectrometer(self):
         self.window.mcpFront_act.setText( '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
-        self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
+        self.window.mcpItof_act.setText(  '{:.1f}'.format(self.ursapq.mcp_ionHV))
+        self.window.extractor_act.setText(  '{:.1f}'.format(self.ursapq.tof_extractorHV))
+        self.window.drift_act.setText(  '{:.1f}'.format(self.ursapq.tof_driftHV))
+        self.window.retarder_act.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
+        self.window.middle_act.setText(  '{:.1f}'.format(self.ursapq.tof_middleHV))
+        self.window.mesh_act.setText(  '{:.1f}'.format(self.ursapq.tof_meshHV))
+
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
@@ -402,7 +368,6 @@ class MainWindow(ConsoleWindow):
     def update(self):
         try:
             self.updateVacuum()
-            self.updateSample()
             self.updateSpectrometer()
             self.updateManipulator()
         except Exception as e:
@@ -436,9 +401,6 @@ class MainWindow(ConsoleWindow):
     @Slot()
     def showManipulator(self):
         self.childWindows.append(ManipulatorWindow(self.ursapq))
-    @Slot()
-    def showSample(self):
-        self.childWindows.append(SampleWindow(self.ursapq))
     @Slot()
     def showVacuum(self):
         self.childWindows.append(VacuumWindow(self.ursapq))

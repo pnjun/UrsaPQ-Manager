@@ -418,16 +418,16 @@ class UrsapqManager:
             self.status.tof_driftHV      = self.HVPS.Drift.voltage
 
             # Read in write requests for voltage setpoints
-            newMiddle     = self._getParamWrite('tof_middleHV')
+            newMiddle     = self._getParamWrite('tof_middleSetHV')
             newRetarter   = self._getParamWrite('tof_retarderSetHV')
-            newMesh       = self._getParamWrite('tof_meshHV')
-            newExtractor  = self._getParamWrite('tof_extractorHV')
-            newDrift      = self._getParamWrite('tof_driftHV')            
+            newMesh       = self._getParamWrite('tof_meshSetHV')
+            newExtractor  = self._getParamWrite('tof_extractorSetHV')
+            newDrift      = self._getParamWrite('tof_driftSetHV')            
             
             newPhosphor = self._getParamWrite('mcp_phosphorSetHV')
             newBack     = self._getParamWrite('mcp_backSetHV')
             newFront    = self._getParamWrite('mcp_frontSetHV')
-            newIon    = self._getParamWrite('mcp_ionHV')
+            newIon    = self._getParamWrite('mcp_ionSetHV')
 
             # Apply new setpoints if needed
             if newMiddle     is not None: self.HVPS.Middle.setVoltage = newMiddle
@@ -457,7 +457,7 @@ class UrsapqManager:
             self.status.tof_middleSetHV    = self.HVPS.Middle.setVoltage
             self.status.tof_retarderSetHV  = self.HVPS.Retarder.setVoltage
             self.status.tof_meshSetHV      = self.HVPS.Mesh.setVoltage
-            self.status.tof_extracorSetHV  = self.HVPS.Extractor.setVoltage
+            self.status.tof_extractorSetHV  = self.HVPS.Extractor.setVoltage
             self.status.tof_driftSetHV     = self.HVPS.Drift.setVoltage            
             
             
@@ -485,7 +485,7 @@ class UrsapqManager:
             self.status.tof_middleHV    = math.nan
             self.status.tof_retarderHV  = math.nan
             self.status.tof_meshHV      = math.nan
-            self.status.tof_extracorHV  = math.nan
+            self.status.tof_extractorHV  = math.nan
             self.status.tof_driftHV     = math.nan
             
             self.status.mcp_ionSetHV        = math.nan
@@ -495,7 +495,7 @@ class UrsapqManager:
             self.status.tof_middleSetHV     = math.nan
             self.status.tof_retarderSetHV   = math.nan
             self.status.tof_meshSetHV       = math.nan
-            self.status.tof_extracorSetHV  = math.nan
+            self.status.tof_extractorSetHV = math.nan
             self.status.tof_driftSetHV     = math.nan
                        
             self.status.HV_Status = "ERROR"
