@@ -83,7 +83,7 @@ class ursapqDataHandler:
         
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
-        
+
         # Try pulling new TOF traces from DOOCS
         try:
             new_eTof = self.pydoocs.read(config.Data_DOOCS_eTOF)           
@@ -141,8 +141,6 @@ class ursapqDataHandler:
     def doocsUpdateLoop(self):
         '''
         Keeps reading data from DOOCS and filters it as it comes in.
-        The commented part should make it so that it takes in all data sequentially,
-        but the ifs slow it down too much.
         '''
         #Run until stop event
         while not self.stopEvent.isSet():
