@@ -76,8 +76,8 @@ class SingleShot:
         if not tof: self.iTofSlicepl.set_xlim([0,xmax])
         self.iTofSlicepl.set_title("iTOF Sliced")                   
         
-        self.eTofSlice, = self.eTofSlicepl.plot(  ursapq.data_axis[self.axId], ursapq.data_evenShots )
-        self.iTofSlice,  = self.iTofSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_oddShots )
+        self.eTofSlice, = self.eTofSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_eTof_lowPass )
+        self.iTofSlice, = self.iTofSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_iTof_lowPass )
                                             
         self.figure.show()
 
