@@ -55,9 +55,8 @@ class ursapqDataHandler:
         self.updateFreq = 0
         self.macropulse = 0
         self.timestamp = time.time()
-        self.tofTrace = None
-        self.laserTrace = None
-        self.triggTrace = None
+        self.eTofTrace = None
+        self.iTofTrace = None
         
     def start(self):
         '''
@@ -87,58 +86,58 @@ class ursapqDataHandler:
         
         # Try pulling new TOF traces from DOOCS
         try:
-            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)           
+            new_eTof = self.pydoocs.read(config.Data_DOOCS_eTOF)           
             
-            if newTof['macropulse'] == self.macropulse: #if we got the same data twice, return false (we dont want to process the same data twice)
+            if new_eTof['macropulse'] == self.macropulse: #if we got the same data twice, return false (we dont want to process the same data twice)
                 return False
                 
-            self.macropulse = newTof['macropulse'] 
-            
+            self.macropulse = new_eTof['macropulse'] 
+
             if config.Data_GmdNorm:
-                newGmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
+                new_gmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
                                            macropulse = self.macropulse)['data'].T[1]            
             
-            self.updateFreq = (  0.03 * 1/(newTof['timestamp'] - self.timestamp) 
+            new_iTof = self.pydoocs.read(config.Data_DOOCS_iTOF, 
+                                           macropulse = self.macropulse)
+            
+            self.updateFreq = (  0.03 * 1/(new_eTof['timestamp'] - self.timestamp) 
                                + 0.97 * self.updateFreq)
-            self.timestamp = newTof['timestamp']
+            self.timestamp = new_eTof['timestamp']
         except Exception as error:
             traceback.print_exc()
             return False
-        
+            
         if config.Data_Invert:
-            newTof['data'].T[1] *= -1      
-                
+            new_eTof['data'].T[1] *= -1 
+            new_iTof['data'].T[1] *= -1          
+                        
         #Two types of online data: Low passed ('moving average') and accumulated
        
         #Low pass:
         #This is run in a separate try...except so that tofTrace gets reinitialized 
         #if the lenght of newTof changes due to DOOCS reconfiguration
         try:
-            self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
+            self.eTofTrace[1]   = self.dataFilter( new_eTof['data'].T[1]   ,  self.eTofTrace[1] )
+            self.iTofTrace[1]   = self.dataFilter( new_iTof['data'].T[1]   ,  self.iTofTrace[1] )
         except Exception as error:
             traceback.print_exc()
-            self.tofTrace  = newTof['data'].T.copy()
-            
+            self.eTofTrace  = new_eTof['data'].T.copy()
+            self.iTofTrace  = new_iTof['data'].T.copy()
+                        
         #Accumulate data:
         try:
-            self.tofAccumulator[1] += newTof['data'].T[1] 
-            self.accumulatorCount += 1
-            if config.Data_GmdNorm: self.gmdAccumulator += newGmd.mean()
+            self.eTof_accumulator[1] += new_eTof['data'].T[1] 
+            self.iTof_accumulator[1] += new_iTof['data'].T[1] 
+            self.accumulator_count += 1
+            if config.Data_GmdNorm: self.gmd_accumulator += new_gmd.mean()
         except Exception as error:
             traceback.print_exc()
-            self.tofAccumulator  = newTof['data'].T.copy() #Rest tof accumulator
-            self.accumulatorCount = 1
-            if config.Data_GmdNorm: self.gmdAccumulator = newGmd.mean() 
+            self.eTof_accumulator  = new_eTof['data'].T.copy() #Rest tof accumulator
+            self.iTof_accumulator  = new_iTof['data'].T.copy() #Rest tof accumulator            
+            self.accumulator_count = 1
+            if config.Data_GmdNorm: self.gmd_accumulator = new_gmd.mean() 
         return True
-                           
-    def updateLaserTrace(self):
-        try:
-            self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
-                                                macropulse = self.macropulse)['data'].T
-                                                
-        except Exception as error:
-            traceback.print_exc()
-
+                          
     def doocsUpdateLoop(self):
         '''
         Keeps reading data from DOOCS and filters it as it comes in.
@@ -149,9 +148,7 @@ class ursapqDataHandler:
         while not self.stopEvent.isSet():
             if not self.updateTofTraces():
                 continue
-
-            self.updateLaserTrace()
-                
+               
             # Notify filter worker that new data is available
             self.dataUpdated.set()
             
@@ -190,10 +187,9 @@ class ursapqDataHandler:
         stackedTraces -= bg[:,None]                                
                                  
         #Sum up all slices skipping the first self.skipSlices
-        evenSlice = stackedTraces[start:end:2].mean(axis=0)
-        oddSlice  = stackedTraces[start+1:end+1:2].mean(axis=0)
+        stacked = stackedTraces[start:end].mean(axis=0)
             
-        return evenSlice, oddSlice, end-start                        
+        return stacked, end-start                        
     
     def getTofsAndEvs(self, tofAxis):
         #Generate tof times and eV data
@@ -212,38 +208,43 @@ class ursapqDataHandler:
         while not self.stopEvent.isSet():
             self.dataUpdated.wait()
             self.dataUpdated.clear()
-    
+      
             try:       
-                evenLowPass, oddLowPass, traceCount = self.sliceAverage(self.tofTrace[1])
+                eTof_lowPass, traceCount = self.sliceAverage(self.eTofTrace[1])
+                iTof_lowPass, traceCount = self.sliceAverage(self.iTofTrace[1])
                 
-                evenAcc, oddAcc, traceCount = self.sliceAverage(self.tofAccumulator[1])
-                evenAcc /= self.accumulatorCount #slightly thread usafe (as accumulatorCount could be update after sliceAverage returns)
-                oddAcc  /= self.accumulatorCount #but worst case it's out by 1-2 shots out of hundreds
-                       
+                eTof_acc, traceCount = self.sliceAverage(self.eTof_accumulator[1])
+                iTof_acc, traceCount = self.sliceAverage(self.iTof_accumulator[1])                
+                
+                #slightly thread usafe (as accumulatorCount could be update after sliceAverage returns) 
+                #but worst case it's out by 1-2 shots out of hundreds
+                eTof_acc /= self.accumulator_count
+                iTof_acc /= self.accumulator_count   
+                
                 if config.Data_GmdNorm:
-                    gmd = self.gmdAccumulator / self.accumulatorCount
-                    evenAcc /= gmd
-                    oddAcc  /= gmd
+                    gmd = self.gmd_accumulator / self.accumulator_count
+                    eTof_acc /= gmd
+                    iTof_acc  /= gmd
                                            
-                tofs, evs = self.getTofsAndEvs(self.tofTrace[0])
+                tofs, evs = self.getTofsAndEvs(self.eTofTrace[0])
                     
                 #Output arrays
                 self.status.data_axis = np.vstack((tofs, evs))
-                self.status.data_evenShots =  evenLowPass
-                self.status.data_oddShots  =  oddLowPass
+                self.status.data_eTof_lowPass =  eTof_lowPass
+                self.status.data_iTof_lowPass =  iTof_lowPass
                 self.status.data_traceNum = traceCount
               
-                self.status.data_evenAccumulator =  evenAcc 
-                self.status.data_oddAccumulator  =  oddAcc
-                self.status.data_AccumulatorCount = self.accumulatorCount
+                self.status.data_eTof_acc =  eTof_acc 
+                self.status.data_iTof_acc  =  iTof_acc
+                self.status.data_AccumulatorCount = self.accumulator_count
                
-                self.status.data_updateFreq = self.updateFreq
-                self.status.data_laserTrace = self.laserTrace
-                self.status.data_tofTrace   = self.tofTrace
+                self.status.data_updateFreq  = self.updateFreq
+                self.status.data_eTofTrace   = self.eTofTrace
+                self.status.data_iTofTrace   = self.iTofTrace
                 
                 if self.status.data_clearAccumulator:
                     # Will throw TypeError in updateTofTraces and reset the accumulators
-                    self.accumulatorCount = None  
+                    self.accumulator_count = None  
                     self.status.data_clearAccumulator = False
                                    
             except Exception as e:
