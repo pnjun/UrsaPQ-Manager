@@ -6,16 +6,10 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-#Time zero estimate
-TIME_ZERO  = 1457.05
-DELAY      = .1
 
-INTEG_TIME = 90    #seconds, per bin
-WAVEPLATE  = 45
-RETARDER   = 10 
-POLARIZ    = 'p'
 
-RANDOMIZE  = True
+INTEG_TIME = 5    #seconds, per bin
+RANDOMIZE  = False
 OUTFOLDER  = "./data/"
 
 PLOTMAX = 200 #Upper val of ev scale 
@@ -32,26 +26,20 @@ print()
 exp = UrsaPQ()
 startDate = datetime.now()
 
-exp.tof_retarderSetHV = RETARDER
-set_waveplate(WAVEPLATE)
-set_delay(DELAY, TIME_ZERO)
-set_polarization(POLARIZ)
-
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
-evs = exp.data_axis[1]
+evs = exp.data_axis[1] # use index 0 for tof, index 1 for evs
 
-data        = np.empty((energies.shape[0], evs.shape[0]))
-data[:]     = np.NaN
-dataEven    = np.empty((energies.shape[0], evs.shape[0]))
-dataEven[:] = np.NaN
-dataOdd     = np.empty((energies.shape[0], evs.shape[0]))
-dataOdd[:]  = np.NaN
+eTofData        = np.empty((energies.shape[0], evs.shape[0]))
+eTofData[:]     = np.NaN
+iTofData        = np.empty((energies.shape[0], evs.shape[0]))
+iTofData[:]     = np.NaN
 
 
 #Setup preview window
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
-plot = DataPreview(evs, energies, data, sliceX = ev_slice)
+eTof_plot = DataPreview(evs, energies, eTofData, sliceX = ev_slice)
+iTof_plot = DataPreview(evs, energies, iTofData, sliceX = ev_slice)
 
 #Generate random permutation
 scan_order = np.arange(energies.shape[0])
@@ -60,7 +48,8 @@ if RANDOMIZE:
 
 try:
     with Run(RunType.energy) as run_id:
-        plot.set_title(f"Run {run_id} - Energy Scan")
+        eTof_plot.set_title(f"Energy Scan {run_id} - eTOF")
+        iTof_plot.set_title(f"Energy Scan {run_id} - iTOF")
         
         for n in scan_order:
             print(f"Scanning energy: {energies[n]:.3f}", end= "\r")
@@ -73,10 +62,10 @@ try:
             
             #Set up preview updater 
             def updatef():
-                dataEven[n] = exp.data_evenAccumulator
-                dataOdd[n]  = exp.data_oddAccumulator
-                data[n]     = dataEven[n] - dataOdd[n]
-                plot.update_data(data)
+                eTofData[n] = exp.data_eTof_acc
+                iTofData[n] = exp.data_iTof_acc
+                eTof_plot.update_data(eTofData)
+                eTof_plot.update_data(iTofData)
                 
             #Wait for INTEG_TIME while updating the preview
             DataPreview.update_wait(updatef, INTEG_TIME)
@@ -98,21 +87,9 @@ if interrupted:
     out_fname += "_stopped"
 
 #Write out data
-np.savez(out_fname + ".npz", energies=energies, evs=evs, dataEven=dataEven, dataOdd=dataOdd)
-plot.save_figure(out_fname + ".png")
+np.savez(out_fname + ".npz", energies=energies, evs=evs, eTofData=eTofData, iTofData=iTofData)
+eTof_plot.save_figure(out_fname + "_eTof.png")
+iTof_plot.save_figure(out_fname + "_iTof.png")
 
 print(f"Data saved as {out_fname}")
-
-
-
-
-
-
-
-
-
-
-
-
-
 
