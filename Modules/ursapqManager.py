@@ -218,10 +218,16 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.PHOSPHORHV", self.status.mcp_phosphorHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.BACKHV",     self.status.mcp_backHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.FRONTHV",    self.status.mcp_frontHV)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     math.nan) #MESH DOES NOT EXIST
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_lensHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   self.status.tof_magnetHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     self.status.tof_meshHV) #MESH DOES NOT EXIST
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_middleHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",  math.nan)
+        
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/ITOF.MCP",       self.status.mcp_ionHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/ITOF.DRIFT",     self.status.tof_driftHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/ITOF.EXTRACTOR", self.status.tof_extractorHV)
+        
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP",      self.status.sample_capTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP",      self.status.sample_tipTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP",     self.status.sample_bodyTemp)
