@@ -8,14 +8,14 @@ from ursapq_api import UrsaPQ
 #**************** SETUP PARAMETERS ************
 
 
-INTEG_TIME = 5    #seconds, per bin
+INTEG_TIME = 300    #seconds, per bin
 RANDOMIZE  = False
 OUTFOLDER  = "./data/"
 
 PLOTMAX = 200 #Upper val of ev scale 
 
 #energies array
-energies = np.arange(214., 226.1, .5)
+energies = np.arange(66., 80., .5)
 
 #***************** CODE BEGINS ****************
 
@@ -28,7 +28,7 @@ startDate = datetime.now()
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired
-evs = exp.data_axis[1] # use index 0 for tof, index 1 for evs
+evs = exp.data_axis[0] # use index 0 for tof, index 1 for evs
 
 eTofData        = np.empty((energies.shape[0], evs.shape[0]))
 eTofData[:]     = np.NaN
@@ -37,9 +37,9 @@ iTofData[:]     = np.NaN
 
 
 #Setup preview window
-ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
-eTof_plot = DataPreview(evs, energies, eTofData, sliceX = ev_slice)
-iTof_plot = DataPreview(evs, energies, iTofData, sliceX = ev_slice)
+#ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
+eTof_plot = DataPreview(evs, energies, eTofData, sliceX = None)
+iTof_plot = DataPreview(evs, energies, iTofData, sliceX = None)
 
 #Generate random permutation
 scan_order = np.arange(energies.shape[0])
@@ -66,7 +66,7 @@ try:
                 iTofData[n] = exp.data_iTof_acc
                 eTof_plot.update_data(eTofData)
                 eTof_plot.update_data(iTofData)
-                
+               
             #Wait for INTEG_TIME while updating the preview
             DataPreview.update_wait(updatef, INTEG_TIME)
             

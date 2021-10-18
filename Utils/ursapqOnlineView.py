@@ -31,7 +31,7 @@ class TracePlots:
         
         
         axslid = self.figure.add_axes([0.5, 0.93, 0.4, 0.04])
-        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.5, 60, valinit=ursapq.data_filterTau)
+        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.5, 20, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
         
         self.figure.show()
@@ -98,7 +98,7 @@ if __name__=='__main__':
 
     ursapq = UrsaPQ()
     traces = TracePlots(ursapq)
-    singleshots = SingleShot(ursapq, tof = tof,xmax=300) #Set tof to true to plot TOF instead of eV
+    singleshots = SingleShot(ursapq, tof = tof,xmax=220) #Set tof to true to plot TOF instead of eV
     
     while True:
         traces.update()

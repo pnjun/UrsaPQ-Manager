@@ -95,10 +95,10 @@ class ursapqDataHandler:
 
             if config.Data_GmdNorm:
                 new_gmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
-                                           macropulse = self.macropulse)['data'].T[1]            
-            
-            new_iTof = self.pydoocs.read(config.Data_DOOCS_iTOF, 
-                                           macropulse = self.macropulse)
+                                           macropulse = self.macropulse)['data'].T[1]       
+                                                
+            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
+            new_iTof = self.pydoocs.read(config.Data_DOOCS_iTOF, macropulse = self.macropulse)
             
             self.updateFreq = (  0.03 * 1/(new_eTof['timestamp'] - self.timestamp) 
                                + 0.97 * self.updateFreq)
@@ -109,8 +109,9 @@ class ursapqDataHandler:
             
         if config.Data_Invert:
             new_eTof['data'].T[1] *= -1 
+            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
             new_iTof['data'].T[1] *= -1          
-                        
+       
         #Two types of online data: Low passed ('moving average') and accumulated
        
         #Low pass:
@@ -118,6 +119,7 @@ class ursapqDataHandler:
         #if the lenght of newTof changes due to DOOCS reconfiguration
         try:
             self.eTofTrace[1]   = self.dataFilter( new_eTof['data'].T[1]   ,  self.eTofTrace[1] )
+            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
             self.iTofTrace[1]   = self.dataFilter( new_iTof['data'].T[1]   ,  self.iTofTrace[1] )
         except Exception as error:
             traceback.print_exc()
@@ -127,13 +129,13 @@ class ursapqDataHandler:
         #Accumulate data:
         try:
             self.eTof_accumulator[1] += new_eTof['data'].T[1] 
-            self.iTof_accumulator[1] += new_iTof['data'].T[1] 
+            self.iTof_accumulator[1] += new_iTof['data'].T[1]
             self.accumulator_count += 1
             if config.Data_GmdNorm: self.gmd_accumulator += new_gmd.mean()
         except Exception as error:
             traceback.print_exc()
             self.eTof_accumulator  = new_eTof['data'].T.copy() #Rest tof accumulator
-            self.iTof_accumulator  = new_iTof['data'].T.copy() #Rest tof accumulator            
+            self.iTof_accumulator  = new_iTof['data'].T.copy() #Rest tof accumulator 
             self.accumulator_count = 1
             if config.Data_GmdNorm: self.gmd_accumulator = new_gmd.mean() 
         return True
@@ -150,14 +152,23 @@ class ursapqDataHandler:
             # Notify filter worker that new data is available
             self.dataUpdated.set()
             
-    def Tof2eV(self, tof, retard):
+    def eTof2eV(self, tof, retard):
         ''' converts time of flight into ectronvolts '''
+        # Constants for conversion:
+        s = config.Data_SpectrometerLen
+        m_over_e = 5.69
+
+        # UNITS AND ORDERS OF MAGNITUDE DO CHECK OUT
+        return 0.5 * m_over_e * ( s / tof )**2 - retard
+
+    def iTof2moz(self, tof):
+        ''' converts time of flight into mass/charge ratio '''
         # Constants for conversion:
         s = 1.7
         m_over_e = 5.69
 
         # UNITS AND ORDERS OF MAGNITUDE DO CHECK OUT
-        return 0.5 * m_over_e * ( s / tof )**2 - retard
+        return 0.5 * m_over_e * ( s / tof )**2
 
     def stack_slices(self, array, startIdx, sliceLen):
         all_idx = startIdx[:, None] + np.arange(sliceLen)
@@ -189,13 +200,15 @@ class ursapqDataHandler:
             
         return stacked, end-start                        
     
-    def getTofsAndEvs(self, tofAxis):
+    def getCalibrated(self, tofAxis):
         #Generate tof times and eV data
         tofs = tofAxis[:config.Data_SliceSize] - tofAxis[0]
                    
         #Generate EV from TOF
-        evs = self.Tof2eV( tofs, self.status.tof_retarderHV )    
-        return tofs, evs 
+        retardation = self.status.tof_retarderHV + self.status.tof_meshHV
+        evs = self.eTof2eV( tofs, retardation )    
+        moz = self.iTof2moz( tofs )    
+        return tofs, evs, moz 
              
     def updateLoop(self):
         '''
@@ -224,10 +237,10 @@ class ursapqDataHandler:
                     eTof_acc /= gmd
                     iTof_acc  /= gmd
                                            
-                tofs, evs = self.getTofsAndEvs(self.eTofTrace[0])
+                tofs, evs, moz = self.getCalibrated(self.eTofTrace[0])
                     
                 #Output arrays
-                self.status.data_axis = np.vstack((tofs, evs))
+                self.status.data_axis = np.vstack((tofs, evs, moz))
                 self.status.data_eTof_lowPass =  eTof_lowPass
                 self.status.data_iTof_lowPass =  iTof_lowPass
                 self.status.data_traceNum = traceCount
