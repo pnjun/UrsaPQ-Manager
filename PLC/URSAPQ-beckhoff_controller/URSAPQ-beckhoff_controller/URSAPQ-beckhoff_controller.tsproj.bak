@@ -3011,10 +3011,6 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo2_NO</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurboTOF_NO</Name>
 							<Type>BOOL</Type>
 						</Var>
@@ -3024,32 +3020,7 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo2_ERR</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurboTOF_ERR</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleX_Fw_End</Name>
-							<Comment><![CDATA[ Limit switches]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleX_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Fw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleZ_Fw_End</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3075,6 +3046,27 @@ External Setpoint Generation:
 						<Var>
 							<Name>MAIN.MagnetY.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleX_Fw_End</Name>
+							<Comment><![CDATA[ Limit switches]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleX_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleY_Fw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleY_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleZ_Fw_End</Name>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.SampleZ_Bw_End</Name>
@@ -3134,10 +3126,6 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo2_ON</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurboTOF_ON</Name>
 							<Type>BOOL</Type>
 						</Var>
@@ -3146,12 +3134,12 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.Lamp1_Enable</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.HVPS_ON</Name>
 							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Lamp1_Enable</Name>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.FrameX.PlcToNc</Name>
@@ -3235,6 +3223,19 @@ External Setpoint Generation:
 							</OwnerB>
 							<OwnerB Name="TINC^NC-Task SAF^Axes^Magnet Z">
 								<Link VarA="MAIN.MagnetZ.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{6A65C767-34E5-42BF-AD87-E1A503EAC7BE}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2022-10-27T16:22:10">
+						<OwnerA Name="InputDst" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="1">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
+								<Link VarA="MAIN.MTurbo2_ERR" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 9^Input" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="MAIN.MTurbo2_NO" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^Input" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
+								<Link VarA="MAIN.MTurbo2_ON" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 3^MAinTurbo2_ON" Size="1" RestoreInfo="ANotFound"/>
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
@@ -6870,7 +6871,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="35" BoxType="9093" BoxFlags="#x00000020">
 						<Name>Term 43 (EL6731)</Name>
 						<ImageId>1006</ImageId>
-						<EtherCAT SlaveType="5" AdsServerAddress="c0a8000103010000" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000025">
+						<EtherCAT SlaveType="5" AdsServerAddress="c0a800010301fb03" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000025">
 							<SyncMan>0010800126000100010000005000da058001001026010000</SyncMan>
 							<SyncMan>8011800122000100020000005000da058001801122010000</SyncMan>
 							<SyncMan>001300002400000003000000000000000000001324010000</SyncMan>
@@ -7988,13 +7989,10 @@ Bit1: Value smaller than Limit2]]></Comment>
 				<Link VarA="PlcTask Inputs^MAIN.PrePump_Pressure_Int" VarB="AI Standard Channel 1^Prepump Pirani"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
-				<Link VarA="PlcTask Outputs^MAIN.MTurbo2_ON" VarB="Channel 3^MAinTurbo2_ON"/>
 				<Link VarA="PlcTask Outputs^MAIN.MTurboTOF_ON" VarB="Channel 4^TOFTurbo_ON"/>
 				<Link VarA="PlcTask Outputs^MAIN.Penning_Enable" VarB="Channel 1^Penning Enable"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
-				<Link VarA="PlcTask Inputs^MAIN.MTurbo2_ERR" VarB="Channel 9^Input"/>
-				<Link VarA="PlcTask Inputs^MAIN.MTurbo2_NO" VarB="Channel 1^Input"/>
 				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_ERR" VarB="Channel 10^Input"/>
 				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_NO" VarB="Channel 2^Input"/>
 			</OwnerB>
