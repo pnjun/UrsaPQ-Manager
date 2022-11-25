@@ -123,19 +123,18 @@ class ursapqDataHandler:
         try:
             self.tofAccumulator[1] += newTof['data'].T[1] 
             self.accumulatorCount += 1
-            if config.Data_GmdNorm: self.gmdAccumulator += newGmd.mean()
+            self.gmdAccumulator += newGmd.mean()
         except Exception as error:
             traceback.print_exc()
             self.tofAccumulator  = newTof['data'].T.copy() #Rest tof accumulator
             self.accumulatorCount = 1
-            if config.Data_GmdNorm: self.gmdAccumulator = newGmd.mean() 
+            self.gmdAccumulator = newGmd.mean() 
         return True
                            
     def updateLaserTrace(self):
         try:
             self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
-                                                macropulse = self.macropulse)['data'].T
-                                                
+                                                macropulse = self.macropulse)['data'].T                 
         except Exception as error:
             traceback.print_exc()
 
@@ -149,9 +148,7 @@ class ursapqDataHandler:
         while not self.stopEvent.isSet():
             if not self.updateTofTraces():
                 continue
-
             self.updateLaserTrace()
-                
             # Notify filter worker that new data is available
             self.dataUpdated.set()
             
@@ -217,13 +214,15 @@ class ursapqDataHandler:
                 evenLowPass, oddLowPass, traceCount = self.sliceAverage(self.tofTrace[1])
                 
                 evenAcc, oddAcc, traceCount = self.sliceAverage(self.tofAccumulator[1])
-                evenAcc /= self.accumulatorCount #slightly thread usafe (as accumulatorCount could be update after sliceAverage returns)
-                oddAcc  /= self.accumulatorCount #but worst case it's out by 1-2 shots out of hundreds
-                       
+
+                #slightly thread usafe (as accumulatorCount / gmd could be updated after sliceAverage returns)
+                #but worst case it's out by 1-2 shots out of hundreds
                 if config.Data_GmdNorm:
-                    gmd = self.gmdAccumulator / self.accumulatorCount
-                    evenAcc /= gmd
-                    oddAcc  /= gmd
+                    evenAcc /= self.gmdAccumulator
+                    oddAcc  /= self.gmdAccumulator
+                else:
+                    evenAcc /= self.accumulatorCount
+                    oddAcc  /= self.accumulatorCount                      
                                            
                 tofs, evs = self.getTofsAndEvs(self.tofTrace[0])
                     
@@ -235,6 +234,7 @@ class ursapqDataHandler:
               
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
+                self.status.data_gmdAccumulator  = self.gmdAccumulator
                 self.status.data_AccumulatorCount = self.accumulatorCount
                
                 self.status.data_updateFreq = self.updateFreq

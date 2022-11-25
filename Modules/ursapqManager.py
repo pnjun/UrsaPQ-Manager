@@ -55,7 +55,7 @@ class TempPIDFilter:
         if out < 0:
             out = 0
 
-        print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
+        #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
         # the PID out to make it linear in applied power.
         return math.sqrt(out)
@@ -218,10 +218,10 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.PHOSPHORHV", self.status.mcp_phosphorHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.BACKHV",     self.status.mcp_backHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.FRONTHV",    self.status.mcp_frontHV)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     math.nan) #MESH DOES NOT EXIST
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_lensHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MESHHV",     self.status.tof_meshHV) #MESH DOES NOT EXIST
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.LENSHV",     self.status.tof_middleHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.RETARDERHV", self.status.tof_retarderHV)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   self.status.tof_magnetHV)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/TOF.MAGNETHV",   math.nan)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP",      self.status.sample_capTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP",      self.status.sample_tipTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP",     self.status.sample_bodyTemp)
@@ -409,22 +409,24 @@ class UrsapqManager:
             self.status.mcp_phosphorHV  = self.HVPS.Phosphor.voltage
             self.status.mcp_backHV      = self.HVPS.Back.voltage
             self.status.mcp_frontHV     = self.HVPS.Front.voltage
-            self.status.tof_lensHV      = self.HVPS.Lens.voltage
+            self.status.tof_middleHV    = self.HVPS.Middle.voltage
             self.status.tof_retarderHV  = self.HVPS.Retarder.voltage
-            self.status.tof_magnetHV    = self.HVPS.Magnet.voltage
-
+            self.status.tof_meshHV      = self.HVPS.Mesh.voltage
+            
+            
             # Read in write requests for voltage setpoints
-            newLens     = self._getParamWrite('tof_lensSetHV')
-            newRetarter = self._getParamWrite('tof_retarderSetHV')
-            newMagnet   = self._getParamWrite('tof_magnetSetHV')
+            newMiddle     = self._getParamWrite('tof_middleSetHV')
+            newRetarter   = self._getParamWrite('tof_retarderSetHV')
+            newMesh       = self._getParamWrite('tof_meshSetHV')
             newPhosphor = self._getParamWrite('mcp_phosphorSetHV')
             newBack     = self._getParamWrite('mcp_backSetHV')
             newFront    = self._getParamWrite('mcp_frontSetHV')
 
             # Apply new setpoints if needed
-            if newLens     is not None: self.HVPS.Lens.setVoltage = newLens
-            if newRetarter is not None: self.HVPS.Retarder.setVoltage = newRetarter
-            if newMagnet   is not None: self.HVPS.Magnet.setVoltage = newMagnet
+            if newMiddle     is not None: self.HVPS.Middle.setVoltage = newMiddle
+            if newRetarter   is not None: self.HVPS.Retarder.setVoltage = newRetarter
+            if newMesh       is not None: self.HVPS.Mesh.setVoltage = newMesh
+            
             if newPhosphor is not None: self.HVPS.Phosphor.setVoltage = newPhosphor
             if newBack     is not None: self.HVPS.Back.setVoltage = newBack
             if newFront    is not None: self.HVPS.Front.setVoltage = newFront
@@ -439,9 +441,9 @@ class UrsapqManager:
                 self.setMessage("WARNING: MCP Back voltage setpoint rescaled", 30)
 
             # Update setPoint status
-            self.status.tof_lensSetHV       = self.HVPS.Lens.setVoltage
-            self.status.tof_retarderSetHV   = self.HVPS.Retarder.setVoltage
-            self.status.tof_magnetSetHV     = self.HVPS.Magnet.setVoltage
+            self.status.tof_middleSetHV    = self.HVPS.Middle.setVoltage
+            self.status.tof_retarderSetHV  = self.HVPS.Retarder.setVoltage
+            self.status.tof_meshSetHV      = self.HVPS.Mesh.setVoltage
             self.status.mcp_phosphorSetHV   = self.HVPS.Phosphor.setVoltage
             self.status.mcp_backSetHV       = self.HVPS.Back.setVoltage
             self.status.mcp_frontSetHV      = self.HVPS.Front.setVoltage
@@ -461,15 +463,15 @@ class UrsapqManager:
             self.status.mcp_phosphorHV  = math.nan
             self.status.mcp_backHV      = math.nan
             self.status.mcp_frontHV     = math.nan
-            self.status.tof_lensHV      = math.nan
+            self.status.tof_middleHV    = math.nan
             self.status.tof_retarderHV  = math.nan
-            self.status.tof_magnetHV    = math.nan
+            self.status.tof_meshHV      = math.nan
             self.status.mcp_phosphorSetHV   = math.nan
             self.status.mcp_backSetHV       = math.nan
             self.status.mcp_frontSetHV      = math.nan
-            self.status.tof_lensSetHV       = math.nan
+            self.status.tof_middleSetHV     = math.nan
             self.status.tof_retarderSetHV   = math.nan
-            self.status.tof_magnetSetHV     = math.nan
+            self.status.tof_meshSetHV       = math.nan
             self.status.HV_Status = "ERROR"
             self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate", 5)
             print(traceback.format_exc())
