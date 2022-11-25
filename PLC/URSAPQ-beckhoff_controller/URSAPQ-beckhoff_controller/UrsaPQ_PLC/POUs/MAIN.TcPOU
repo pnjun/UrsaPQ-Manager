@@ -13,10 +13,8 @@ VAR
 	Magnet_Temp          AT %I* : INT;
 	
 	MTurbo1_NO AT %I*   : BOOL;		//Normal Operation relays
-	MTurbo2_NO AT %I*   : BOOL;
 	MTurboTOF_NO AT %I* : BOOL;	
 	MTurbo1_ERR AT %I*   : BOOL;	//Eorror relays
-	MTurbo2_ERR AT %I*   : BOOL;
 	MTurboTOF_ERR AT %I* : BOOL;		
 	
 	
@@ -28,7 +26,6 @@ VAR
 	MPreVac2_Valve AT %Q* : BOOL;
 
 	MTurbo1_ON AT %Q*   : BOOL;		//Normal Operation relays
-	MTurbo2_ON AT %Q*   : BOOL;
 	MTurboTOF_ON AT %Q* : BOOL;	
 	
 	FlashInterlock AT %Q* : BOOL;	
@@ -139,8 +136,8 @@ manageAx_MagnetY(axis := MagnetY, setPoint := MagnetY_SetPoint, speed := PARAM.S
 //*** SAFETY CHECKS ***
 // Compute status variables
 Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_CapTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp; //Prevent overtemp of oven
-TurboError 		:= MTurbo1_ERR OR MTurbo2_ERR OR MTurboTOF_ERR;
-Turbo_NO         := MTurboTOF_NO AND MTurbo2_NO; 
+TurboError 		:= MTurbo1_ERR OR MTurboTOF_ERR;
+Turbo_NO         := MTurboTOF_NO; 
 MainVac_OK      := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.MainVac_Ok_Threshold; // Negative pressure means sensor error or sensor disconnected
 MainVac_TurboOK := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.TurboStart_Threshold;
 PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_Threshold;
@@ -156,7 +153,6 @@ MPreVac_Valve   := PreVacValves_Open;
 MPreVac2_Valve  := PreVacValves_Open;
 TOFPreVac_Valve := PreVacValves_Open;
 MTurbo1_ON := TurboPump_ON;
-MTurbo2_ON := TurboPump_ON;
 MTurboTOF_ON := TurboPump_ON;
 
 IF MainVac_OK AND Turbo_NO THEN
@@ -212,7 +208,6 @@ END_IF
       <LineId Id="433" Count="1" />
       <LineId Id="398" Count="0" />
       <LineId Id="400" Count="0" />
-      <LineId Id="402" Count="0" />
       <LineId Id="399" Count="0" />
       <LineId Id="703" Count="0" />
       <LineId Id="303" Count="0" />
