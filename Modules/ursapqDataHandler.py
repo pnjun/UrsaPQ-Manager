@@ -34,14 +34,12 @@ class ursapqDataHandler:
         self.status = self.manager.getStatusNamespace()
 
         # Init analyis parameters from config file they are not present already
-        self.status.data_filterTau = config.Data_FilterTau   # Tau in seconds of the low pass filter on evenShots and oddShots
+        self.status.data_filterTau = config.Data_FilterTau      # Tau in seconds of the low pass filter on evenShots and oddShots
+        self.status.data_cfdThreshold = config.Data_cfdTreshold # Thresold for CFD filter, set to None to disable
         self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
         self.skipSlicesEnd  = config.Data_SkipSlicesEnd  #How many slices to skip for singleShot average at the end   
-        
-        if self.skipSlices % 2 != 0 or self.skipSlicesEnd % 2 != 0:
-            raise ValueError("skipSlices must be even")
         
         try:
             self.pydoocs = __import__('pydoocs')
@@ -81,6 +79,9 @@ class ursapqDataHandler:
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return (oldData * lvl) + (newData * (1-lvl))
         
+    def cfdFilter(self, newData, threshold):
+        return newData > newData.mean() + threshold
+        
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
 
@@ -107,10 +108,12 @@ class ursapqDataHandler:
             traceback.print_exc()
             return False
             
-        if config.Data_Invert:
-            new_eTof['data'].T[1] *= -1 
-            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
-            new_iTof['data'].T[1] *= -1          
+        #invert traces
+        new_eTof['data'].T[1] *= -1 
+        new_iTof['data'].T[1] *= -1          
+       
+        if self.status.data_cfdThreshold is not None:
+            new_eTof['data'].T[1] = self.cfdFilter(new_eTof['data'].T[1], self.status.data_cfdThreshold)
        
         #Two types of online data: Low passed ('moving average') and accumulated
        
