@@ -79,8 +79,11 @@ class ursapqDataHandler:
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return (oldData * lvl) + (newData * (1-lvl))
         
+    def movingAverage(self, data, window=100):
+        return np.convolve(data, np.ones(window), 'same') / window
+        
     def cfdFilter(self, newData, threshold):
-        return newData > newData.mean() + threshold
+        return newData - self.movingAverage(newData) > threshold
         
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
