@@ -42,11 +42,11 @@ class TracePlots:
         
         
         axslid = self.figure.add_axes([0.5, 0.93, 0.4, 0.04])
-        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.1, 20, valinit=ursapq.data_filterTau)
+        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.1, 40, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
         
         cfdax = self.figure.add_axes([0.5, 0.88, 0.4, 0.04])
-        self.cfdFilterSlider = Slider(cfdax, 'CFD Threshold', 0, 10, valinit= ursapq.data_cfdThreshold if ursapq.data_cfdThreshold else 0)
+        self.cfdFilterSlider = Slider(cfdax, 'CFD Threshold', 0, 40, valinit= ursapq.data_cfdThreshold if ursapq.data_cfdThreshold else 0)
         self.cfdFilterUpdate(self.cfdFilterSlider.val)
         self.cfdFilterSlider.on_changed(self.cfdFilterUpdate)
         
