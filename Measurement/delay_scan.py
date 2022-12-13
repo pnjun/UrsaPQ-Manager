@@ -46,6 +46,8 @@ set_energy(PHOTON_EN)
 #NaN initialization in case scan is stopped before all data is acquired
 evs    = exp.data_axis[1]
 data = np.empty((delays.shape[0], evs.shape[0]))
+even = np.empty((delays.shape[0], evs.shape[0]))
+odd  = np.empty((delays.shape[0], evs.shape[0]))
 data[:] = np.NaN
 even[:] = np.NaN
 odd[:] = np.NaN
