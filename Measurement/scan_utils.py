@@ -75,11 +75,12 @@ def set_polarization(pol):
 
 
 class Run:
-    def __init__(self, runtype):
+    def __init__(self, runtype, skipDAQ = False):
         self.type = runtype
+        self.skipDAQ = skipDAQ
             
-    def __enter__(self, skipDAQ = False):
-        if pydoocs.read(DOOCS_DAQ)['data'] != 1 and not skipDAQ:
+    def __enter__(self):
+        if pydoocs.read(DOOCS_DAQ)['data'] != 1 and not self.skipDAQ:
             raise Exception("Start the DAQ, you stupid fuck!")
             
         newId = pydoocs.read(DOOCS_RUNID)['data'] + 1
