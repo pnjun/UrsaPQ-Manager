@@ -47,6 +47,8 @@ set_energy(PHOTON_EN)
 evs    = exp.data_axis[1]
 data = np.empty((delays.shape[0], evs.shape[0]))
 data[:] = np.NaN
+even[:] = np.NaN
+odd[:] = np.NaN
 
 #Setup preview window
 ev_slice = slice(np.abs( evs - PLOTMAX ).argmin(), None) #Range of ev to plot
@@ -72,8 +74,9 @@ try:
             
             #Set up preview updater 
             def updatef():
-                diff_data = exp.data_evenAccumulator - exp.data_oddAccumulator
-                data[n] = diff_data
+                even[n] = exp.data_evenAccumulator
+                odd[n] = exp.data_oddAccumulator
+                data[n] = even[n] - odd[n]
                 plot.update_data(data)
                 
             #Wait for INTEG_TIME while updating the preview
@@ -96,21 +99,9 @@ if interrupted:
     out_fname += "_stopped"
 
 #Write out data
-np.savez(out_fname + ".npz", delays=delays, evs=evs, data=data)
+np.savez(out_fname + ".npz", delays=delays, evs=evs, diff=data, even=even, odd=odd)
 plot.save_figure(out_fname + ".png")
 
 print(f"Data saved as {out_fname}")
-
-
-
-
-
-
-
-
-
-
-
-
 
 
