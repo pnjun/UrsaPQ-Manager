@@ -23,7 +23,6 @@ VAR
 	OvenPS_Relay AT %Q* : BOOL;
 	MPreVac_Valve AT %Q*: BOOL;
 	TOFPreVac_Valve AT %Q* : BOOL;
-	MPreVac2_Valve AT %Q* : BOOL;
 
 	MTurbo1_ON AT %Q*   : BOOL;		//Normal Operation relays
 	MTurboTOF_ON AT %Q* : BOOL;	
@@ -150,7 +149,6 @@ OvenPS_Relay := OvenPS_Enable AND NOT Oven_OverTEMP;
 
 // Actuate outputs (when one action controls more than one output)
 MPreVac_Valve   := PreVacValves_Open;
-MPreVac2_Valve  := PreVacValves_Open;
 TOFPreVac_Valve := PreVacValves_Open;
 MTurbo1_ON := TurboPump_ON;
 MTurboTOF_ON := TurboPump_ON;
@@ -205,7 +203,7 @@ END_IF
       <LineId Id="440" Count="0" />
       <LineId Id="436" Count="0" />
       <LineId Id="435" Count="0" />
-      <LineId Id="433" Count="1" />
+      <LineId Id="433" Count="0" />
       <LineId Id="398" Count="0" />
       <LineId Id="400" Count="0" />
       <LineId Id="399" Count="0" />

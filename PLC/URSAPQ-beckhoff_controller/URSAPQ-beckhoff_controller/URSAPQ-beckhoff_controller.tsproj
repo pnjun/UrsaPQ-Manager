@@ -3117,10 +3117,6 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MPreVac2_Valve</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurbo1_ON</Name>
 							<Comment><![CDATA[Normal Operation relays]]></Comment>
 							<Type>BOOL</Type>
@@ -3226,7 +3222,7 @@ External Setpoint Generation:
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
-					<UnrestoredVarLinks ImportTime="2022-10-27T16:22:10">
+					<UnrestoredVarLinks ImportTime="2022-12-13T10:41:20">
 						<OwnerA Name="InputDst" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="1">
 							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
 								<Link VarA="MAIN.MTurbo2_ERR" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 9^Input" Size="1" RestoreInfo="ANotFound"/>
@@ -3234,6 +3230,9 @@ External Setpoint Generation:
 							</OwnerB>
 						</OwnerA>
 						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
+								<Link VarA="MAIN.MPreVac2_Valve" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^MainPreVacValve2" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
 							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
 								<Link VarA="MAIN.MTurbo2_ON" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 3^MAinTurbo2_ON" Size="1" RestoreInfo="ANotFound"/>
 							</OwnerB>
@@ -6871,7 +6870,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="35" BoxType="9093" BoxFlags="#x00000020">
 						<Name>Term 43 (EL6731)</Name>
 						<ImageId>1006</ImageId>
-						<EtherCAT SlaveType="5" AdsServerAddress="c0a8000103010000" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000025">
+						<EtherCAT SlaveType="5" AdsServerAddress="c0a800010301fb03" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000025">
 							<SyncMan>0010800126000100010000005000da058001001026010000</SyncMan>
 							<SyncMan>8011800122000100020000005000da058001801122010000</SyncMan>
 							<SyncMan>001300002400000003000000000000000000001324010000</SyncMan>
@@ -7978,7 +7977,6 @@ Bit1: Value smaller than Limit2]]></Comment>
 				<Link VarA="PlcTask Inputs^MAIN.MagnetY_Fw_End" VarB="STM Status^Status^Digital input 1"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
-				<Link VarA="PlcTask Outputs^MAIN.MPreVac2_Valve" VarB="Channel 1^MainPreVacValve2"/>
 				<Link VarA="PlcTask Outputs^MAIN.TOFPreVac_Valve" VarB="Channel 2^TOFPreVacValve"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Penning Gauges">
