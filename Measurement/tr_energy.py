@@ -76,7 +76,7 @@ from pathlib import Path
 Path(OUTFOLDER).mkdir(parents=True, exist_ok=True)
 
 try:
-    with Run(RunType.tr_energy) as run_id:
+    with Run(RunType.tr_energy, skipDAQ=False) as run_id:
         out_fname = OUTFOLDER + f"trEnergy_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
         plot.set_title(f"Run {run_id} - Time Resolved Energy Scan")
         
