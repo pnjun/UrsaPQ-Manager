@@ -6,20 +6,21 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-TIME_ZERO = 1456.6
+TIME_ZERO = -448.9
 
-INTEG_TIME = 300    #seconds, per bin
-DELAY      = 200     #ps
-WAVEPLATE  = 16
+INTEG_TIME = 30    #seconds, per bin
+DELAY      = 0.2     #ps
+WAVEPLATE  = 45
 POLARIZ    = 'p'
-
-RANDOMIZE  = True
+DIFFERENCE = False
+RANDOMIZE  = False
 
 OUTFOLDER  = "./data/"
-PLOTMAX = 110 #Upper val of ev scale 
+PLOTMAX = 30 #Upper val of ev scale 
 
 #Delays array
-retarders = -np.arange(75, 85, 1.)
+#retarders = -np.concatenate([np.arange(0,10,2) , np.arange(10, 65, 5)])
+retarders = -np.arange(5.5,15.5,0.5) 
 
 #***************** CODE BEGINS ****************
 
@@ -41,7 +42,7 @@ data = np.empty((retarders.shape[0], tof.shape[0]))
 data[:] = np.NaN
 
 #Setup preview window
-plot = DataPreview(tof, retarders, data)
+plot = DataPreview(tof, retarders, data, diff=DIFFERENCE)
 
 #Generate random permutation
 scan_order = np.arange(retarders.shape[0])
@@ -57,10 +58,11 @@ try:
             
             #Set the desired retardation stage position 
             exp.tof_retarderSetHV = retarders[n]
+            time.sleep(2)
             
             #Wait for voltage 
             tries = 0
-            while (np.abs(exp.tof_retarderSetHV - exp.tof_retarderHV) > 0.5) and (tries < 5):
+            while (np.abs(exp.tof_retarderSetHV - exp.tof_retarderHV) > 0.5) and (tries < 10):
                 time.sleep(1)
                 tries += 1
             
@@ -69,7 +71,10 @@ try:
             
             #Set up preview updater 
             def updatef():
-                databin = exp.data_evenAccumulator - exp.data_oddAccumulator
+                if DIFFERENCE:
+                    databin = exp.data_evenAccumulator - exp.data_oddAccumulator
+                else:
+                    databin = exp.data_evenAccumulator + exp.data_oddAccumulator
                 data[n] = databin
                     
                 plot.update_data(data)

@@ -5,28 +5,35 @@ from datetime import datetime
 sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
+
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.85
-PARK_DELAY = 1470
+TIME_ZERO  = -448.9
+PARK_DELAY = None
 POLARIZ    = 'p'
 
-INTEG_TIME = 60   #seconds, per bin
-WAVEPLATE  = 16
-RETARDER   = 10
-PHOTON_EN  = 223
+INTEG_TIME = 70   #seconds, per bin
+WAVEPLATE  = 45
+
+
+#WAVEPLATE = int(sys.argv[0])
+RETARDER   = 12
+#PHOTON_EN  = 400
 
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
-PLOTMAX = 180 #Upper val of ev scale 
+PLOTMAX = 27 #Upper val of ev scale 
 
 #Delays array
+delays = np.arange(-0.1, 1.9, 0.05)
 
-#delays = np.arange(-0.3, 1.01, .05)
-#delays = np.array([0.7, 1, 2, 5, 10, 20, 50, 100, 200, 500])
-delaysList = [[-0.3], np.arange(-.2, .41, .05), [.5,.6,.7]]
-delays = np.concatenate(delaysList)
+#delays = np.concatenate([np.arange(-0.4,5,0.2),np.arange(6,15,1)])
+#delays = np.array([2])
+#delays = np.concatenate([ np.arange(-2.5, 20.0, 1), [50., 100.] ] )
+#delays = np.array([1,10,100])
+#delays = np.arange(-2.5,15,0.5)
+#delays = np.arange(-0.4,5,0.2)
 
 #***************** CODE BEGINS ****************
 
@@ -40,7 +47,7 @@ startDate = datetime.now()
 exp.tof_retarderSetHV = RETARDER
 set_waveplate(WAVEPLATE)
 set_polarization(POLARIZ)
-set_energy(PHOTON_EN)
+#set_energy(PHOTON_EN, thrd_harm=True)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

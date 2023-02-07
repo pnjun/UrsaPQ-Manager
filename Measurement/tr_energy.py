@@ -1,18 +1,19 @@
 from scan_utils import *
 import numpy as np
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1456.85
-PARK_DELAY = 1475.
+TIME_ZERO  = -414.3
+PARK_DELAY = None
 
-INTEG_TIME = 60    #seconds, per bin
-WAVEPLATE  = 16
-RETARDER   = 10 
+INTEG_TIME = 30    #seconds, per bin
+WAVEPLATE  = 27
+RETARDER   = 290 
 POLARIZ    = 'p'
 
 RANDOMIZE_ENERGY  = True
@@ -20,26 +21,31 @@ RANDOMIZE_DELAY   = True
 
 OUTFOLDER  = "./data/"
 
-PLOTROI = (80,153) #Integration region for online plot 
+PLOTROI = (350,420) #Integration region for online plot 
 
 #Delays array
-energies    = np.arange(216.5, 226.1, 0.5) 
-#delaysList  = [ [-0.3], np.arange(-0.2, 0.41, 0.05), [0.5, 0.6 ,0.7]]
-#delays = np.concatenate(delaysList)
-delays = np.array([1, 2, 5, 10, 20, 50, 100]) 
-#delays = np.arange(-0.3, 0.71, 0.1)
-
+THRD_HARM = True #Use 3rd harmonic of FEL (Sets undulator to 1/3 of energy)
+energies    = np.arange(401., 408.1, .5)
+#delays      = np.array([0, 1., 1.2])
+delaysList      = [np.arange(-0.2, 1.5,.2)]
+#delaysList = [np.arange(1, 3.1, .5)]
+delays = np.concatenate(delaysList)
                 
 #***************** CODE BEGINS ****************
-
+time_duration = INTEG_TIME*energies.shape[0]*delays.shape[0]/60 # in minutes
+time_duration += energies.shape[0]*delays.shape[0]*(2.5/60)
+time_end = str(datetime.now() +timedelta(minutes = time_duration))[:-10]
 print(f"Starting {TermCol.YELLOW}{TermCol.BOLD}Time Resolved Energy{TermCol.ENDC} Scan")
-print(f"Time to scan {INTEG_TIME*energies.shape[0]*delays.shape[0]/60} mins")
+#print(f"Time to scan {INTEG_TIME*energies.shape[0]*delays.shape[0]/60} mins")
+print(f"Time to scan {time_duration} mins")
+print(f"Approximate end: {time_end}") # be here, or you will waste beamtime!
 print()
 
 exp = UrsaPQ()
 startDate = datetime.now()
 
 exp.tof_retarderSetHV = RETARDER
+time.sleep(10)
 set_waveplate(WAVEPLATE)
 set_polarization(POLARIZ)
 
@@ -79,12 +85,14 @@ try:
     with Run(RunType.tr_energy, skipDAQ=False) as run_id:
         out_fname = OUTFOLDER + f"trEnergy_{run_id}_{startDate.strftime('%Y.%m.%d-%H.%M')}"
         plot.set_title(f"Run {run_id} - Time Resolved Energy Scan")
+
+        
         
         for e, d in scan_order:
             print(f"Scanning energy {energies[e]:.1f} delay {delays[d]:.3f}", end= "\r")
             
             #Set the desired delay stage position 
-            set_energy(energies[e])
+            set_energy(energies[e], thrd_harm=THRD_HARM)
             set_delay(delays[d], TIME_ZERO, PARK_DELAY)
             
             #Reset accumulator for online preview

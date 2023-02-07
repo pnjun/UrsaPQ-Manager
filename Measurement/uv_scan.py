@@ -6,22 +6,22 @@ sys.path.append("../Utils/")
 from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
-TIME_ZERO  = 1456.6
-
-INTEG_TIME = 70    #seconds, per bin
-DELAY      = 0.2   #ps
-RETARDER   = 90 
+TIME_ZERO  = -448.9
+INTEG_TIME = 90    #seconds, per bin
+DELAY      = 0.500   #ps
+RETARDER   = 12 
 POLARIZ    = 'p'
-PHOTON_EN  = 165
+PHOTON_EN  = None
+#THIRDRD_HARM = True  #Use 3rd harmonic of FEL (Sets undulator to 1/3 of energy
 
 RANDOMIZE  = True
 
 OUTFOLDER  = "./data/"
-PLOTMAX  = 300 #Upper val of ev scale 
+PLOTMAX  = 25 #Upper val of ev scale 
 
 
 #Delays array
-waveplate = np.arange(8., 30, 3)
+waveplate = np.arange(20.,45,5)#np.arange(5., 45.1, 2.5)
 
 #***************** CODE BEGINS ****************
 
@@ -35,7 +35,7 @@ startDate = datetime.now()
 exp.tof_retarderSetHV = RETARDER
 set_delay(DELAY, TIME_ZERO)
 set_polarization(POLARIZ)
-set_energy(PHOTON_EN)
+#set_energy(PHOTON_EN)
 
 #Output array
 #NaN initialization in case scan is stopped before all data is acquired

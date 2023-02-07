@@ -7,10 +7,10 @@ from ursapq_api import UrsaPQ
 
 #**************** SETUP PARAMETERS ************
 #Time zero estimate
-TIME_ZERO  = 1457.05
-DELAY      = .1
+TIME_ZERO  = -414.1
+DELAY      = .4
 
-INTEG_TIME = 90    #seconds, per bin
+INTEG_TIME = 30    #seconds, per bin
 WAVEPLATE  = 45
 RETARDER   = 10 
 POLARIZ    = 'p'
@@ -18,10 +18,11 @@ POLARIZ    = 'p'
 RANDOMIZE  = True
 OUTFOLDER  = "./data/"
 
-PLOTMAX = 200 #Upper val of ev scale 
+PLOTMAX = 60 #Upper val of ev scale 
 
 #energies array
-energies = np.arange(214., 226.1, .5)
+THIRDRD_HARM = False #Use 3rd harmonic of FEL (Sets undulator to 1/3 of energy)
+energies = np.arange(390., 408., .5)
 
 #***************** CODE BEGINS ****************
 
@@ -32,7 +33,7 @@ print()
 exp = UrsaPQ()
 startDate = datetime.now()
 
-exp.tof_retarderSetHV = RETARDER
+#exp.tof_retarderSetHV = RETARDER
 set_waveplate(WAVEPLATE)
 set_delay(DELAY, TIME_ZERO)
 set_polarization(POLARIZ)
@@ -66,7 +67,7 @@ try:
             print(f"Scanning energy: {energies[n]:.3f}", end= "\r")
             
             #Set the desired delay stage position 
-            set_energy(energies[n])
+            set_energy(energies[n], thrd_harm=THIRDRD_HARM)
             
             #Reset accumulator for online preview
             exp.data_clearAccumulator = True

@@ -3,17 +3,22 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import time
 import numpy as np
+from retry import retry
 
 DOOCS_RUNID   = 'FLASH.UTIL/STORE/URSAPQ/RUN.ID'
 DOOCS_RUNTYPE = 'FLASH.UTIL/STORE/URSAPQ/RUN.TYPE'
 DOOCS_DELAY_SET  = 'FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.WR'
 DOOCS_DELAY_GET  = 'FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD'
+DOOCS_LAM_SET    = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR11.FL24/FPOS.SET'
+DOOCS_LAM_EN     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR11.FL24/CMD'
 DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
 DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
 DOOCS_POLARIZ       = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/FPOS.SET'
 DOOCS_POLARIZ_EN    = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR14.FL24/CMD'
-DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/GROUP.FLASH2/USER.E_PHOTON.SP'
+DOOCS_UNDULATOR     = 'FLASH.FEL/UNDULATOR.ML/FLASH2.COLOR1/USER.E_PHOTON.SP'
 DOOCS_DAQ           = 'FLASH.DAQ/DQM/SVR.FL2USER1/DQMFSTAT'
+
+LAM_OFFSET = 4424.185
 
 
 class RunType:
@@ -24,15 +29,24 @@ class RunType:
     tr_energy    = 4
     retardation  = 5
     coil         = 6
+    static       = 7
+    raster_h     = 8
+    raster_v     = 9
     other        = 100 
+
 
 def get_delay():
     return pydoocs.read(DOOCS_DELAY_GET)['data']
-    
+
 def wait_delay(delay):
+    pydoocs.write(DOOCS_DELAY_SET, delay)    
+    pydoocs.write(DOOCS_LAM_SET, LAM_OFFSET - delay)
+    pydoocs.write(DOOCS_LAM_EN, 1)
+    
     while abs( delay - get_delay() ) > 0.05:
         time.sleep(0.1)   
-
+        
+@retry(pydoocs.DoocsException, tries=10, delay=2)    
 def set_delay(delay, time_zero = None, park_position=None):
     #correct for time zero setting if given
     if time_zero:
@@ -40,29 +54,28 @@ def set_delay(delay, time_zero = None, park_position=None):
     else:
         new_delay = delay
 
-    #if already there, don't move
-    old_sp = pydoocs.read(DOOCS_DELAY_SET)['data']
-    if abs( old_sp - new_delay ) < 0.001:
-        return
-
     #Move to park position if one is given
     if park_position:
-        pydoocs.write(DOOCS_DELAY_SET, park_position)     
         wait_delay(park_position)
 
     #Finally...
-    pydoocs.write(DOOCS_DELAY_SET, new_delay)
     wait_delay(new_delay)
         
+@retry(pydoocs.DoocsException, tries=10, delay=2)        
 def set_waveplate(wp):
     pydoocs.write(DOOCS_WAVEPLATE, wp)
     pydoocs.write(DOOCS_WAVEPLATE_EN, 1)
     time.sleep(1)   
     
-def set_energy(energy):
+@retry(pydoocs.DoocsException, tries=10, delay=2)    
+def set_energy(energy, thrd_harm = False):
+    if thrd_harm:
+        energy /= 3
+            
     pydoocs.write(DOOCS_UNDULATOR, energy)
-    time.sleep(1)  
+    time.sleep(2.5)  
     
+@retry(pydoocs.DoocsException, tries=10, delay=2)    
 def set_polarization(pol):
     if pol == 'p':
         angle = 45
@@ -82,7 +95,7 @@ class Run:
             
     def __enter__(self):
         if pydoocs.read(DOOCS_DAQ)['data'] != 1 and not self.skipDAQ:
-            raise Exception("Start the DAQ, you stupid fuck!")
+            raise Exception("Start the DAQ, you silly fool!")
             
         newId = pydoocs.read(DOOCS_RUNID)['data'] + 1
         pydoocs.write(DOOCS_RUNID, newId)
@@ -109,13 +122,15 @@ class DataPreview:
         self.ax  = self.fig.add_subplot(1, 1, 1)
         self.diff = diff
         
-        colormap = 'bwr' if self.diff else 'bone_r'
+        colormap = 'RdBu' if self.diff else 'bone_r'
         self.img = self.ax.pcolormesh(xAx[self.sliceX], yAx, data[:,self.sliceX], shading='nearest', cmap=colormap)
+        
+        #self.fig.colorbar(im, cax=cax, orientation='vertical')
         self.fig.show()
         
     def set_title(self, title):
-        self.fig.suptitle(title, fontsize=16)    
-    
+        self.fig.suptitle(title, fontsize=16)  
+        
     def save_figure(self, fname):
         self.fig.savefig(fname, dpi=1200)
         
