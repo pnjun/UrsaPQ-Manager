@@ -46,7 +46,7 @@ class TracePlots:
         self.filterSlider.on_changed(self.filterUpdate)
         
         cfdax = self.figure.add_axes([0.5, 0.88, 0.4, 0.04])
-        self.cfdFilterSlider = Slider(cfdax, 'CFD Threshold', 0, 100, valinit= ursapq.data_cfdThreshold if ursapq.data_cfdThreshold else 0)
+        self.cfdFilterSlider = Slider(cfdax, 'Threshold', 0, 25, valinit= ursapq.data_cfdThreshold if ursapq.data_cfdThreshold else 0)
         self.cfdFilterUpdate(self.cfdFilterSlider.val)
         self.cfdFilterSlider.on_changed(self.cfdFilterUpdate)
         
@@ -62,9 +62,9 @@ class TracePlots:
     def cfdFilterUpdate(self, val):
         if val < 1:
             self.cfdFilterSlider.valtext.set_text("OFF")
-            ursapq.data_cfdThreshold = None
+            ursapq.data_Threshold = None
         else:
-            ursapq.data_cfdThreshold = val
+            ursapq.data_Threshold = val
     
     def autoscaleCallback(self, event):
         self.eTofTracepl.set_ylim( *calculate_autoscale( self.eTofTrace.get_ydata() ))

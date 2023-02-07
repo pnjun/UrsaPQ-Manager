@@ -35,7 +35,7 @@ class ursapqDataHandler:
 
         # Init analyis parameters from config file they are not present already
         self.status.data_filterTau = config.Data_FilterTau      # Tau in seconds of the low pass filter on evenShots and oddShots
-        self.status.data_cfdThreshold = config.Data_cfdTreshold # Thresold for CFD filter, set to None to disable
+        self.status.data_Threshold = config.Data_Treshold    # Thresold for threshold filter, set to None to disable
         self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
@@ -79,11 +79,13 @@ class ursapqDataHandler:
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return (oldData * lvl) + (newData * (1-lvl))
         
-    def movingAverage(self, data, window=100):
+    def movingAverage(self, data, window=200):
         return np.convolve(data, np.ones(window), 'same') / window
         
-    def cfdFilter(self, newData, threshold):
-        return newData - self.movingAverage(newData) > threshold
+    def threshFilter(self, newData, threshold):
+        newData = newData - self.movingAverage(newData) 
+        newData[ newData < threshold ] = 0
+        return newData
         
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
@@ -115,8 +117,8 @@ class ursapqDataHandler:
         new_eTof['data'].T[1] *= -1 
         new_iTof['data'].T[1] *= -1          
        
-        if self.status.data_cfdThreshold is not None:
-            new_eTof['data'].T[1] = self.cfdFilter(new_eTof['data'].T[1], self.status.data_cfdThreshold)
+        if self.status.data_Threshold is not None:
+            new_eTof['data'].T[1] = self.threshFilter(new_eTof['data'].T[1], self.status.data_Threshold)
        
         #Two types of online data: Low passed ('moving average') and accumulated
        
