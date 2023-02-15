@@ -40,16 +40,10 @@ class TracePlots:
         self.iTofTrace, = self.iTofTracepl.plot(ursapq.data_iTofTrace[0], ursapq.data_iTofTrace[1])
         self.updateFreq = self.figure.text(0.04, 0.93, "", fontsize=13)
         
-        
         axslid = self.figure.add_axes([0.5, 0.93, 0.4, 0.04])
         self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.1, 60, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
-        
-        cfdax = self.figure.add_axes([0.5, 0.88, 0.4, 0.04])
-        self.cfdFilterSlider = Slider(cfdax, 'CFD Threshold', 0, 100, valinit= ursapq.data_cfdThreshold if ursapq.data_cfdThreshold else 0)
-        self.cfdFilterUpdate(self.cfdFilterSlider.val)
-        self.cfdFilterSlider.on_changed(self.cfdFilterUpdate)
-        
+      
         axbutton = self.figure.add_axes([0.04, 0.84, 0.15, 0.06])
         self.autoscale_button = Button(axbutton, 'Autoscale y')
         self.autoscale_button.on_clicked(self.autoscaleCallback)        
@@ -59,13 +53,6 @@ class TracePlots:
     def filterUpdate(self,val):
         ursapq.data_filterTau = val
         
-    def cfdFilterUpdate(self, val):
-        if val < 1:
-            self.cfdFilterSlider.valtext.set_text("OFF")
-            ursapq.data_cfdThreshold = None
-        else:
-            ursapq.data_cfdThreshold = val
-    
     def autoscaleCallback(self, event):
         self.eTofTracepl.set_ylim( *calculate_autoscale( self.eTofTrace.get_ydata() ))
         self.iTofTracepl.set_ylim( *calculate_autoscale( self.iTofTrace.get_ydata() ))

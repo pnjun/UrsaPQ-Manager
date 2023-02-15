@@ -35,7 +35,6 @@ class ursapqDataHandler:
 
         # Init analyis parameters from config file they are not present already
         self.status.data_filterTau = config.Data_FilterTau      # Tau in seconds of the low pass filter on evenShots and oddShots
-        self.status.data_cfdThreshold = config.Data_cfdTreshold # Thresold for CFD filter, set to None to disable
         self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
@@ -79,12 +78,9 @@ class ursapqDataHandler:
         lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return (oldData * lvl) + (newData * (1-lvl))
         
-    def movingAverage(self, data, window=100):
+    def movingAverage(self, data, window=200):
         return np.convolve(data, np.ones(window), 'same') / window
-        
-    def cfdFilter(self, newData, threshold):
-        return newData - self.movingAverage(newData) > threshold
-        
+         
     def updateTofTraces(self):
         ''' gets new traces from DOOCS, returns True if fetch was successful '''
 
@@ -101,7 +97,6 @@ class ursapqDataHandler:
                 new_gmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
                                            macropulse = self.macropulse)['data'].T[1]       
                                                 
-            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
             new_iTof = self.pydoocs.read(config.Data_DOOCS_iTOF, macropulse = self.macropulse)
             
             self.updateFreq = (  0.03 * 1/(new_eTof['timestamp'] - self.timestamp) 
@@ -114,10 +109,7 @@ class ursapqDataHandler:
         #invert traces
         new_eTof['data'].T[1] *= -1 
         new_iTof['data'].T[1] *= -1          
-       
-        if self.status.data_cfdThreshold is not None:
-            new_eTof['data'].T[1] = self.cfdFilter(new_eTof['data'].T[1], self.status.data_cfdThreshold)
-       
+      
         #Two types of online data: Low passed ('moving average') and accumulated
        
         #Low pass:
@@ -125,7 +117,6 @@ class ursapqDataHandler:
         #if the lenght of newTof changes due to DOOCS reconfiguration
         try:
             self.eTofTrace[1]   = self.dataFilter( new_eTof['data'].T[1]   ,  self.eTofTrace[1] )
-            #**************** TAKE THIS OUT TO ENABLE ITOF ************************   
             self.iTofTrace[1]   = self.dataFilter( new_iTof['data'].T[1]   ,  self.iTofTrace[1] )
         except Exception as error:
             traceback.print_exc()
