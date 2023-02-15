@@ -3011,10 +3011,6 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo2_NO</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurboTOF_NO</Name>
 							<Type>BOOL</Type>
 						</Var>
@@ -3024,32 +3020,7 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo2_ERR</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurboTOF_ERR</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleX_Fw_End</Name>
-							<Comment><![CDATA[ Limit switches]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleX_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Fw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleZ_Fw_End</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3075,6 +3046,27 @@ External Setpoint Generation:
 						<Var>
 							<Name>MAIN.MagnetY.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleX_Fw_End</Name>
+							<Comment><![CDATA[ Limit switches]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleX_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleY_Fw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleY_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleZ_Fw_End</Name>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.SampleZ_Bw_End</Name>
@@ -3125,16 +3117,8 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MPreVac2_Valve</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MTurbo1_ON</Name>
 							<Comment><![CDATA[Normal Operation relays]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.MTurbo2_ON</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3146,12 +3130,12 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.Lamp1_Enable</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.HVPS_ON</Name>
 							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Lamp1_Enable</Name>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.FrameX.PlcToNc</Name>
@@ -3235,6 +3219,22 @@ External Setpoint Generation:
 							</OwnerB>
 							<OwnerB Name="TINC^NC-Task SAF^Axes^Magnet Z">
 								<Link VarA="MAIN.MagnetZ.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{6A65C767-34E5-42BF-AD87-E1A503EAC7BE}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2022-12-13T10:41:20">
+						<OwnerA Name="InputDst" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="1">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
+								<Link VarA="MAIN.MTurbo2_ERR" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 9^Input" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="MAIN.MTurbo2_NO" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^Input" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
+								<Link VarA="MAIN.MPreVac2_Valve" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^MainPreVacValve2" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
+								<Link VarA="MAIN.MTurbo2_ON" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 3^MAinTurbo2_ON" Size="1" RestoreInfo="ANotFound"/>
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
@@ -5004,50 +5004,49 @@ External Setpoint Generation:
 							<MBoxUserCmdData>004003000c0000000000000003000000000000000000000000000000000000002081f001040000000000140000</MBoxUserCmdData>
 							<MBoxUserCmdData>004003000a00000000000000030010000000000000000000000000000000000020f3100502000000010000</MBoxUserCmdData>
 							<Pdo Name="ENC Status compact" Index="#x1a00" Flags="#x0010" SyncMan="3">
-								<ExcludePdo>#x1a01</ExcludePdo>
-								<Entry Name="Status__Latch C valid" Index="#x6000" Sub="#x01">
+								<Entry Name="Latch C valid" Index="#x6000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Latch extern valid" Index="#x6000" Sub="#x02">
+								<Entry Name="Latch extern valid" Index="#x6000" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Set counter done" Index="#x6000" Sub="#x03">
+								<Entry Name="Set counter done" Index="#x6000" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Counter underflow" Index="#x6000" Sub="#x04">
+								<Entry Name="Counter underflow" Index="#x6000" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Counter overflow" Index="#x6000" Sub="#x05">
+								<Entry Name="Counter overflow" Index="#x6000" Sub="#x05">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000002}">ARRAY [0..1] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__Extrapolation stall" Index="#x6000" Sub="#x08">
+								<Entry Name="Extrapolation stall" Index="#x6000" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input A" Index="#x6000" Sub="#x09">
+								<Entry Name="Status of input A" Index="#x6000" Sub="#x09">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input B" Index="#x6000" Sub="#x0a">
+								<Entry Name="Status of input B" Index="#x6000" Sub="#x0a">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input C" Index="#x6000" Sub="#x0b">
+								<Entry Name="Status of input C" Index="#x6000" Sub="#x0b">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000001}">ARRAY [0..0] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of extern latch" Index="#x6000" Sub="#x0d">
+								<Entry Name="Status of extern latch" Index="#x6000" Sub="#x0d">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Sync error" Index="#x6000" Sub="#x0e">
+								<Entry Name="Sync error" Index="#x6000" Sub="#x0e">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000001}">ARRAY [0..0] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__TxPDO Toggle" Index="#x6000" Sub="#x10">
+								<Entry Name="TxPDO Toggle" Index="#x6000" Sub="#x10">
 									<Type>BIT</Type>
 								</Entry>
 								<Entry Name="Counter value" Index="#x6000" Sub="#x11">
@@ -5058,50 +5057,49 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="ENC Status" Index="#x1a01" Flags="#x0010">
-								<ExcludePdo>#x1a00</ExcludePdo>
-								<Entry Name="Status__Latch C valid" Index="#x6000" Sub="#x01">
+								<Entry Name="Latch C valid" Index="#x6000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Latch extern valid" Index="#x6000" Sub="#x02">
+								<Entry Name="Latch extern valid" Index="#x6000" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Set counter done" Index="#x6000" Sub="#x03">
+								<Entry Name="Set counter done" Index="#x6000" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Counter underflow" Index="#x6000" Sub="#x04">
+								<Entry Name="Counter underflow" Index="#x6000" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Counter overflow" Index="#x6000" Sub="#x05">
+								<Entry Name="Counter overflow" Index="#x6000" Sub="#x05">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000002}">ARRAY [0..1] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__Extrapolation stall" Index="#x6000" Sub="#x08">
+								<Entry Name="Extrapolation stall" Index="#x6000" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input A" Index="#x6000" Sub="#x09">
+								<Entry Name="Status of input A" Index="#x6000" Sub="#x09">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input B" Index="#x6000" Sub="#x0a">
+								<Entry Name="Status of input B" Index="#x6000" Sub="#x0a">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of input C" Index="#x6000" Sub="#x0b">
+								<Entry Name="Status of input C" Index="#x6000" Sub="#x0b">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000001}">ARRAY [0..0] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__Status of extern latch" Index="#x6000" Sub="#x0d">
+								<Entry Name="Status of extern latch" Index="#x6000" Sub="#x0d">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Sync error" Index="#x6000" Sub="#x0e">
+								<Entry Name="Sync error" Index="#x6000" Sub="#x0e">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000001}">ARRAY [0..0] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__TxPDO Toggle" Index="#x6000" Sub="#x10">
+								<Entry Name="TxPDO Toggle" Index="#x6000" Sub="#x10">
 									<Type>BIT</Type>
 								</Entry>
 								<Entry Name="Counter value" Index="#x6000" Sub="#x11">
@@ -5117,46 +5115,46 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="STM Status" Index="#x1a03" Flags="#x0010" SyncMan="3">
-								<Entry Name="Status__Ready to enable" Index="#x6010" Sub="#x01">
+								<Entry Name="Ready to enable" Index="#x6010" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Ready" Index="#x6010" Sub="#x02">
+								<Entry Name="Ready" Index="#x6010" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Warning" Index="#x6010" Sub="#x03">
+								<Entry Name="Warning" Index="#x6010" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Error" Index="#x6010" Sub="#x04">
+								<Entry Name="Error" Index="#x6010" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Moving positive" Index="#x6010" Sub="#x05">
+								<Entry Name="Moving positive" Index="#x6010" Sub="#x05">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Moving negative" Index="#x6010" Sub="#x06">
+								<Entry Name="Moving negative" Index="#x6010" Sub="#x06">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Torque reduced" Index="#x6010" Sub="#x07">
+								<Entry Name="Torque reduced" Index="#x6010" Sub="#x07">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Motor stall" Index="#x6010" Sub="#x08">
+								<Entry Name="Motor stall" Index="#x6010" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000003}">ARRAY [0..2] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__Digital input 1" Index="#x6010" Sub="#x0c" Flags="#x00008020">
+								<Entry Name="Digital input 1" Index="#x6010" Sub="#x0c">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Digital input 2" Index="#x6010" Sub="#x0d" Flags="#x00008020">
+								<Entry Name="Digital input 2" Index="#x6010" Sub="#x0d">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Sync error" Index="#x6010" Sub="#x0e">
+								<Entry Name="Sync error" Index="#x6010" Sub="#x0e">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000001}">ARRAY [0..0] OF BIT</Type>
 								</Entry>
-								<Entry Name="Status__TxPDO Toggle" Index="#x6010" Sub="#x10">
+								<Entry Name="TxPDO Toggle" Index="#x6010" Sub="#x10">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -5174,62 +5172,60 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="POS Status compact" Index="#x1a06" Flags="#x0010">
-								<ExcludePdo>#x1a07</ExcludePdo>
-								<Entry Name="Status__Busy" Index="#x6020" Sub="#x01">
+								<Entry Name="Busy" Index="#x6020" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__In-Target" Index="#x6020" Sub="#x02">
+								<Entry Name="In-Target" Index="#x6020" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Warning" Index="#x6020" Sub="#x03">
+								<Entry Name="Warning" Index="#x6020" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Error" Index="#x6020" Sub="#x04">
+								<Entry Name="Error" Index="#x6020" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Calibrated" Index="#x6020" Sub="#x05">
+								<Entry Name="Calibrated" Index="#x6020" Sub="#x05">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Accelerate" Index="#x6020" Sub="#x06">
+								<Entry Name="Accelerate" Index="#x6020" Sub="#x06">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Decelerate" Index="#x6020" Sub="#x07">
+								<Entry Name="Decelerate" Index="#x6020" Sub="#x07">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Ready to execute" Index="#x6020" Sub="#x08">
+								<Entry Name="Ready to execute" Index="#x6020" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000008}">ARRAY [0..0] OF BYTE</Type>
 								</Entry>
 							</Pdo>
 							<Pdo Name="POS Status" Index="#x1a07" Flags="#x0010">
-								<ExcludePdo>#x1a06</ExcludePdo>
-								<Entry Name="Status__Busy" Index="#x6020" Sub="#x01">
+								<Entry Name="Busy" Index="#x6020" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__In-Target" Index="#x6020" Sub="#x02">
+								<Entry Name="In-Target" Index="#x6020" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Warning" Index="#x6020" Sub="#x03">
+								<Entry Name="Warning" Index="#x6020" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Error" Index="#x6020" Sub="#x04">
+								<Entry Name="Error" Index="#x6020" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Calibrated" Index="#x6020" Sub="#x05">
+								<Entry Name="Calibrated" Index="#x6020" Sub="#x05">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Accelerate" Index="#x6020" Sub="#x06">
+								<Entry Name="Accelerate" Index="#x6020" Sub="#x06">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Decelerate" Index="#x6020" Sub="#x07">
+								<Entry Name="Decelerate" Index="#x6020" Sub="#x07">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__Ready to execute" Index="#x6020" Sub="#x08">
+								<Entry Name="Ready to execute" Index="#x6020" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Status__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000008}">ARRAY [0..0] OF BYTE</Type>
 								</Entry>
 								<Entry Name="Actual position" Index="#x6020" Sub="#x11">
@@ -5258,20 +5254,19 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="ENC Control compact" Index="#x1600" InOut="1" Flags="#x0010" SyncMan="2">
-								<ExcludePdo>#x1601</ExcludePdo>
-								<Entry Name="Control__Enable latch C" Index="#x7000" Sub="#x01">
+								<Entry Name="Enable latch C" Index="#x7000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Enable latch extern on positive edge" Index="#x7000" Sub="#x02">
+								<Entry Name="Enable latch extern on positive edge" Index="#x7000" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Set counter" Index="#x7000" Sub="#x03">
+								<Entry Name="Set counter" Index="#x7000" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Enable latch extern on negative edge" Index="#x7000" Sub="#x04">
+								<Entry Name="Enable latch extern on negative edge" Index="#x7000" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-00200000000C}">ARRAY [0..11] OF BIT</Type>
 								</Entry>
 								<Entry Name="Set counter value" Index="#x7000" Sub="#x11">
@@ -5279,20 +5274,19 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="ENC Control" Index="#x1601" InOut="1" Flags="#x0010">
-								<ExcludePdo>#x1600</ExcludePdo>
-								<Entry Name="Control__Enable latch C" Index="#x7000" Sub="#x01">
+								<Entry Name="Enable latch C" Index="#x7000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Enable latch extern on positive edge" Index="#x7000" Sub="#x02">
+								<Entry Name="Enable latch extern on positive edge" Index="#x7000" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Set counter" Index="#x7000" Sub="#x03">
+								<Entry Name="Set counter" Index="#x7000" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Enable latch extern on negative edge" Index="#x7000" Sub="#x04">
+								<Entry Name="Enable latch extern on negative edge" Index="#x7000" Sub="#x04">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-00200000000C}">ARRAY [0..11] OF BIT</Type>
 								</Entry>
 								<Entry Name="Set counter value" Index="#x7000" Sub="#x11">
@@ -5300,52 +5294,43 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="STM Control" Index="#x1602" InOut="1" Flags="#x0010" SyncMan="2">
-								<Entry Name="Control__Enable" Index="#x7010" Sub="#x01">
+								<Entry Name="Enable" Index="#x7010" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Reset" Index="#x7010" Sub="#x02">
+								<Entry Name="Reset" Index="#x7010" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Reduce torque" Index="#x7010" Sub="#x03">
+								<Entry Name="Reduce torque" Index="#x7010" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000008}">ARRAY [0..0] OF BYTE</Type>
 								</Entry>
-								<Entry Name="Control__Digital output 1" Index="#x7010" Sub="#x0c">
+								<Entry Name="Digital output 1" Index="#x7010" Sub="#x0c">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000004}">ARRAY [0..3] OF BIT</Type>
 								</Entry>
 							</Pdo>
 							<Pdo Name="STM Position" Index="#x1603" InOut="1" Flags="#x0010">
-								<ExcludePdo>#x1604</ExcludePdo>
-								<ExcludePdo>#x1605</ExcludePdo>
-								<ExcludePdo>#x1606</ExcludePdo>
 								<Entry Name="Position" Index="#x7010" Sub="#x11">
 									<Type>UDINT</Type>
 								</Entry>
 							</Pdo>
 							<Pdo Name="STM Velocity" Index="#x1604" InOut="1" Flags="#x0010" SyncMan="2">
-								<ExcludePdo>#x1603</ExcludePdo>
-								<ExcludePdo>#x1605</ExcludePdo>
-								<ExcludePdo>#x1606</ExcludePdo>
 								<Entry Name="Velocity" Index="#x7010" Sub="#x21">
 									<Type>INT</Type>
 								</Entry>
 							</Pdo>
 							<Pdo Name="POS Control compact" Index="#x1605" InOut="1" Flags="#x0010">
-								<ExcludePdo>#x1603</ExcludePdo>
-								<ExcludePdo>#x1604</ExcludePdo>
-								<ExcludePdo>#x1606</ExcludePdo>
-								<Entry Name="Control__Execute" Index="#x7020" Sub="#x01">
+								<Entry Name="Execute" Index="#x7020" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Emergency stop" Index="#x7020" Sub="#x02">
+								<Entry Name="Emergency stop" Index="#x7020" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-00200000000E}">ARRAY [0..13] OF BIT</Type>
 								</Entry>
 								<Entry Name="Target position" Index="#x7020" Sub="#x11">
@@ -5353,16 +5338,13 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="POS Control" Index="#x1606" InOut="1" Flags="#x0010">
-								<ExcludePdo>#x1603</ExcludePdo>
-								<ExcludePdo>#x1604</ExcludePdo>
-								<ExcludePdo>#x1605</ExcludePdo>
-								<Entry Name="Control__Execute" Index="#x7020" Sub="#x01">
+								<Entry Name="Execute" Index="#x7020" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__Emergency stop" Index="#x7020" Sub="#x02">
+								<Entry Name="Emergency stop" Index="#x7020" Sub="#x02">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-00200000000E}">ARRAY [0..13] OF BIT</Type>
 								</Entry>
 								<Entry Name="Target position" Index="#x7020" Sub="#x11">
@@ -5382,16 +5364,13 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="POS Control 2" Index="#x1607" InOut="1" Flags="#x0010">
-								<ExcludePdo>#x1603</ExcludePdo>
-								<ExcludePdo>#x1604</ExcludePdo>
-								<ExcludePdo>#x1605</ExcludePdo>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-002000000002}">ARRAY [0..1] OF BIT</Type>
 								</Entry>
-								<Entry Name="Control__Enable auto start" Index="#x7021" Sub="#x03">
+								<Entry Name="Enable auto start" Index="#x7021" Sub="#x03">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Control__">
+								<Entry>
 									<Type GUID="{18071995-0000-0000-0000-00200000000D}">ARRAY [0..12] OF BIT</Type>
 								</Entry>
 								<Entry Name="Target position" Index="#x7021" Sub="#x11">
@@ -7904,43 +7883,13 @@ Bit1: Value smaller than Limit2]]></Comment>
 		</OwnerA>
 		<OwnerA Name="TINC^NC-Task SAF^Axes^SampleZ">
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Term 6 Sample Z (EL7047)">
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Error" Size="1" OffsA="3"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Motor stall" Size="1" OffsA="7"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Moving negative" Size="1" OffsA="5"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Moving positive" Size="1" OffsA="4"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Ready" Size="1" OffsA="1"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Ready to enable"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Torque reduced" Size="1" OffsA="6"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="STM Status^Status^Warning" Size="1" OffsA="2"/>
-				<Link VarA="Drive^Inputs^In^nState2" VarB="STM Status^Status^Sync error" Size="1" OffsA="5"/>
-				<Link VarA="Drive^Inputs^In^nState2" VarB="STM Status^Status^TxPDO Toggle" Size="1" OffsA="7"/>
 				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
 				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^WcState"/>
-				<Link VarA="Drive^Outputs^Out^nCtrl1" VarB="STM Control^Control^Enable"/>
-				<Link VarA="Drive^Outputs^Out^nCtrl1" VarB="STM Control^Control^Reduce torque" Size="1" OffsA="2"/>
-				<Link VarA="Drive^Outputs^Out^nCtrl1" VarB="STM Control^Control^Reset" Size="1" OffsA="1"/>
-				<Link VarA="Drive^Outputs^Out^nCtrl2" VarB="STM Control^Control^Digital output 1" Size="1" OffsA="3"/>
 				<Link VarA="Drive^Outputs^Out^nDataOut2[0]" VarB="STM Velocity^Velocity"/>
 				<Link VarA="Enc^Inputs^In^nDataIn1[0]" VarB="ENC Status compact^Counter value"/>
 				<Link VarA="Enc^Inputs^In^nDataIn2[0]" VarB="ENC Status compact^Latch value"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Counter overflow" Size="1" OffsA="4"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Counter underflow" Size="1" OffsA="3"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Extrapolation stall" Size="1" OffsA="7"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Latch C valid"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Latch extern valid" Size="1" OffsA="1"/>
-				<Link VarA="Enc^Inputs^In^nState1" VarB="ENC Status compact^Status^Set counter done" Size="1" OffsA="2"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^Status of extern latch" Size="1" OffsA="4"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^Status of input A"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^Status of input B" Size="1" OffsA="1"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^Status of input C" Size="1" OffsA="2"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^Sync error" Size="1" OffsA="5"/>
-				<Link VarA="Enc^Inputs^In^nState2" VarB="ENC Status compact^Status^TxPDO Toggle" Size="1" OffsA="7"/>
 				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
 				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^WcState"/>
-				<Link VarA="Enc^Outputs^Out^nCtrl1" VarB="ENC Control compact^Control^Enable latch C"/>
-				<Link VarA="Enc^Outputs^Out^nCtrl1" VarB="ENC Control compact^Control^Enable latch extern on negative edge" Size="1" OffsA="3"/>
-				<Link VarA="Enc^Outputs^Out^nCtrl1" VarB="ENC Control compact^Control^Enable latch extern on positive edge" Size="1" OffsA="1"/>
-				<Link VarA="Enc^Outputs^Out^nCtrl1" VarB="ENC Control compact^Control^Set counter" Size="1" OffsA="2"/>
 				<Link VarA="Enc^Outputs^Out^nDataOut1[0]" VarB="ENC Control compact^Set counter value"/>
 			</OwnerB>
 		</OwnerA>
@@ -7968,16 +7917,11 @@ Bit1: Value smaller than Limit2]]></Comment>
 				<Link VarA="PlcTask Inputs^MAIN.SampleY_Bw_End" VarB="STM Status^Status^Digital input 1"/>
 				<Link VarA="PlcTask Inputs^MAIN.SampleY_Fw_End" VarB="STM Status^Status^Digital input 2"/>
 			</OwnerB>
-			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Term 6 Sample Z (EL7047)">
-				<Link VarA="PlcTask Inputs^MAIN.SampleZ_Bw_End" VarB="STM Status^Status^Digital input 1"/>
-				<Link VarA="PlcTask Inputs^MAIN.SampleZ_Fw_End" VarB="STM Status^Status^Digital input 2"/>
-			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Term 7 Magnet Y (EL7047)">
 				<Link VarA="PlcTask Inputs^MAIN.MagnetY_Bw_End" VarB="STM Status^Status^Digital input 2"/>
 				<Link VarA="PlcTask Inputs^MAIN.MagnetY_Fw_End" VarB="STM Status^Status^Digital input 1"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
-				<Link VarA="PlcTask Outputs^MAIN.MPreVac2_Valve" VarB="Channel 1^MainPreVacValve2"/>
 				<Link VarA="PlcTask Outputs^MAIN.TOFPreVac_Valve" VarB="Channel 2^TOFPreVacValve"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Penning Gauges">
@@ -7988,13 +7932,10 @@ Bit1: Value smaller than Limit2]]></Comment>
 				<Link VarA="PlcTask Inputs^MAIN.PrePump_Pressure_Int" VarB="AI Standard Channel 1^Prepump Pirani"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
-				<Link VarA="PlcTask Outputs^MAIN.MTurbo2_ON" VarB="Channel 3^MAinTurbo2_ON"/>
 				<Link VarA="PlcTask Outputs^MAIN.MTurboTOF_ON" VarB="Channel 4^TOFTurbo_ON"/>
 				<Link VarA="PlcTask Outputs^MAIN.Penning_Enable" VarB="Channel 1^Penning Enable"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
-				<Link VarA="PlcTask Inputs^MAIN.MTurbo2_ERR" VarB="Channel 9^Input"/>
-				<Link VarA="PlcTask Inputs^MAIN.MTurbo2_NO" VarB="Channel 1^Input"/>
 				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_ERR" VarB="Channel 10^Input"/>
 				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_NO" VarB="Channel 2^Input"/>
 			</OwnerB>
