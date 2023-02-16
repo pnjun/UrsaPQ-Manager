@@ -95,7 +95,7 @@ class SingleShot:
         self.iTofSlicepl.set_title("iTOF Sliced")                   
         
         self.eTofSlice, = self.eTofSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_eTof_lowPass )
-        self.iTofSlice, = self.iTofSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_iTof_lowPass )
+        self.iTofSlice, = self.iTofSlicepl.plot( ursapq.data_axis[0], ursapq.data_iTof_lowPass )
                                
         axbutton = self.figure.add_axes([0.1, 0.9, 0.15, 0.06])
         self.autoscale_button = Button(axbutton, 'Autoscale y')
