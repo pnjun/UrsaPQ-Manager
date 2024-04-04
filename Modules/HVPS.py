@@ -113,14 +113,14 @@ if __name__=='__main__':
 
     d = HVPS()
     d.connect()
-    d.MeshCh.setVoltage = 20
-    print(d.MeshCh.setVoltage)
-    print(d.MeshCh.voltage)
+    d.Mesh.setVoltage = 20
+    print(d.Mesh.setVoltage)
+    print(d.Mesh.voltage)
 
-    d.MeshCh.on()
+    d.Mesh.on()
     time.sleep(4)
-    print(d.MeshCh.voltage)
+    print(d.Mesh.voltage)
 
-    d.MeshCh.off()
+    d.Mesh.off()
     time.sleep(1)
-    print(d.MeshCh.voltage)
+    print(d.Mesh.voltage)
