@@ -12,6 +12,8 @@ VAR
 	Sample_TipTemp       AT %I* : INT;	
 	Magnet_Temp          AT %I* : INT;
 	
+	Flow_Valve 			 AT %I* : INT;                  // Gas flow valve conductance 0-10 V
+	
 	MTurbo1_NO AT %I*   : BOOL;		//Normal Operation relays
 	MTurboTOF_NO AT %I* : BOOL;	
 	MTurbo1_ERR AT %I*   : BOOL;	//Eorror relays
@@ -24,6 +26,8 @@ VAR
 	MPreVac_Valve AT %Q*: BOOL;
 	TOFPreVac_Valve AT %Q* : BOOL;
 
+	Flow_Valve_Set AT %Q* : INT;    // Flow valve setpoint
+	
 	MTurbo1_ON AT %Q*   : BOOL;		//Normal Operation relays
 	MTurboTOF_ON AT %Q* : BOOL;	
 	
@@ -36,6 +40,8 @@ VAR
 	OvenPS_Enable :     BOOL := FALSE;		// Enables Oven power supply (if vacuum ok)
 	Pumps_Enable :      BOOL := FALSE;      // Start pumping sequence
 	PreVac_Valve_Lock : BOOL := FALSE;		// Ovverides auto valves and close prevac valves
+	
+	
 	
 	SampleX_MotionEnable : BOOL := FALSE;     // Motion enables and setpoints input
 	SampleY_MotionEnable : BOOL := FALSE;  	
