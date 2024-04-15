@@ -2,9 +2,9 @@
 <TcLicenseInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2011/11/TcLicenseInfo">
 	<LicenseInfo>
 		<SystemId>{E1810823-5F07-6B3B-BA2B-05EC100365BF}</SystemId>
-		<IssueTime>2022-12-13T09:46:00</IssueTime>
-		<ExpireTime>2022-12-21T00:00:00</ExpireTime>
-		<LicenseKey>57ef15c439d50c55b5749715f79a646a0fbd965f391fe1c331f38315a19c2576a0fff3db8e138dfb278f2f05642b9abd7b25f4cf716049d7aecd70f3996a0f00bae8a1f449d3ab302109018b179feb72a0733f112113f3a80e92dc7e700849060f58709d523077e4b4c9b58e15f173ca3e4d9eba4e3f166cc6ecde635bf20e20edf106e943403374fdeaa9d859c5f02a0fa8c717b4cc3ab9e1282e0b021f3f487c9f1de1c6577f394d44f38e1289979b9e49c441615a9cb9ee514b7876a4bf90b3fc2b50d5d6510ce04888c5bba5a7176d7d2ad73a218222e7876284a564ff02d3e47d5800dd2cc29c407f90423f9b76e3bffc995dce10bdfc8844c82327cd5e</LicenseKey>
+		<IssueTime>2024-04-12T09:02:00</IssueTime>
+		<ExpireTime>2024-04-20T00:00:00</ExpireTime>
+		<LicenseKey>be85247625e848ccd51d449465929b359fae98f112d5895e84328bc62f71b4fb16c2c926a533d39717e9caa10113aaace3e96f0ea91c0401145e3e4b06de09a2f74485657aacdeb72089a1523eb5cf38778147c458f4f0a4d4e1d37c8c1a77c402309328f9b9579640b3744e3fde9aba3dce47d48c721ec974ba1fd72b1cc7120d3909083c43c08dba3a4351ed3956d26bc9732d87fe6cee27fe9c07329eb19558f9e98dbd57dcde92e4f86d7229ceaafcacd42a454beae05342a3105841f6859e9b85b730cc02ce8615bca30cb193fb9021f8a0ca68169a0359de04bdce577426be9abd8c2c1955c2afc02d6bf2334aa7a57909cebca9880b13019f29e0382e</LicenseKey>
 		<License>
 			<LicenseId>{4C256767-E6E6-4AF5-BD68-9F7ABAD0C200}</LicenseId>
 			<Name>TC3 ADS</Name>
@@ -21,6 +21,11 @@
 			<OrderNo>TC1200</OrderNo>
 		</License>
 		<License>
+			<LicenseId>{FDEB49FC-E8D5-4978-96BC-06E257B23F2D}</LicenseId>
+			<Name>TC3 Virtual-Serial-COM</Name>
+			<OrderNo>TF6360</OrderNo>
+		</License>
+		<License>
 			<LicenseId>{A19036CF-A53B-4E3A-99FF-023EF5C4798B}</LicenseId>
 			<Name>TC3 NC PTP Axis</Name>
 			<Instances>10</Instances>
@@ -29,11 +34,6 @@
 			<LicenseId>{520DE751-9DB6-47CB-8240-BD5C466E7E64}</LicenseId>
 			<Name>TC3 NC PTP</Name>
 			<OrderNo>TF5000</OrderNo>
-		</License>
-		<License>
-			<LicenseId>{FDEB49FC-E8D5-4978-96BC-06E257B23F2D}</LicenseId>
-			<Name>TC3 Virtual-Serial-COM</Name>
-			<OrderNo>TF6360</OrderNo>
 		</License>
 	</LicenseInfo>
 </TcLicenseInfo>

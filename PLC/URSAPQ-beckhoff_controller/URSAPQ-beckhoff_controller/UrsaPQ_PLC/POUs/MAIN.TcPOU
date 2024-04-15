@@ -7,6 +7,7 @@ VAR
 	PrePump_Pressure_Int AT %I* : INT;
 	Chamber_Penning_Int  AT %I* : INT;
 	Chamber_Pirani_Int   AT %I* : INT;	
+	GasLine_Pirani_Int   AT %I* : INT;
 	Sample_BodyTemp      AT %I* : INT;					// Oven temperatures in 0.01 degC
 	Sample_CapTemp       AT %I* : INT;
 	Sample_TipTemp       AT %I* : INT;	
@@ -38,10 +39,11 @@ VAR
 	
 	//ADS inputs: CONTROL PARAMETERS (PLC reads values and acts accordignly, ADS clients should set these values)
 	OvenPS_Enable :     BOOL := FALSE;		// Enables Oven power supply (if vacuum ok)
+	GasLine_Enable :    BOOL := FALSE;
 	Pumps_Enable :      BOOL := FALSE;      // Start pumping sequence
 	PreVac_Valve_Lock : BOOL := FALSE;		// Ovverides auto valves and close prevac valves
 	
-	
+	Sample_Flow_Set : REAL := 0;
 	
 	SampleX_MotionEnable : BOOL := FALSE;     // Motion enables and setpoints input
 	SampleY_MotionEnable : BOOL := FALSE;  	
@@ -67,9 +69,12 @@ VAR
 	
 	//ADS outputs: READ ONLY (PLC updates them at every cycle, ADS clients should just read)
 	Chamber_Pressure : REAL;				// Main chamber pressure in mBars
+	GasLine_Pressure : REAL;
 	PreVac_Pressure  : REAL;                // PrePump line pressure
 	PreVacValves_Open: BOOL;	            // Are valves open?
 
+	Sample_Flow : REAL;
+	
 	TurboPump_ON: BOOL;
 	TurboError: BOOL;	
 	Turbo_NO:    BOOL;
@@ -116,6 +121,7 @@ END_VAR]]></Declaration>
 //Get pressures in mbar (from ADC value)
 Pressure_Chamber_Manager(penningInt := Chamber_Penning_Int, piraniInt := Chamber_Pirani_Int, penningOn => Penning_enable, pressureOut => Chamber_Pressure);
 PreVac_Pressure := ConvertPressure_Pirani(PrePump_Pressure_Int);
+GasLine_Pressure := ConvertPressure_Pirani(GasLine_Pirani_Int);
 
 //*** MOTION ***
 //Move axes
@@ -153,6 +159,11 @@ PreVacValves_Open := NOT PreVac_Valve_Lock AND ( PreVac_OK OR NOT MainVac_TurboO
 TurboPump_ON := PreVac_Ok AND Pumps_Enable AND MainVac_TurboOK AND NOT TurboError;
 OvenPS_Relay := OvenPS_Enable AND NOT Oven_OverTEMP;
 
+// Sample Valve
+Sample_Flow := INT_TO_REAL(Flow_Valve) / 32767; // convert int to float in range 0-1
+Sample_Flow_Set := MAX( MIN( Sample_Flow_Set, 1), 0);
+Flow_Valve_Set := REAL_TO_INT( Sample_Flow_Set * 32767) * BOOL_TO_INT(MainVac_TurboOK) * BOOL_TO_INT(GasLine_Enable);  // If vented, valve is closed
+
 // Actuate outputs (when one action controls more than one output)
 MPreVac_Valve   := PreVacValves_Open;
 TOFPreVac_Valve := PreVacValves_Open;
@@ -172,6 +183,7 @@ END_IF
       <LineId Id="14" Count="1" />
       <LineId Id="11" Count="0" />
       <LineId Id="9" Count="0" />
+      <LineId Id="1310" Count="0" />
       <LineId Id="38" Count="0" />
       <LineId Id="37" Count="0" />
       <LineId Id="39" Count="0" />
@@ -207,6 +219,11 @@ END_IF
       <LineId Id="318" Count="0" />
       <LineId Id="310" Count="0" />
       <LineId Id="440" Count="0" />
+      <LineId Id="1193" Count="0" />
+      <LineId Id="1192" Count="0" />
+      <LineId Id="1194" Count="0" />
+      <LineId Id="1196" Count="0" />
+      <LineId Id="1195" Count="0" />
       <LineId Id="436" Count="0" />
       <LineId Id="435" Count="0" />
       <LineId Id="433" Count="0" />
