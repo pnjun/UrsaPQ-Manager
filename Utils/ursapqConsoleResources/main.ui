@@ -461,7 +461,7 @@ QGroupBox::title {
       <x>450</x>
       <y>15</y>
       <width>271</width>
-      <height>256</height>
+      <height>331</height>
      </rect>
     </property>
     <property name="title">
@@ -471,7 +471,7 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>180</x>
-       <y>225</y>
+       <y>300</y>
        <width>91</width>
        <height>31</height>
       </rect>
@@ -493,24 +493,11 @@ QGroupBox::title {
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
-     <property name="geometry">
-      <rect>
-       <x>15</x>
-       <y>45</y>
-       <width>271</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Oven Temperatures [C]:</string>
-     </property>
-    </widget>
     <widget class="QLabel" name="tipTemp">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>75</y>
+       <x>150</x>
+       <y>70</y>
        <width>91</width>
        <height>30</height>
       </rect>
@@ -522,47 +509,47 @@ QGroupBox::title {
     <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
-       <x>45</x>
-       <y>75</y>
+       <x>40</x>
+       <y>70</y>
        <width>76</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Tip:</string>
+      <string>Tip     [C]:</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>45</x>
-       <y>105</y>
+       <x>40</x>
+       <y>100</y>
        <width>76</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Body:</string>
+      <string>Body [C]:</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_8">
      <property name="geometry">
       <rect>
-       <x>45</x>
-       <y>135</y>
+       <x>40</x>
+       <y>130</y>
        <width>76</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Cap:</string>
+      <string>Cap   [C]:</string>
      </property>
     </widget>
     <widget class="QLabel" name="bodyTemp">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>105</y>
+       <x>150</x>
+       <y>100</y>
        <width>91</width>
        <height>30</height>
       </rect>
@@ -574,8 +561,8 @@ QGroupBox::title {
     <widget class="QLabel" name="capTemp">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>135</y>
+       <x>150</x>
+       <y>130</y>
        <width>91</width>
        <height>30</height>
       </rect>
@@ -587,9 +574,9 @@ QGroupBox::title {
     <widget class="QLabel" name="label_9">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>165</y>
-       <width>241</width>
+       <x>10</x>
+       <y>40</y>
+       <width>111</width>
        <height>31</height>
       </rect>
      </property>
@@ -600,8 +587,8 @@ QGroupBox::title {
     <widget class="QLabel" name="ovenStatus">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>165</y>
+       <x>130</x>
+       <y>40</y>
        <width>121</width>
        <height>30</height>
       </rect>
@@ -610,24 +597,89 @@ QGroupBox::title {
       <string>---</string>
      </property>
     </widget>
+    <widget class="QLabel" name="gasLine_flow">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>220</y>
+       <width>91</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_18">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>220</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Flow Valve</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_24">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>250</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pressure [mbar]</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="gasLine_pressure">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>250</y>
+       <width>91</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_25">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>190</y>
+       <width>171</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Gas Delivery Line:</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>285</y>
+      <y>355</y>
       <width>271</width>
-      <height>181</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="title">
-     <string>Manipulatos</string>
+     <string>Manipulators</string>
     </property>
     <widget class="QPushButton" name="manipulator_MB">
      <property name="geometry">
       <rect>
        <x>180</x>
-       <y>150</y>
+       <y>80</y>
        <width>91</width>
        <height>31</height>
       </rect>
@@ -639,8 +691,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label_15">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>45</y>
+       <x>55</x>
+       <y>40</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -652,8 +704,8 @@ QGroupBox::title {
     <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>45</y>
+       <x>10</x>
+       <y>40</y>
        <width>46</width>
        <height>31</height>
       </rect>

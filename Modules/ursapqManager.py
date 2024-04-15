@@ -303,7 +303,7 @@ class UrsapqManager:
         self._beckhoffWrite('frame_pos_y_enable',      'MAIN.FrameY_MotionEnable', pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_x_stop',        'MAIN.FrameX_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_y_stop',        'MAIN.FrameY_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_flow_set',         'MAIN.Sample_Flow_Set',  pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('gasLine_flow_set',        'MAIN.Sample_Flow_Set',  pyads.PLCTYPE_REAL)
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()

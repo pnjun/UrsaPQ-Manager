@@ -186,7 +186,7 @@ class SampleWindow(ConsoleWindow):
         self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
         self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
         self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
-        self.window.flow_set.setText('{:.3f}'.format(self.ursapq.sample_flow_set))
+        self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
 
     #Callbacks:
     @Slot()
@@ -201,7 +201,7 @@ class SampleWindow(ConsoleWindow):
     @Slot()
     def newFlow(self):
         try:
-            self.ursapq.sample_flow_set = float( self.window.flow_in.toPlainText() )
+            self.ursapq.gasLine_flow_set = float( self.window.flow_in.toPlainText() )
         except Exception:
             pass
 
@@ -385,6 +385,8 @@ class MainWindow(ConsoleWindow):
         self.window.bodyTemp.setText( '{:.1f}'.format(self.ursapq.sample_bodyTemp) )
         self.window.capTemp.setText(  '{:.1f}'.format(self.ursapq.sample_capTemp) )
         self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
+        self.window.gasLine_flow.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
+        self.window.gasLine_pressure.setText('{:.2e}'.format(self.ursapq.gasLine_pressure))
 
         #Update status label
         self.window.ovenStatus.setText(self.ursapq.oven_PIDStatus)
