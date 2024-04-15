@@ -162,28 +162,48 @@ class ManipulatorWindow(ConsoleWindow):
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
-        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.window.ovenEnableBox.addWidget(self.enableSwitch)
+        self.ovenSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.window.ovenEnableBox.addWidget(self.ovenSwitch)
+        self.gasLine_switch = Switch(thumb_radius=11, track_radius=8)
+        self.window.flowEnableBox.addWidget(self.gasLine_switch)
+
         self.ursapq = ursapq
         self.setupCallbacks()
 
     def setupCallbacks(self):
         self.window.setPointsButton.clicked.connect(self.newSetPoints)
-        self.enableSwitch.clicked.connect(self.oven_enable)
+        self.window.flow_setButton.clicked.connect(self.newFlow)
+        self.ovenSwitch.clicked.connect(self.oven_enable)
+        self.gasLine_switch.clicked.connect(self.gasLine_enable)
 
     def update(self):
-        self.enableSwitch.setChecked( self.ursapq.oven_enable )
+        self.ovenSwitch.setChecked( self.ursapq.oven_enable )
+        self.gasLine_switch.setChecked( self.ursapq.gasLine_enable )
         self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
         self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
         self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
         self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
         self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
         self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
+        self.window.flow_act.setText('{:.1f}'.format(self.ursapq.gasLine_flow))
+        self.window.flow_set.setText('{:.1f}'.format(self.ursapq.sample_flow_set))
 
     #Callbacks:
     @Slot()
     def oven_enable(self):
         self.ursapq.oven_enable = self.enableSwitch.isChecked()
+
+    #Callbacks:
+    @Slot()
+    def gasLine_enable(self):
+        self.ursapq.gasLine_enable = self.gasLine_switch.isChecked()
+
+    @Slot()
+    def newFlow(self):
+        try:
+            self.ursapq.sample_flow_set = float( self.window.flow_in.toPlainText() )
+        except Exception:
+            pass
 
     @Slot()
     def newSetPoints(self):
@@ -230,11 +250,7 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorSetHV))
 
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        self.window.tofLens_act.setText(     '{:.1f}'.format(self.ursapq.tof_lensHV))
-        self.window.tofMagnet_act.setText(   '{:.1f}'.format(self.ursapq.tof_magnetHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
-        self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
-        self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
@@ -387,6 +403,9 @@ class MainWindow(ConsoleWindow):
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
+        self.window.retarder.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
+        #self.window.coilCurr.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
+
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)

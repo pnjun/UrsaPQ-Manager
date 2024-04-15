@@ -263,8 +263,10 @@ class UrsapqManager:
         self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
         self._beckhoffRead('frame_pos_x',    'MAIN.FrameX.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
         self._beckhoffRead('frame_pos_y',    'MAIN.FrameY.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('sample_flow',    'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
+        self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
+        self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
 
+        
         # Update PID setpoints if necessary
         newTip = self._getParamWrite('oven_tipSetPoint')
         newCap = self._getParamWrite('oven_capSetPoint')
@@ -279,6 +281,7 @@ class UrsapqManager:
         # Check if a client requested a change and wirte it out to beckhoff if necessary
         # self.status namespace values are updated to the new value if write is succesful
         self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('gasLine_enable',     'MAIN.GasLine_Enable',      pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('light_enable',       'MAIN.Lamp1_Enable',       pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
