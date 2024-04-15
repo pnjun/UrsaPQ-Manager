@@ -185,8 +185,8 @@ class SampleWindow(ConsoleWindow):
         self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
         self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
         self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
-        self.window.flow_act.setText('{:.1f}'.format(self.ursapq.gasLine_flow))
-        self.window.flow_set.setText('{:.1f}'.format(self.ursapq.sample_flow_set))
+        self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
+        self.window.flow_set.setText('{:.3f}'.format(self.ursapq.sample_flow_set))
 
     #Callbacks:
     @Slot()
