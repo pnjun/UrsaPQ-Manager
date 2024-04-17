@@ -171,7 +171,7 @@ class SampleWindow(ConsoleWindow):
         self.setupCallbacks()
 
     def setupCallbacks(self):
-        self.window.setPointsButton.clicked.connect(self.newSetPoints)
+        self.window.ovenSetButton.clicked.connect(self.newSetPoints)
         self.window.flow_setButton.clicked.connect(self.newFlow)
         self.ovenSwitch.clicked.connect(self.oven_enable)
         self.gasLine_switch.clicked.connect(self.gasLine_enable)
@@ -179,19 +179,16 @@ class SampleWindow(ConsoleWindow):
     def update(self):
         self.ovenSwitch.setChecked( self.ursapq.oven_enable )
         self.gasLine_switch.setChecked( self.ursapq.gasLine_enable )
-        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
-        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
-        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
-        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
-        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
-        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
+        self.window.oven_temp.setText(  '{:.2f}'.format(self.ursapq.sample_bodyTemp))
+        self.window.ovenPow.setText(  '{:.2f}'.format(self.ursapq.oven_output_pow))
+        self.window.ovenSetPoint.setText('{:.1f}'.format(self.ursapq.oven_setPoint))
         self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
         self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
 
     #Callbacks:
     @Slot()
     def oven_enable(self):
-        self.ursapq.oven_enable = self.enableSwitch.isChecked()
+        self.ursapq.oven_enable = self.ovenSwitch.isChecked()
 
     #Callbacks:
     @Slot()
@@ -208,15 +205,7 @@ class SampleWindow(ConsoleWindow):
     @Slot()
     def newSetPoints(self):
         try:
-            self.ursapq.oven_bodySetPoint = float( self.window.bodySetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_tipSetPoint = float( self.window.tipSetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_capSetPoint = float( self.window.capSetPoint_in.toPlainText() )
+            self.ursapq.oven_setPoint = float( self.window.ovenSetPoint_in.toPlainText() )
         except Exception:
             pass
 
