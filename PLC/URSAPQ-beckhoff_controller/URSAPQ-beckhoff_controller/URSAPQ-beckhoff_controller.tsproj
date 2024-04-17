@@ -3130,10 +3130,6 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.OvenPS_Relay</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>MAIN.MPreVac_Valve</Name>
 							<Type>BOOL</Type>
 						</Var>
@@ -3190,6 +3186,10 @@ External Setpoint Generation:
 						<Var>
 							<Name>MAIN.MagnetY.PlcToNc</Name>
 							<Type GUID="{63A84524-72E3-41C8-BEAB-4CCE44690A13}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.LVPS_ON</Name>
+							<Type>BOOL</Type>
 						</Var>
 					</Vars>
 					<UnrestoredVarLinks ImportTime="2019-01-29T11:17:56">
@@ -3265,6 +3265,13 @@ External Setpoint Generation:
 							</OwnerB>
 							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
 								<Link VarA="MAIN.MTurbo2_ON" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 3^MAinTurbo2_ON" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2024-04-17T20:06:22">
+						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^LVPS + M1 Valve">
+								<Link VarA="MAIN.OvenPS_Relay" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^LVPS" Size="1" RestoreInfo="ANotFound"/>
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
@@ -5908,7 +5915,7 @@ External Setpoint Generation:
 						</EtherCAT>
 					</Box>
 					<Box Id="9" BoxType="9099">
-						<Name>OvenPS + M1 Valve</Name>
+						<Name>LVPS + M1 Valve</Name>
 						<ImageId>1003</ImageId>
 						<EtherCAT SlaveType="1" PdiType="#x0104" CycleMBoxPollingTime="0" VendorId="#x00000002" ProductCode="#x0a2a3052" RevisionNo="#x0010000a" RepeatSupport="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL2602-0010 2Ch. Relay Output + ZCD, NO (230V AC / 30V DC)" Desc="EL2602-0010" PortABoxInfo="#x01000008">
 							<SyncMan>000f01004400010003000000000000000000000f44090000</SyncMan>
@@ -5927,7 +5934,7 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="Channel 1" Index="#x1600" InOut="1" Flags="#x0011" SyncMan="0">
-								<Entry Name="OvenPS" Index="#x7000" Sub="#x01">
+								<Entry Name="LVPS" Index="#x7000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -8067,12 +8074,12 @@ Revision: 1.02
 			</OwnerB>
 		</OwnerA>
 		<OwnerA Name="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance">
+			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^LVPS + M1 Valve">
+				<Link VarA="PlcTask Outputs^MAIN.LVPS_ON" VarB="Channel 1^LVPS"/>
+				<Link VarA="PlcTask Outputs^MAIN.MPreVac_Valve" VarB="Channel 2^MainPrevacValve"/>
+			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Lamp1">
 				<Link VarA="PlcTask Outputs^MAIN.Lamp1_Enable" VarB="Channel 1^Lamp1"/>
-			</OwnerB>
-			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^OvenPS + M1 Valve">
-				<Link VarA="PlcTask Outputs^MAIN.MPreVac_Valve" VarB="Channel 2^MainPrevacValve"/>
-				<Link VarA="PlcTask Outputs^MAIN.OvenPS_Relay" VarB="Channel 1^OvenPS"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Term 2 Frame X (EL7047)">
 				<Link VarA="PlcTask Inputs^MAIN.FrameX_Bw_End" VarB="STM Status^Status^Digital input 2"/>
