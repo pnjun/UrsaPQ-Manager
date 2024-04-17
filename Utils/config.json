@@ -1,7 +1,0 @@
-{
-  "UrsapqServer_IP": "192.168.0.0",
-  "UrsapqServer_Port": 2222,
-  "UrsapqServer_AuthKey":  "ursapqManager_TurboOK",
-  "UrsapqServer_WritePort": 2223,
-  "UrsapqServer_WriteKey": "ursapqManager_WriteOK"
-}
