@@ -147,7 +147,7 @@ class ursapqDataHandler:
         but the ifs slow it down too much.
         '''
         #Run until stop event
-        while not self.stopEvent.isSet():
+        while not self.stopEvent.is_set():
             if not self.updateTofTraces():
                 continue
             self.updateLaserTrace()
@@ -208,7 +208,7 @@ class ursapqDataHandler:
         so that doocsUpdateLoop can run as fast as possible
         '''
         #Run until stop event
-        while not self.stopEvent.isSet():
+        while not self.stopEvent.is_set():
             self.dataUpdated.wait()
             self.dataUpdated.clear()
     

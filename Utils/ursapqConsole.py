@@ -334,6 +334,9 @@ class MainWindow(ConsoleWindow):
             self.childWindows.append(DataDisplayWindow(self.ursapq, "Main Chamber Pressure", "chamberPressure"))
         if obj is self.window.prevacPressure and event.type() == QEvent.MouseButtonPress:
             self.childWindows.append(DataDisplayWindow(self.ursapq, "Pre Vacuum Pressure", "preVacPressure"))
+        if obj is self.window.gasLine_pressure and event.type() == QEvent.MouseButtonPress:
+            self.childWindows.append(DataDisplayWindow(self.ursapq, "Gas Line Pressure", "gasLine_pressure"))
+
 
         return super(MainWindow, self).eventFilter(obj, event)
 
@@ -347,6 +350,7 @@ class MainWindow(ConsoleWindow):
 
         self.window.chamberPressure.installEventFilter(self)
         self.window.prevacPressure.installEventFilter(self)
+        self.window.gasLine_pressure.installEventFilter(self)
         pass
 
     def updateManipulator(self):
