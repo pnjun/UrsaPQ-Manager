@@ -1,5 +1,5 @@
-#Modules/config.json
-#Utils/config.json
+Modules/config.json
+Utils/config.json
 Scripts/*
 **/data/
 *.pyc
