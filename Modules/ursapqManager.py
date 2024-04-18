@@ -276,6 +276,9 @@ class UrsapqManager:
         if newOvenTemp is not None: self.OvenPID.setPoint = newOvenTemp
         self.status.oven_setPoint = self.OvenPID.setPoint
 
+        coil_enable = self._getParamWrite('coil_enable')
+        if coil_enable is not None: self.status.coil_enable = coil_enable
+
         # Check if a client requested a change and wirte it out to beckhoff if necessary
         # self.status namespace values are updated to the new value if write is succesful
         self._beckhoffWrite('gasLine_enable',     'MAIN.GasLine_Enable',      pyads.PLCTYPE_BOOL)
@@ -318,7 +321,18 @@ class UrsapqManager:
             try:
                 # Try to read out status
                 self.LVPS.connect()
-                self.status.oven_output_pow  = self.LVPS.Oven.power
+
+                if self.status.coil_enable:
+                    self.LVPS.Coil.on()
+                else:
+                    self.LVPS.Coil.off()
+
+                newCurrent = self._getParamWrite('coil_setCurrent')
+                if newCurrent is not None: 
+                    self.LVPS.Coil.setCurrent = newCurrent
+
+                self.status.coil_current = self.LVPS.Coil.current
+                self.status.coil_setCurrent = self.LVPS.Coil.setCurrent
 
                 if self.status.oven_enable:
                     # If we got this far, the LVPS is probably connected and working,
@@ -335,6 +349,8 @@ class UrsapqManager:
                     self.LVPS.Oven.off()
                     self.OvenPID.reset()
                     self.status.oven_PIDStatus = "OFF"
+
+                self.status.oven_output_pow  = self.LVPS.Oven.power
 
             # If connection failed, set everything to NaN and reset PID filters
             except Exception as e:

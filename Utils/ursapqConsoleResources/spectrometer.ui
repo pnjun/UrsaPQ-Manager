@@ -54,8 +54,8 @@ QGroupBox::title {
     <widget class="QWidget" name="verticalLayoutWidget_6">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>45</y>
+       <x>10</x>
+       <y>40</y>
        <width>46</width>
        <height>31</height>
       </rect>
@@ -65,9 +65,9 @@ QGroupBox::title {
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>45</y>
-       <width>166</width>
+       <x>55</x>
+       <y>40</y>
+       <width>131</width>
        <height>31</height>
       </rect>
      </property>
@@ -228,6 +228,30 @@ QGroupBox::title {
       <string>Set values</string>
      </property>
     </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_7">
+     <property name="geometry">
+      <rect>
+       <x>225</x>
+       <y>40</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="tofEnableBox_2"/>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>40</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Coil Enable</string>
+     </property>
+    </widget>
     <zorder>verticalLayoutWidget_6</zorder>
     <zorder>label_7</zorder>
     <zorder>widget_2</zorder>
@@ -240,6 +264,8 @@ QGroupBox::title {
     <zorder>tofRetarder_set</zorder>
     <zorder>label_13</zorder>
     <zorder>tofSetButton</zorder>
+    <zorder>verticalLayoutWidget_7</zorder>
+    <zorder>label_10</zorder>
    </widget>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">

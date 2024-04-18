@@ -81,20 +81,29 @@ class LVPS:
                 serial.write( b':MEAS:POW?\r\n'); serial.flush()
                 return float(serial.readline())
 
+            #sets and retrives the set current for channel
+            @property
+            def setCurrent(self):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':CURR?\r\n'); serial.flush()
+                return float (serial.readline())
+
+            @setCurrent.setter
+            def setCurrent(self, val):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':CURR %f' % float(val) + b'\r\n'); serial.flush()
+
+            @property
+            def current(self):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':MEAS:CURR?\r\n'); serial.flush()
+                return float(serial.readline())
+
         return LVPSChannel()
 
 if __name__=='__main__':
     d = LVPS()
     d.connect()
-    d.Body.off()
-    d.Body.setVoltage = 2.22
-    print(d.Body.setVoltage)
-    print(d.Body.voltage)
+    print(d.Oven.setVoltage)
+    print(d.Oven.voltage)
 
-    d.Body.on()
-    time.sleep(2)
-    print(d.Body.voltage)
-
-    d.Body.off()
-    time.sleep(1)
-    print(d.Body.voltage)

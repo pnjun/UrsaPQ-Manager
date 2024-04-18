@@ -167,6 +167,8 @@ class SampleWindow(ConsoleWindow):
         self.gasLine_switch = Switch(thumb_radius=11, track_radius=8)
         self.window.flowEnableBox.addWidget(self.gasLine_switch)
 
+        self.resetTimer = False
+        
         self.ursapq = ursapq
         self.setupCallbacks()
 
@@ -185,15 +187,27 @@ class SampleWindow(ConsoleWindow):
         self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
         self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
 
+        if self.resetTimer:
+            self.updateTimer.setInterval( self.updateTime )
+            self.resetTimer = False
+
     #Callbacks:
     @Slot()
     def oven_enable(self):
         self.ursapq.oven_enable = self.ovenSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+        self.resetTimer = True
 
     #Callbacks:
     @Slot()
     def gasLine_enable(self):
         self.ursapq.gasLine_enable = self.gasLine_switch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+        self.resetTimer = True
 
     @Slot()
     def newFlow(self):
@@ -214,8 +228,10 @@ class SpectrometerWindow(ConsoleWindow):
         super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.coilEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
+        self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
         self.ursapq = ursapq
         self.setupCallbacks()
 
@@ -224,6 +240,7 @@ class SpectrometerWindow(ConsoleWindow):
     def setupCallbacks(self):
         self.mcpEnableSwitch.clicked.connect(self.mcpEnable)
         self.tofEnableSwitch.clicked.connect(self.tofEnable)
+        self.coilEnableSwitch.clicked.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
 
@@ -240,6 +257,8 @@ class SpectrometerWindow(ConsoleWindow):
 
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
+        self.window.coilCurr_act.setText( '{:.1f}'.format(self.ursapq.coil_current))
+        self.window.coilCurr_set.setText( '{:.1f}'.format(self.ursapq.coil_setCurrent))        
 
         if self.resetTimer:
             self.updateTimer.setInterval( self.updateTime )
@@ -257,6 +276,14 @@ class SpectrometerWindow(ConsoleWindow):
     @Slot()
     def tofEnable(self):
         self.ursapq.tof_hvEnable = self.tofEnableSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+        self.resetTimer = True
+
+    @Slot()
+    def coilEnable(self):
+        self.ursapq.coil_enable = self.coilEnableSwitch.isChecked()
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
@@ -284,11 +311,7 @@ class SpectrometerWindow(ConsoleWindow):
         except Exception:
             pass
         try:
-            self.ursapq.tof_lensSetHV = float( self.window.tofLens_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.tof_magnetSetHV = float( self.window.tofMagnet_in.toPlainText() )
+            self.ursapq.coil_setCurrent = float( self.window.coilCurr_in.toPlainText() )
         except Exception:
             pass
 
@@ -401,8 +424,7 @@ class MainWindow(ConsoleWindow):
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
         self.window.retarder.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        #self.window.coilCurr.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
-
+        self.window.coil_curr.setText(  '{:.1f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)

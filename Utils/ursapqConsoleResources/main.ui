@@ -259,7 +259,7 @@ QGroupBox::title {
       <x>10</x>
       <y>260</y>
       <width>421</width>
-      <height>201</height>
+      <height>211</height>
      </rect>
     </property>
     <property name="title">
@@ -282,7 +282,7 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>170</y>
+       <y>180</y>
        <width>91</width>
        <height>31</height>
       </rect>
@@ -466,7 +466,7 @@ QGroupBox::title {
        <string>Coil [A]:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="coilCurr">
+     <widget class="QLabel" name="coil_curr">
       <property name="geometry">
        <rect>
         <x>120</x>
@@ -485,7 +485,7 @@ QGroupBox::title {
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>15</y>
+      <y>10</y>
       <width>271</width>
       <height>331</height>
      </rect>
@@ -693,9 +693,9 @@ QGroupBox::title {
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>355</y>
+      <y>350</y>
       <width>271</width>
-      <height>111</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
