@@ -314,46 +314,47 @@ class UrsapqManager:
         If update succeeded, new voltages are calculated via the PID filters
         '''
 
-        #Try connection to OVPS, if not,
-        try:
-            # Try to read out status
-            self.LVPS.connect()
-            self.status.oven_output_pow  = self.LVPS.Oven.power
-
-            if self.status.oven_enable:
-                # If we got this far, the LVPS is probably connected and working,
-                # we can set the new control voltages based on PID filter
-                self.LVPS.Oven.on()
-                self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
-
-                # Write oven status variable
-                if abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
-                    self.status.oven_PIDStatus = "OK"
-                else:
-                    self.status.oven_PIDStatus = "TRACKING"
-            else:
-                self.LVPS.Oven.off()
-                self.OvenPID.reset()
-                self.status.oven_PIDStatus = "OFF"
-
-        # If connection failed, set everything to NaN and reset PID filters
-        except Exception as e:
+        if self.status.LVPS_isOn: # no point in trying if power is off
             try:
-                self.LVPS.allOff()
-            except serial.serialutil.SerialException:
-                pass
-            
-            self.LVPS.close()
-            self.OvenPID.reset()
+                # Try to read out status
+                self.LVPS.connect()
+                self.status.oven_output_pow  = self.LVPS.Oven.power
 
-            self.status.oven_PIDStatus = "ERROR"
-            self.status.oven_output_pow = math.nan
-            self.status.coil_current = math.nan
+                if self.status.oven_enable:
+                    # If we got this far, the LVPS is probably connected and working,
+                    # we can set the new control voltages based on PID filter
+                    self.LVPS.Oven.on()
+                    self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
 
-            if self.status.LVPS_isOn:
+                    # Write oven status variable
+                    if abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
+                        self.status.oven_PIDStatus = "OK"
+                    else:
+                        self.status.oven_PIDStatus = "TRACKING"
+                else:
+                    self.LVPS.Oven.off()
+                    self.OvenPID.reset()
+                    self.status.oven_PIDStatus = "OFF"
+
+            # If connection failed, set everything to NaN and reset PID filters
+            except Exception as e:
+                try:
+                    self.LVPS.allOff()
+                except serial.serialutil.SerialException:
+                    pass
+                
+                self.LVPS.close()
+                self.OvenPID.reset()
+
+                self.status.oven_output_pow = math.nan
+                self.status.coil_current = math.nan
+
                 self.setMessage("ERROR: Cannot connect to LVPS, check USB", 5)
-                print("LVPS not reachable: " , traceback.format_exc())       
-            else:
+                print("LVPS not reachable: " , traceback.format_exc())     
+                
+        else: #LVPS is off
+            if self.status.oven_enable:
+                self.status.oven_PIDStatus = "ERROR"
                 self.setMessage("WARNING: LVPS disabled, cannot run oven (overtemp/overpressure?)", 5)
                 
 
