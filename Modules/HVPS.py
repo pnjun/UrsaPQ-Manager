@@ -43,6 +43,12 @@ class HVPS:
         self.posSerial.flush()
         self.negSerial.flush()
 
+    def close(self):
+        if self.posSerial.is_open:
+            self.posSerial.close()
+        if self.negSerial.is_open:
+            self.negSerial.close()
+
     @property
     def mcpEnable(self):
         return self._mcpEnable

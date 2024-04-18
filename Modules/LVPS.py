@@ -27,6 +27,10 @@ class LVPS:
 
         self.serial.flush()
 
+    def close(self):
+        if self.serial.is_open:
+            self.serial.close()
+
     def allOn(self):
         for key, val in config.LVPS.Channels._asdict().items():
             self.__getattr__(key).on()

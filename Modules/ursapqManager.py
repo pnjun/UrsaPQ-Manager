@@ -141,9 +141,10 @@ class UrsapqManager:
         Sets a server status message that clients can read.
         If timeout is specified, message goes back to previous message after timeout
         '''
+
         if False: # Not working properly, TO BE FIXED
-            print(timeout)
-            threading.Timer(timeout, self.setMessage, [self.status.statusMessage] ).start()
+            old_message = self.status.statusMessage
+            threading.Timer(timeout, self.setMessage, ["ASDF Running", None] ).start()
 
         print(f"Server Message: {msg}")
         self.status.statusMessage = msg
@@ -341,19 +342,20 @@ class UrsapqManager:
                 self.LVPS.allOff()
             except serial.serialutil.SerialException:
                 pass
-                
-            self.status.oven_output_pow = math.nan
+            
+            self.LVPS.close()
             self.OvenPID.reset()
+
+            self.status.oven_PIDStatus = "ERROR"
+            self.status.oven_output_pow = math.nan
+            self.status.coil_current = math.nan
 
             if self.status.LVPS_isOn:
                 self.setMessage("ERROR: Cannot connect to LVPS, check USB", 5)
-                print("LVPS not reachable: " , traceback.format_exc())        
-                self.status.coil_current = math.nan
-
+                print("LVPS not reachable: " , traceback.format_exc())       
             else:
-                self.setMessage("ERROR: LVPS shutoff, overtemp?", 5)
-
-            self.status.oven_PIDStatus = "ERROR"
+                self.setMessage("WARNING: LVPS disabled, cannot run oven (overtemp/overpressure?)", 5)
+                
 
         # If stopping, switch everything off and reset PID filters
         if self.controls_stop.is_set():
@@ -361,7 +363,7 @@ class UrsapqManager:
                 self.LVPS.allOff()
             except serial.serialutil.SerialException:
                 pass
-                
+            self.LVPS.close()
             self.OvenPID.reset()
         # If not stopping, calls itself again after configurable interval
         else:
@@ -461,6 +463,7 @@ class UrsapqManager:
             self.status.HV_Status = "ERROR"
             self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate", 5)
             print(traceback.format_exc())
+            self.HVPS.close()
 
         if self.controls_stop.is_set():
             try:
@@ -470,6 +473,7 @@ class UrsapqManager:
                 self.status.mcp_hvEnable = False
             except Exception:
                 pass
+            self.HVPS.close()
         else:
             threading.Timer(config.HVPS.UpdatePeriod, self.HVPSController).start()
 
