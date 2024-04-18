@@ -163,7 +163,7 @@ PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_T
 // Decide actions based on status
 PreVacValves_Open := NOT PreVac_Valve_Lock AND ( PreVac_OK OR NOT MainVac_TurboOK );
 TurboPump_ON := PreVac_Ok AND Pumps_Enable AND MainVac_TurboOK AND NOT TurboError;
-LVPS_ON := NOT Oven_OverTEMP;
+LVPS_ON := MainVac_TurboOK AND NOT Oven_OverTEMP;
 
 // Sample Valve
 Sample_Flow := INT_TO_REAL(Flow_Valve) / 32767; // convert int to float in range 0-1
