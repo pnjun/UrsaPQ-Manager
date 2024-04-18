@@ -15,11 +15,18 @@ VAR
 	
 	Flow_Valve 			 AT %I* : INT;                  // Gas flow valve conductance 0-10 V
 	
-	MTurbo1_NO AT %I*   : BOOL;		//Normal Operation relays
-	MTurboTOF_NO AT %I* : BOOL;	
-	MTurbo1_ERR AT %I*   : BOOL;	//Eorror relays
-	MTurboTOF_ERR AT %I* : BOOL;		
+	TurboTOF_NO AT %I* : BOOL;	
+	TurboTOF_ERR AT %I* : BOOL;
+		
 	
+	// IMPORTANT! 
+	// LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
+	// LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+	// BECKHOFF:  8  9  10 11 12 13 14 15 0  1  2  3  4  5  6  7 
+	TurboMain_Overtemp AT %I* : BOOL;
+	TurboMain_NO AT %I* : BOOL;
+	TurboMain_ERR AT %I* : BOOL;
+	TurboMain_Freq AT %I* : UINT;
 	
 	//OUTPUTS
 	Penning_Enable AT %Q* : BOOL;
@@ -27,14 +34,14 @@ VAR
 	MPreVac_Valve AT %Q*: BOOL;
 	TOFPreVac_Valve AT %Q* : BOOL;
 
+	TurboTOF_enable AT %Q* : BOOL;
+	TurboMain_enable AT %Q*: BOOL;
+	TurboMain_Control AT %Q* : BOOL;
+
 	Flow_Valve_Set AT %Q* : INT;    // Flow valve setpoint
-	
-	MTurbo1_ON AT %Q*   : BOOL;		//Normal Operation relays
-	MTurboTOF_ON AT %Q* : BOOL;	
 	
 	FlashInterlock AT %Q* : BOOL;	
 	HVPS_ON AT %Q* : INT;
-	
 	Lamp1_Enable AT %Q* : BOOL;
 	
 	//ADS inputs: CONTROL PARAMETERS (PLC reads values and acts accordignly, ADS clients should set these values)
@@ -145,9 +152,9 @@ manageAx_MagnetY(axis := MagnetY, setPoint := MagnetY_SetPoint, speed := PARAM.S
 		 
 //*** SAFETY CHECKS ***
 // Compute status variables
-Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_CapTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp; //Prevent overtemp of oven
-TurboError 		:= MTurbo1_ERR OR MTurboTOF_ERR;
-Turbo_NO         := MTurboTOF_NO; 
+Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp; // OR Sample_CapTemp > PARAM.Oven_MaxTemp Prevent overtemp of oven
+TurboError 		:= TurboTOF_ERR AND TurboMain_ERR;
+Turbo_NO        := TurboTOF_NO AND TurboMain_NO; 
 MainVac_OK      := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.MainVac_Ok_Threshold; // Negative pressure means sensor error or sensor disconnected
 MainVac_TurboOK := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.TurboStart_Threshold;
 PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_Threshold;
@@ -166,8 +173,9 @@ Flow_Valve_Set := REAL_TO_INT( Sample_Flow_Set * 32767) * BOOL_TO_INT(MainVac_Tu
 // Actuate outputs (when one action controls more than one output)
 MPreVac_Valve   := PreVacValves_Open;
 TOFPreVac_Valve := PreVacValves_Open;
-MTurbo1_ON := TurboPump_ON;
-MTurboTOF_ON := TurboPump_ON;
+TurboTOF_enable  := TurboPump_ON;
+TurboMain_enable := TurboPump_ON;
+TurboMain_control := TRUE; // Tell pump that control is through Profibus and ignore other signals
 
 IF MainVac_OK AND Turbo_NO THEN
 	FlashInterlock := TRUE;
@@ -226,9 +234,9 @@ END_IF
       <LineId Id="436" Count="0" />
       <LineId Id="435" Count="0" />
       <LineId Id="433" Count="0" />
-      <LineId Id="398" Count="0" />
-      <LineId Id="400" Count="0" />
-      <LineId Id="399" Count="0" />
+      <LineId Id="398" Count="1" />
+      <LineId Id="1436" Count="0" />
+      <LineId Id="1438" Count="0" />
       <LineId Id="703" Count="0" />
       <LineId Id="303" Count="0" />
       <LineId Id="706" Count="0" />

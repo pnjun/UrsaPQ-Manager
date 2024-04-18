@@ -3031,21 +3031,27 @@ External Setpoint Generation:
 							<Type>INT</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo1_NO</Name>
-							<Comment><![CDATA[Normal Operation relays]]></Comment>
+							<Name>MAIN.TurboMain_NO</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurboTOF_NO</Name>
+							<Name>MAIN.TurboMain_ERR</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurbo1_ERR</Name>
-							<Comment><![CDATA[Eorror relays]]></Comment>
+							<Name>MAIN.TurboTOF_NO</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.MTurboTOF_ERR</Name>
+							<Name>MAIN.TurboMain_Overtemp</Name>
+							<Comment><![CDATA[ IMPORTANT! 
+ LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
+ LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+ BECKHOFF:  8  9  10 11 12 13 14 15 0  1  2  3  4  5  6  7 ]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.TurboTOF_ERR</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3121,9 +3127,21 @@ External Setpoint Generation:
 							<Name>MAIN.MagnetY_Bw_End</Name>
 							<Type>BOOL</Type>
 						</Var>
+						<Var>
+							<Name>MAIN.TurboMain_Freq</Name>
+							<Type>UINT</Type>
+						</Var>
 					</Vars>
 					<Vars VarGrpType="2">
 						<Name>PlcTask Outputs</Name>
+						<Var>
+							<Name>MAIN.TurboMain_enable</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.TurboMain_Control</Name>
+							<Type>BOOL</Type>
+						</Var>
 						<Var>
 							<Name>MAIN.Penning_Enable</Name>
 							<Comment><![CDATA[OUTPUTS]]></Comment>
@@ -3141,15 +3159,6 @@ External Setpoint Generation:
 							<Name>MAIN.Flow_Valve_Set</Name>
 							<Comment><![CDATA[ Flow valve setpoint]]></Comment>
 							<Type>INT</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.MTurbo1_ON</Name>
-							<Comment><![CDATA[Normal Operation relays]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.MTurboTOF_ON</Name>
-							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.FlashInterlock</Name>
@@ -3189,6 +3198,10 @@ External Setpoint Generation:
 						</Var>
 						<Var>
 							<Name>MAIN.LVPS_ON</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.TurboTOF_enable</Name>
 							<Type>BOOL</Type>
 						</Var>
 					</Vars>
@@ -3272,6 +3285,27 @@ External Setpoint Generation:
 						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
 							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^LVPS + M1 Valve">
 								<Link VarA="MAIN.OvenPS_Relay" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 1^LVPS" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2024-04-18T11:14:35">
+						<OwnerA Name="InputDst" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="1">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
+								<Link VarA="MAIN.MTurboTOF_ERR" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 10^Input" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="MAIN.MTurboTOF_NO" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 2^Input" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+						<OwnerA Name="OutputSrc" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="2">
+							<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
+								<Link VarA="MAIN.MTurboTOF_ON" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Channel 4^TOFTurbo_ON" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2024-04-18T13:39:42">
+						<OwnerA Name="InputDst" Prefix="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance" Type="1">
+							<OwnerB Name="TIID^Device 2 (EL6731)^Box 10 (GSD Box) (Anybus-CC Profibus-DPV1)">
+								<Link VarA="MAIN.TurboMain_Freq" TypeA="INT" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000006}" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[1]" RestoreInfo="TypeMismatch" OldTypeA="INT" OldGuidA="{18071995-0000-0000-0000-000000000006}" NewTypeA="UINT" NewGuidA="{18071995-0000-0000-0000-000000000005}"/>
+								<Link VarA="MAIN.TurboMain_readback" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[0]" Size="1" OffsB="7" RestoreInfo="ANotFound"/>
 							</OwnerB>
 						</OwnerA>
 					</UnrestoredVarLinks>
@@ -5965,7 +5999,7 @@ External Setpoint Generation:
 								</Entry>
 							</Pdo>
 							<Pdo Name="Channel 1" Index="#x1600" InOut="1" Flags="#x0011" SyncMan="0">
-								<Entry Name="MainPreVacValve2" Index="#x7000" Sub="#x01">
+								<Entry Name="Val" Index="#x7000" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -6450,7 +6484,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 						</EtherCAT>
 					</Box>
 					<Box Id="30" BoxType="9099">
-						<Name>Term 30 (EL2004)</Name>
+						<Name>TurboTOF_enable + penning enable</Name>
 						<ImageId>1003</ImageId>
 						<EtherCAT SlaveType="1" PdiType="#x0104" CycleMBoxPollingTime="0" VendorId="#x00000002" ProductCode="#x07d43052" RevisionNo="#x00120000" RepeatSupport="true" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL2004 4Ch. Dig. Output 24V, 0.5A" Desc="EL2004" PortABoxInfo="#x0100001d">
 							<SyncMan>000f01004400010003000000000000000000000f44090000</SyncMan>
@@ -6471,7 +6505,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 								</Entry>
 							</Pdo>
 							<Pdo Name="Channel 4" Index="#x1603" InOut="1" Flags="#x0011" SyncMan="0">
-								<Entry Name="TOFTurbo_ON" Index="#x7030" Sub="#x01">
+								<Entry Name="TurboTOF_enable" Index="#x7030" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -6526,7 +6560,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 						</EtherCAT>
 					</Box>
 					<Box Id="36" BoxType="9099">
-						<Name>Term 36 (EL1819)</Name>
+						<Name>TurboTOF Input</Name>
 						<ImageId>7</ImageId>
 						<EtherCAT SlaveType="1" PdiType="#x0104" CycleMBoxPollingTime="0" VendorId="#x00000002" ProductCode="#x071b3052" RevisionNo="#x00120000" RepeatSupport="true" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL1819 16Ch. Dig. Input 24V, 10µs" Desc="EL1819" PortABoxInfo="#x01000020">
 							<SyncMan>001002000000010004000000000000000200001000010000</SyncMan>
@@ -6537,7 +6571,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 								</Entry>
 							</Pdo>
 							<Pdo Name="Channel 2" Index="#x1a01" Flags="#x0011" SyncMan="0">
-								<Entry Name="Input" Index="#x6010" Sub="#x01">
+								<Entry Name="TurboTOF_NO" Index="#x6010" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -6577,7 +6611,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 								</Entry>
 							</Pdo>
 							<Pdo Name="Channel 10" Index="#x1a09" Flags="#x0011" SyncMan="0">
-								<Entry Name="Input" Index="#x6090" Sub="#x01">
+								<Entry Name="TurboTOF_ERR" Index="#x6090" Sub="#x01">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -6913,7 +6947,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="35" BoxType="9093" BoxFlags="#x00000020">
 						<Name>Profibus</Name>
 						<ImageId>1007</ImageId>
-						<EtherCAT SlaveType="5" AdsServerAddress="c0a800010301fc03" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
+						<EtherCAT SlaveType="5" AdsServerAddress="c0a8000103010000" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
 							<SyncMan>0010800126000100010000005000da058001001026010000</SyncMan>
 							<SyncMan>8011800122000100020000005000da058001801122010000</SyncMan>
 							<SyncMan>00130c002400010003000000000000000000001324010000</SyncMan>
@@ -6973,7 +7007,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="40" BoxType="9103" BoxFlags="#x00000020">
 						<Name>Term 40 (EL6022)</Name>
 						<ImageId>1007</ImageId>
-						<EtherCAT SlaveType="7" PdiType="#x0005" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x17863052" RevisionNo="#x00130000" InfoDataAddr="true" TimeoutMailbox2="2000" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6022 Interface 2Ch. (RS422/485)" Desc="EL6022" PortABoxInfo="#x01000023">
+						<EtherCAT SlaveType="7" PdiType="#x0005" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x17863052" RevisionNo="#x00130000" InfoDataAddr="true" TimeoutMailbox2="2000" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6022 Interface 2Ch. (RS422/485)" Desc="EL6022" PortABoxInfo="#x01000023">
 							<SyncMan>001080002600010001000000400080008000001026010000</SyncMan>
 							<SyncMan>801080002200010002000000400080008000801022010000</SyncMan>
 							<SyncMan>001130002400010003000000000000003000001124010000</SyncMan>
@@ -7638,7 +7672,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 							</Pdo>
 							<CoeProfile ProfileNo="39326601"/>
 							<CoeProfile ProfileNo="39326601"/>
-							<EL60xxComPort ComPortNumber="6" BaudRate="9600" ByteSize="8" EnableRtsCts="true" EnableTxXonXoff="true" EnableRxXonXoff="true" EnableSendFifoDataCont="true" EnableTransferRateOpt="true" LocalComPort="true" VirtualComPort="true" RxFifoFullThreshold="864" EnableHalfDuplex="true" EnablePtPConnection="true"/>
+							<EL60xxComPort BaudRate="9600" ByteSize="8" EnableRtsCts="true" EnableTxXonXoff="true" EnableRxXonXoff="true" EnableSendFifoDataCont="true" EnableTransferRateOpt="true" LocalComPort="true" RxFifoFullThreshold="864" EnableHalfDuplex="true" EnablePtPConnection="true"/>
 							<EL60xxComPort BaudRate="19200" ByteSize="8" EnableRtsCts="true" LocalComPort="true" RxFifoFullThreshold="864"/>
 						</EtherCAT>
 					</Box>
@@ -7818,6 +7852,7 @@ Revision: 1.02
 	</Project>
 	<Mappings>
 		<MappingInfo Identifier="{00000000-2001-0850-0020-500841000403}" Id="#x02030020"/>
+		<MappingInfo Identifier="{00000000-2001-0850-0020-500860000403}" Id="#x02030050"/>
 		<MappingInfo Identifier="{00000000-0010-0304-2000-040310000403}" Id="#x02030010"/>
 		<MappingInfo Identifier="{08502001-0010-0304-0020-500810000403}" Id="#x02030040" Watchdog="00000000000000000000000000000000"/>
 		<MappingInfo Identifier="{05000010-2001-0850-2000-040300205008}" Id="#x02030030" Watchdog="0a000000040000000400000004000000"/>
@@ -8074,6 +8109,14 @@ Revision: 1.02
 			</OwnerB>
 		</OwnerA>
 		<OwnerA Name="TIPC^UrsaPQ_PLC^UrsaPQ_PLC Instance">
+			<OwnerB Name="TIID^Device 2 (EL6731)^Box 10 (GSD Box) (Anybus-CC Profibus-DPV1)">
+				<Link VarA="PlcTask Inputs^MAIN.TurboMain_ERR" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[0]" Size="1" OffsB="11"/>
+				<Link VarA="PlcTask Inputs^MAIN.TurboMain_Freq" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[1]"/>
+				<Link VarA="PlcTask Inputs^MAIN.TurboMain_NO" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[0]" Size="1" OffsB="2"/>
+				<Link VarA="PlcTask Inputs^MAIN.TurboMain_Overtemp" VarB="Module 1 (PPO1)^Inputs^PPO1_0_1[0]" Size="1" OffsB="15"/>
+				<Link VarA="PlcTask Outputs^MAIN.TurboMain_Control" VarB="Module 1 (PPO1)^Outputs^PPO1_1_1[0]" Size="1" OffsB="2"/>
+				<Link VarA="PlcTask Outputs^MAIN.TurboMain_enable" VarB="Module 1 (PPO1)^Outputs^PPO1_1_1[0]" Size="1" OffsB="8"/>
+			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^LVPS + M1 Valve">
 				<Link VarA="PlcTask Outputs^MAIN.LVPS_ON" VarB="Channel 1^LVPS"/>
 				<Link VarA="PlcTask Outputs^MAIN.MPreVac_Valve" VarB="Channel 2^MainPrevacValve"/>
@@ -8120,19 +8163,19 @@ Revision: 1.02
 				<Link VarA="PlcTask Inputs^MAIN.GasLine_Pirani_Int" VarB="AI Standard Channel 2^Gas Delivery Line"/>
 				<Link VarA="PlcTask Inputs^MAIN.PrePump_Pressure_Int" VarB="AI Standard Channel 1^Prepump Pirani"/>
 			</OwnerB>
-			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 30 (EL2004)">
-				<Link VarA="PlcTask Outputs^MAIN.MTurboTOF_ON" VarB="Channel 4^TOFTurbo_ON"/>
-				<Link VarA="PlcTask Outputs^MAIN.Penning_Enable" VarB="Channel 1^Penning Enable"/>
-			</OwnerB>
-			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 36 (EL1819)">
-				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_ERR" VarB="Channel 10^Input"/>
-				<Link VarA="PlcTask Inputs^MAIN.MTurboTOF_NO" VarB="Channel 2^Input"/>
-			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Term 37 (EL3318)">
 				<Link VarA="PlcTask Inputs^MAIN.Magnet_Temp" VarB="TC Channel 8^Magnet"/>
 				<Link VarA="PlcTask Inputs^MAIN.Sample_BodyTemp" VarB="TC Channel 3^Body"/>
 				<Link VarA="PlcTask Inputs^MAIN.Sample_CapTemp" VarB="TC Channel 2^Cap"/>
 				<Link VarA="PlcTask Inputs^MAIN.Sample_TipTemp" VarB="TC Channel 4^Tip2"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^TurboTOF Input">
+				<Link VarA="PlcTask Inputs^MAIN.TurboTOF_ERR" VarB="Channel 10^TurboTOF_ERR"/>
+				<Link VarA="PlcTask Inputs^MAIN.TurboTOF_NO" VarB="Channel 2^TurboTOF_NO"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^TurboTOF_enable + penning enable">
+				<Link VarA="PlcTask Outputs^MAIN.Penning_Enable" VarB="Channel 1^Penning Enable"/>
+				<Link VarA="PlcTask Outputs^MAIN.TurboTOF_enable" VarB="Channel 4^TurboTOF_enable"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 38 (EK1100)^FlashInterlock">
 				<Link VarA="PlcTask Outputs^MAIN.FlashInterlock" VarB="Channel 1^FlashInterlock"/>
