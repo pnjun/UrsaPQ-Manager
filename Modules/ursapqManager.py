@@ -250,6 +250,7 @@ class UrsapqManager:
         self._beckhoffRead('mainVac_OK',          'MAIN.MainVac_OK',        pyads.PLCTYPE_BOOL)
         self._beckhoffRead('pumps_areON',         'MAIN.TurboPump_ON',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('pumps_normalOp',      'MAIN.Turbo_NO',          pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('pump_speed',          'MAIN.TurboMain_Freq',    pyads.PLCTYPE_UINT)
         self._beckhoffRead('preVacValve_isOpen',  'MAIN.PreVacValves_Open', pyads.PLCTYPE_BOOL)
         self._beckhoffRead('LVPS_isOn',           'MAIN.LVPS_ON',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('sample_capTemp',      'MAIN.Sample_CapTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
