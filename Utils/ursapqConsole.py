@@ -347,13 +347,15 @@ class MainWindow(ConsoleWindow):
 
     def updateVacuum(self):
         #VACUUM BOX
-        self.window.prevacPressure.setText(  '{:.2e}'.format(self.ursapq.preVacPressure) )
-        self.window.chamberPressure.setText( '{:.2e}'.format(self.ursapq.chamberPressure) )
+        self.window.prevacPressure.setText(  f'{self.ursapq.preVacPressure:.2e}')
+        self.window.chamberPressure.setText( f'{self.ursapq.chamberPressure:.2e}') 
+        self.window.pump_speed.setText( f'{self.ursapq.pump_speed}' )
+
         self.window.prevacValves.setText( '{} ({})'.format(
                                            "Open" if self.ursapq.preVacValve_isOpen else "Closed",
                                            "Locked" if self.ursapq.preVacValve_lock else "Auto" ))
         if not self.ursapq.pumps_areON:
-            pump_status = "Stopped"
+            pump_status = "Stop"
         elif self.ursapq.pumps_normalOp:
             pump_status = "Running"
         else:

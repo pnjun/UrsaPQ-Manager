@@ -72,10 +72,10 @@ QGroupBox::title {
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>15</x>
-      <y>15</y>
+      <x>10</x>
+      <y>10</y>
       <width>421</width>
-      <height>211</height>
+      <height>231</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -99,8 +99,8 @@ QGroupBox::title {
     <widget class="QLabel" name="chamberPressure">
      <property name="geometry">
       <rect>
-       <x>255</x>
-       <y>45</y>
+       <x>260</x>
+       <y>40</y>
        <width>151</width>
        <height>30</height>
       </rect>
@@ -112,8 +112,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>75</y>
+       <x>20</x>
+       <y>70</y>
        <width>241</width>
        <height>31</height>
       </rect>
@@ -125,8 +125,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>45</y>
+       <x>20</x>
+       <y>40</y>
        <width>241</width>
        <height>31</height>
       </rect>
@@ -138,8 +138,8 @@ QGroupBox::title {
     <widget class="QLabel" name="prevacPressure">
      <property name="geometry">
       <rect>
-       <x>255</x>
-       <y>75</y>
+       <x>260</x>
+       <y>70</y>
        <width>151</width>
        <height>30</height>
       </rect>
@@ -151,8 +151,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label_3">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>105</y>
+       <x>20</x>
+       <y>100</y>
        <width>241</width>
        <height>31</height>
       </rect>
@@ -164,8 +164,8 @@ QGroupBox::title {
     <widget class="QLabel" name="prevacValves">
      <property name="geometry">
       <rect>
-       <x>255</x>
-       <y>105</y>
+       <x>260</x>
+       <y>100</y>
        <width>151</width>
        <height>31</height>
       </rect>
@@ -177,8 +177,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>135</y>
+       <x>20</x>
+       <y>130</y>
        <width>241</width>
        <height>31</height>
       </rect>
@@ -190,8 +190,8 @@ QGroupBox::title {
     <widget class="QLabel" name="pumpStatus">
      <property name="geometry">
       <rect>
-       <x>255</x>
-       <y>135</y>
+       <x>260</x>
+       <y>130</y>
        <width>151</width>
        <height>31</height>
       </rect>
@@ -217,7 +217,7 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>180</y>
+       <y>200</y>
        <width>91</width>
        <height>31</height>
       </rect>
@@ -226,14 +226,40 @@ QGroupBox::title {
       <string>Config</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>160</y>
+       <width>241</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Main turbo speed [Hz]</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="pump_speed">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>160</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>15</x>
-      <y>240</y>
+      <x>10</x>
+      <y>260</y>
       <width>421</width>
-      <height>226</height>
+      <height>201</height>
      </rect>
     </property>
     <property name="title">
@@ -256,7 +282,7 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>195</y>
+       <y>170</y>
        <width>91</width>
        <height>31</height>
       </rect>
@@ -268,8 +294,8 @@ QGroupBox::title {
     <widget class="QWidget" name="widget" native="true">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>45</y>
+       <x>10</x>
+       <y>30</y>
        <width>211</width>
        <height>136</height>
       </rect>
@@ -369,8 +395,8 @@ QGroupBox::title {
     <widget class="QWidget" name="widget_2" native="true">
      <property name="geometry">
       <rect>
-       <x>225</x>
-       <y>45</y>
+       <x>220</x>
+       <y>30</y>
        <width>181</width>
        <height>136</height>
       </rect>
