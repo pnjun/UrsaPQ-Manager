@@ -232,6 +232,7 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
         self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
+        
         self.ursapq = ursapq
         self.setupCallbacks()
 
@@ -247,6 +248,7 @@ class SpectrometerWindow(ConsoleWindow):
     def update(self):
         self.mcpEnableSwitch.setChecked( self.ursapq.mcp_hvEnable )
         self.tofEnableSwitch.setChecked( self.ursapq.tof_hvEnable )
+        self.coilEnableSwitch.setChecked( self.ursapq.coil_enable )
 
         self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))

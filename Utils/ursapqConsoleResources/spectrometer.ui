@@ -237,7 +237,7 @@ QGroupBox::title {
        <height>31</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="tofEnableBox_2"/>
+     <layout class="QVBoxLayout" name="coilEnableBox"/>
     </widget>
     <widget class="QLabel" name="label_10">
      <property name="geometry">
