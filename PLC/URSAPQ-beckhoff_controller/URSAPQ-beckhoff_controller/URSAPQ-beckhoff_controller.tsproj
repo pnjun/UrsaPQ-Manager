@@ -7823,6 +7823,9 @@ Revision: 1.02
 									<Name>PPO1_0_1</Name>
 									<Type GUID="{18071995-0000-0000-0000-000400000002}">ARRAY [0..1] OF WORD</Type>
 									<BitOffs>64</BitOffs>
+									<SubVar Swapping="#x1">
+										<Name>PPO1_0_1[1]</Name>
+									</SubVar>
 								</Var>
 							</Vars>
 							<Vars VarGrpType="2">

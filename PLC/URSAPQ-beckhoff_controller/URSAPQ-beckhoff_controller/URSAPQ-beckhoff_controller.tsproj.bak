@@ -3044,6 +3044,10 @@ External Setpoint Generation:
 						</Var>
 						<Var>
 							<Name>MAIN.TurboMain_Overtemp</Name>
+							<Comment><![CDATA[ IMPORTANT! 
+ LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
+ LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+ BECKHOFF:  8  9  10 11 12 13 14 15 0  1  2  3  4  5  6  7 ]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
