@@ -167,8 +167,6 @@ class SampleWindow(ConsoleWindow):
         self.gasLine_switch = Switch(thumb_radius=11, track_radius=8)
         self.window.flowEnableBox.addWidget(self.gasLine_switch)
 
-        self.resetTimer = False
-        
         self.ursapq = ursapq
         self.setupCallbacks()
 
@@ -187,9 +185,7 @@ class SampleWindow(ConsoleWindow):
         self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
         self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
 
-        if self.resetTimer:
-            self.updateTimer.setInterval( self.updateTime )
-            self.resetTimer = False
+        self.updateTimer.setInterval( self.updateTime )
 
     #Callbacks:
     @Slot()
@@ -198,7 +194,6 @@ class SampleWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     #Callbacks:
     @Slot()
@@ -207,7 +202,6 @@ class SampleWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     @Slot()
     def newFlow(self):
@@ -236,8 +230,6 @@ class SpectrometerWindow(ConsoleWindow):
         self.ursapq = ursapq
         self.setupCallbacks()
 
-        self.resetTimer = False
-
     def setupCallbacks(self):
         self.mcpEnableSwitch.clicked.connect(self.mcpEnable)
         self.tofEnableSwitch.clicked.connect(self.tofEnable)
@@ -262,9 +254,7 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.coilCurr_act.setText( '{:.1f}'.format(self.ursapq.coil_current))
         self.window.coilCurr_set.setText( '{:.1f}'.format(self.ursapq.coil_setCurrent))        
 
-        if self.resetTimer:
-            self.updateTimer.setInterval( self.updateTime )
-            self.resetTimer = False
+        self.updateTimer.setInterval( self.updateTime )
 
     #Callbacks:
     @Slot()
@@ -273,7 +263,6 @@ class SpectrometerWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     @Slot()
     def tofEnable(self):
@@ -281,7 +270,6 @@ class SpectrometerWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     @Slot()
     def coilEnable(self):
@@ -289,7 +277,6 @@ class SpectrometerWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     @Slot()
     def mcpSet(self):

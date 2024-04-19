@@ -16,14 +16,17 @@ from config import config
 import time
 
 class PIDFilter:
-    def __init__(self, p, i ,d, setPoint):
+    def __init__(self, p, i ,d, setPoint, lowpass_tau=60):
         '''
         PID filter. Takes the filter coefficients for the
         proportional, integral and derivative components
+
+
         '''
         self.d = d
         self.i = i
         self.p = p
+        self.lowpass_tau = lowpass_tau
         self.setPoint = setPoint
         self.reset()
 
@@ -45,14 +48,19 @@ class PIDFilter:
         if self.integ < 0:
             self.integ = 0
         if dt > 0:
-            prop = self.d / dt * (err - self.lastErr)
-            self.lastErr = err
+            if self.lastErr is None:
+                self.lastErr = err
+            deriv = self.d / dt * (err - self.lastErr)
+            filter = min( dt/self.lowpass_tau, 1)
+            self.lastErr =  filter * err + (1-filter) * self.lastErr #lowpass filter on error, to avoid quantization on derivative
         else:
-            prop = 0
+            deriv = 0
 
-        out = self.p * err + self.integ + prop
+        out = self.p * err + self.integ + deriv
         if out < 0:
             out = 0
+
+        print(err, self.lastErr, self.integ, deriv)
 
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
@@ -61,7 +69,7 @@ class PIDFilter:
 
     def reset(self):
         self.integ = 0
-        self.lastErr = 0
+        self.lastErr = None
         self.lastcall = None
 
 
@@ -341,7 +349,7 @@ class UrsapqManager:
                     self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
 
                     # Write oven status variable
-                    if abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
+                    if self.OvenPID.lastErr is not None and abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
                         self.status.oven_PIDStatus = "OK"
                     else:
                         self.status.oven_PIDStatus = "TRACKING"
