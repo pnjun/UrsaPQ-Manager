@@ -8,23 +8,25 @@ import math
 import time
 import serial
 
-from OvenPS import OvenPS
-from RigolPS import RigolPS
 from HVPS import HVPS
+from LVPS import LVPS
 from Beckhoff import BeckhoffSys
 import pyads
 from config import config
 import time
 
-class TempPIDFilter:
-    def __init__(self, p, i ,d, setPoint):
+class PIDFilter:
+    def __init__(self, p, i ,d, setPoint, lowpass_tau=60):
         '''
-        Temperature PID filter. Takes the filter coefficients for the
+        PID filter. Takes the filter coefficients for the
         proportional, integral and derivative components
+
+
         '''
         self.d = d
         self.i = i
         self.p = p
+        self.lowpass_tau = lowpass_tau
         self.setPoint = setPoint
         self.reset()
 
@@ -46,14 +48,19 @@ class TempPIDFilter:
         if self.integ < 0:
             self.integ = 0
         if dt > 0:
-            prop = self.d / dt * (err - self.lastErr)
-            self.lastErr = err
+            if self.lastErr is None:
+                self.lastErr = err
+            deriv = self.d / dt * (err - self.lastErr)
+            filter = min( dt/self.lowpass_tau, 1)
+            self.lastErr =  filter * err + (1-filter) * self.lastErr #lowpass filter on error, to avoid quantization on derivative
         else:
-            prop = 0
+            deriv = 0
 
-        out = self.p * err + self.integ + prop
+        out = self.p * err + self.integ + deriv
         if out < 0:
             out = 0
+
+        print(err, self.lastErr, self.integ, deriv)
 
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
@@ -62,7 +69,7 @@ class TempPIDFilter:
 
     def reset(self):
         self.integ = 0
-        self.lastErr = 0
+        self.lastErr = None
         self.lastcall = None
 
 
@@ -117,15 +124,13 @@ class UrsapqManager:
 
         # Instances of hardware control modules
         self.beckhoff = BeckhoffSys()
-        self.ovenPS = OvenPS()
+        self.LVPS = LVPS()
         self.HVPS = HVPS()
 
         self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
         #PID filters
-        self.TipPID =  TempPIDFilter(*tuple(config.Oven.PID.TipParams),  config.Oven.PID.TipDefSetpoint)
-        self.CapPID =  TempPIDFilter(*tuple(config.Oven.PID.CapParams),  config.Oven.PID.CapDefSetpoint)
-        self.BodyPID = TempPIDFilter(*tuple(config.Oven.PID.BodyParams), config.Oven.PID.BodyDefSetpoint)
+        self.OvenPID =  PIDFilter(*tuple(config.OvenPID.Params),  config.OvenPID.DefSetpoint)
 
         #System status message initalization
         self.status.statusMessage = ""
@@ -144,9 +149,10 @@ class UrsapqManager:
         Sets a server status message that clients can read.
         If timeout is specified, message goes back to previous message after timeout
         '''
+
         if False: # Not working properly, TO BE FIXED
-            print(timeout)
-            threading.Timer(timeout, self.setMessage, [self.status.statusMessage] ).start()
+            old_message = self.status.statusMessage
+            threading.Timer(timeout, self.setMessage, ["ASDF Running", None] ).start()
 
         print(f"Server Message: {msg}")
         self.status.statusMessage = msg
@@ -157,15 +163,17 @@ class UrsapqManager:
         ''' Starts status update operations. '''
         self.setMessage("Attempting to start server...")
         self.beckhoff.start()
-        self.updateStatus()
-
-        self.controls_stop.clear()
-        self.ovenController()
-        self.HVPSController()
 
         self.status.coil_current = math.nan
         self.status.coil_setCurrent = math.nan
         self.status.coil_enable = False
+        self.status.oven_enable = False
+
+        self.updateStatus()
+
+        self.controls_stop.clear()
+        self.LVPSController()
+        self.HVPSController()
 
         if self.doocs:
             self.doocs_stop.clear()
@@ -251,8 +259,9 @@ class UrsapqManager:
         self._beckhoffRead('mainVac_OK',          'MAIN.MainVac_OK',        pyads.PLCTYPE_BOOL)
         self._beckhoffRead('pumps_areON',         'MAIN.TurboPump_ON',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('pumps_normalOp',      'MAIN.Turbo_NO',          pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('pump_speed',          'MAIN.TurboMain_Freq',    pyads.PLCTYPE_UINT)
         self._beckhoffRead('preVacValve_isOpen',  'MAIN.PreVacValves_Open', pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('oven_isOn',           'MAIN.OvenPS_Relay',      pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('LVPS_isOn',           'MAIN.LVPS_ON',      pyads.PLCTYPE_BOOL)
         self._beckhoffRead('sample_capTemp',      'MAIN.Sample_CapTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
         self._beckhoffRead('sample_tipTemp',      'MAIN.Sample_TipTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
         self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT, lambda x:x/10)
@@ -263,21 +272,24 @@ class UrsapqManager:
         self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
         self._beckhoffRead('frame_pos_x',    'MAIN.FrameX.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
         self._beckhoffRead('frame_pos_y',    'MAIN.FrameY.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
+        self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
+        self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
 
+        
         # Update PID setpoints if necessary
-        newTip = self._getParamWrite('oven_tipSetPoint')
-        newCap = self._getParamWrite('oven_capSetPoint')
-        newBody = self._getParamWrite('oven_bodySetPoint')
-        if newTip is not None: self.TipPID.setPoint = newTip
-        if newCap is not None: self.CapPID.setPoint = newCap
-        if newBody is not None: self.BodyPID.setPoint = newBody
-        self.status.oven_tipSetPoint = self.TipPID.setPoint
-        self.status.oven_capSetPoint = self.CapPID.setPoint
-        self.status.oven_bodySetPoint = self.BodyPID.setPoint
+        oven_enable = self._getParamWrite('oven_enable')
+        if oven_enable is not None: self.status.oven_enable = oven_enable
+
+        newOvenTemp = self._getParamWrite('oven_setPoint')
+        if newOvenTemp is not None: self.OvenPID.setPoint = newOvenTemp
+        self.status.oven_setPoint = self.OvenPID.setPoint
+
+        coil_enable = self._getParamWrite('coil_enable')
+        if coil_enable is not None: self.status.coil_enable = coil_enable
 
         # Check if a client requested a change and wirte it out to beckhoff if necessary
         # self.status namespace values are updated to the new value if write is succesful
-        self._beckhoffWrite('oven_enable',        'MAIN.OvenPS_Enable',      pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('gasLine_enable',     'MAIN.GasLine_Enable',      pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('light_enable',       'MAIN.Lamp1_Enable',       pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
@@ -299,87 +311,88 @@ class UrsapqManager:
         self._beckhoffWrite('frame_pos_y_enable',      'MAIN.FrameY_MotionEnable', pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_x_stop',        'MAIN.FrameX_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_y_stop',        'MAIN.FrameY_MotionStop',   pyads.PLCTYPE_BOOL)
+        self._beckhoffWrite('gasLine_flow_set',        'MAIN.Sample_Flow_Set',  pyads.PLCTYPE_REAL)
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
 
-    class OvenOFFException(Exception):
-        pass
-
     #Manages sample oven tempearture control loop
-    def ovenController(self):
+    def LVPSController(self):
         '''
-        Runs the PID filter for oven control.
+        Runs the PID filter for oven control and sets coil current
         Attempts connection with the hardware and updates values if possible.
         Values are set to NaN if no hardware connection fails.
         If update succeeded, new voltages are calculated via the PID filters
         '''
 
-        #Try connection to OVPS, if not,
-        try:
-            # If oven is not powered by beckhoff, dont even bother trying
-            if not self.status.oven_isOn:
-                raise UrsapqManager.OvenOFFException("Oven PS is off")
-
-            # Try to read out status
-            self.ovenPS.connect()
-            self.status.oven_capPow  = self.ovenPS.Cap.power
-            self.status.oven_bodyPow = self.ovenPS.Body.power
-            self.status.oven_tipPow  = self.ovenPS.Tip.power
-
-            # If we got this far, the OvenPS is probably connected and working,
-            # we can set the new control voltages based on PID filter
-            self.ovenPS.allOn()
-            self.ovenPS.Cap.setVoltage  = self.CapPID.filter(self.status.sample_capTemp)
-            self.ovenPS.Tip.setVoltage  = self.TipPID.filter(self.status.sample_tipTemp)
-            self.ovenPS.Body.setVoltage = self.BodyPID.filter(self.status.sample_bodyTemp)
-
-            # Write oven status variable
-            if abs(self.TipPID.lastErr) < config.Oven.PID.NormalOpMaxErr and abs(self.CapPID.lastErr) < config.Oven.PID.NormalOpMaxErr:
-                self.status.oven_PIDStatus = "OK"
-            else:
-                self.status.oven_PIDStatus = "TRACKING"
-
-        # If connection failed, set everything to NaN and reset PID filters
-        except Exception as e:
-
+        if self.status.LVPS_isOn: # no point in trying if power is off
             try:
-                self.ovenPS.allOff()
-            except serial.serialutil.SerialException:
-                pass
-                
-            self.status.oven_capPow = math.nan
-            self.status.oven_bodyPow = math.nan
-            self.status.oven_tipPow = math.nan
-            self.TipPID.reset()
-            self.CapPID.reset()
-            self.BodyPID.reset()
+                # Try to read out status
+                self.LVPS.connect()
 
-            #Update status variable
-            if not self.status.oven_enable:
-                self.status.oven_PIDStatus = "OFF"
-            else:
-                if isinstance(e, UrsapqManager.OvenOFFException):
-                    self.setMessage("ERROR: Oven enabled but not active, check interlock", 5)
+                if self.status.coil_enable:
+                    self.LVPS.Coil.on()
                 else:
-                    self.setMessage("ERROR: Cannot connect to OvenPS, check USB", 5)
-                    print("OvenPS not reachable: " , traceback.format_exc())
-                self.status.oven_PIDStatus = "ERROR"
+                    self.LVPS.Coil.off()
 
+                newCurrent = self._getParamWrite('coil_setCurrent')
+                if newCurrent is not None: 
+                    self.LVPS.Coil.setCurrent = newCurrent
+
+                self.status.coil_current = self.LVPS.Coil.current
+                self.status.coil_setCurrent = self.LVPS.Coil.setCurrent
+
+                if self.status.oven_enable:
+                    # If we got this far, the LVPS is probably connected and working,
+                    # we can set the new control voltages based on PID filter
+                    self.LVPS.Oven.on()
+                    self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
+
+                    # Write oven status variable
+                    if self.OvenPID.lastErr is not None and abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
+                        self.status.oven_PIDStatus = "OK"
+                    else:
+                        self.status.oven_PIDStatus = "TRACKING"
+                else:
+                    self.LVPS.Oven.off()
+                    self.OvenPID.reset()
+                    self.status.oven_PIDStatus = "OFF"
+
+                self.status.oven_output_pow  = self.LVPS.Oven.power
+
+            # If connection failed, set everything to NaN and reset PID filters
+            except Exception as e:
+                try:
+                    self.LVPS.allOff()
+                except serial.serialutil.SerialException:
+                    pass
+                
+                self.LVPS.close()
+                self.OvenPID.reset()
+
+                self.status.oven_output_pow = math.nan
+                self.status.coil_current = math.nan
+
+                self.setMessage("ERROR: Cannot connect to LVPS, check USB", 5)
+                print("LVPS not reachable: " , traceback.format_exc())     
+                
+        else: #LVPS is off
+            if self.status.oven_enable:
+                self.status.oven_PIDStatus = "ERROR"
+                self.setMessage("WARNING: LVPS disabled, cannot run oven (overtemp/overpressure?)", 5)
+                
 
         # If stopping, switch everything off and reset PID filters
         if self.controls_stop.is_set():
             try:
-                self.ovenPS.allOff()
+                self.LVPS.allOff()
             except serial.serialutil.SerialException:
                 pass
-                
-            self.TipPID.reset()
-            self.CapPID.reset()
-            self.BodyPID.reset()
+            self.LVPS.close()
+            self.OvenPID.reset()
         # If not stopping, calls itself again after configurable interval
         else:
-            threading.Timer(config.Oven.ControlPeriod, self.ovenController).start()
+            threading.Timer(config.LVPS.ControlPeriod, self.LVPSController).start()
 
     def HVPSController(self):
         '''
@@ -475,6 +488,7 @@ class UrsapqManager:
             self.status.HV_Status = "ERROR"
             self.setMessage("ERROR: Cannot connect to HVPS, check NIM crate", 5)
             print(traceback.format_exc())
+            self.HVPS.close()
 
         if self.controls_stop.is_set():
             try:
@@ -484,6 +498,7 @@ class UrsapqManager:
                 self.status.mcp_hvEnable = False
             except Exception:
                 pass
+            self.HVPS.close()
         else:
             threading.Timer(config.HVPS.UpdatePeriod, self.HVPSController).start()
 

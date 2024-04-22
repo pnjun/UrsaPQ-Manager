@@ -60,6 +60,9 @@ QGroupBox::title {
        <height>406</height>
       </rect>
      </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
      <widget class="QPlainTextEdit" name="pos_z_set">
       <property name="geometry">
        <rect>
@@ -68,6 +71,9 @@ QGroupBox::title {
         <width>91</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhNone</set>
       </property>
      </widget>
      <widget class="QPushButton" name="moveButtonZ">
@@ -105,6 +111,9 @@ QGroupBox::title {
         <height>31</height>
        </rect>
       </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhNone</set>
+      </property>
      </widget>
      <widget class="QLabel" name="pos_x">
       <property name="geometry">
@@ -140,6 +149,9 @@ QGroupBox::title {
         <width>91</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhNone</set>
       </property>
      </widget>
      <widget class="QLabel" name="pos_y">
@@ -177,6 +189,9 @@ QGroupBox::title {
        <width>91</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
      </property>
     </widget>
     <widget class="QLabel" name="mag_y">

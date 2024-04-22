@@ -1,6 +1,6 @@
 #!python3
 
-#This class is used to manage the HV pover supplies connected through serial interface
+#This class is used to manage the low voltage pover supplies connected through serial interface
 
 #Fabiano Lever (fabiano.lever@uni-potsdam.de)
 
@@ -9,10 +9,10 @@ import serial
 from serial.tools import list_ports
 from config import config
 
-class OvenPS:
+class LVPS:
     #initialize serial connection and check that serial is isOpen
     #TODO: implement consistency check on device ID to prevent wrong physical power supply from being connected
-    def __init__(self, name=config.Oven.PS_DeviceName):
+    def __init__(self, name=config.LVPS.PS_DeviceName):
         #init serial connection
         self.serial = serial.Serial()
         self.name = name
@@ -27,21 +27,25 @@ class OvenPS:
 
         self.serial.flush()
 
+    def close(self):
+        if self.serial.is_open:
+            self.serial.close()
+
     def allOn(self):
-        for key, val in config.Oven.Channels._asdict().items():
+        for key, val in config.LVPS.Channels._asdict().items():
             self.__getattr__(key).on()
 
     def allOff(self):
-        for key, val in config.Oven.Channels._asdict().items():
+        for key, val in config.LVPS.Channels._asdict().items():
             self.__getattr__(key).off()
 
     #returns a channel
     def __getattr__(self, channelname):
 
-        chid = getattr(config.Oven.Channels, channelname)
+        chid = getattr(config.LVPS.Channels, channelname)
         serial = self.serial
 
-        class OvenPSChannel:
+        class LVPSChannel:
             #uses the SCPI commands to talk to power supply, read manual in /Manuals folder for explanation
             def on(self):
                 serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
@@ -77,20 +81,29 @@ class OvenPS:
                 serial.write( b':MEAS:POW?\r\n'); serial.flush()
                 return float(serial.readline())
 
-        return OvenPSChannel()
+            #sets and retrives the set current for channel
+            @property
+            def setCurrent(self):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':CURR?\r\n'); serial.flush()
+                return float (serial.readline())
+
+            @setCurrent.setter
+            def setCurrent(self, val):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':CURR %f' % float(val) + b'\r\n'); serial.flush()
+
+            @property
+            def current(self):
+                serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
+                serial.write( b':MEAS:CURR?\r\n'); serial.flush()
+                return float(serial.readline())
+
+        return LVPSChannel()
 
 if __name__=='__main__':
-    d = OvenPS()
+    d = LVPS()
     d.connect()
-    d.Body.off()
-    d.Body.setVoltage = 2.22
-    print(d.Body.setVoltage)
-    print(d.Body.voltage)
+    print(d.Oven.setVoltage)
+    print(d.Oven.voltage)
 
-    d.Body.on()
-    time.sleep(2)
-    print(d.Body.voltage)
-
-    d.Body.off()
-    time.sleep(1)
-    print(d.Body.voltage)

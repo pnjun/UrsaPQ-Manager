@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 import os
 import time
@@ -161,41 +162,58 @@ class ManipulatorWindow(ConsoleWindow):
 class SampleWindow(ConsoleWindow):
     def __init__(self, ursapq, *args, **kvargs):
         super(SampleWindow, self).__init__('sample.ui', *args, **kvargs)
-        self.enableSwitch = Switch(thumb_radius=11, track_radius=8)
-        self.window.ovenEnableBox.addWidget(self.enableSwitch)
+        self.ovenSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.window.ovenEnableBox.addWidget(self.ovenSwitch)
+        self.gasLine_switch = Switch(thumb_radius=11, track_radius=8)
+        self.window.flowEnableBox.addWidget(self.gasLine_switch)
+
         self.ursapq = ursapq
         self.setupCallbacks()
 
     def setupCallbacks(self):
-        self.window.setPointsButton.clicked.connect(self.newSetPoints)
-        self.enableSwitch.clicked.connect(self.oven_enable)
+        self.window.ovenSetButton.clicked.connect(self.newSetPoints)
+        self.window.flow_setButton.clicked.connect(self.newFlow)
+        self.ovenSwitch.clicked.connect(self.oven_enable)
+        self.gasLine_switch.clicked.connect(self.gasLine_enable)
 
     def update(self):
-        self.enableSwitch.setChecked( self.ursapq.oven_enable )
-        self.window.capPow.setText(  '{:.2f}'.format(self.ursapq.oven_capPow))
-        self.window.tipPow.setText(  '{:.2f}'.format(self.ursapq.oven_tipPow))
-        self.window.bodyPow.setText( '{:.2f}'.format(self.ursapq.oven_bodyPow))
-        self.window.bodySetPoint.setText('{:.1f}'.format(self.ursapq.oven_bodySetPoint))
-        self.window.tipSetPoint.setText('{:.1f}'.format(self.ursapq.oven_tipSetPoint))
-        self.window.capSetPoint.setText('{:.1f}'.format(self.ursapq.oven_capSetPoint))
+        self.ovenSwitch.setChecked( self.ursapq.oven_enable )
+        self.gasLine_switch.setChecked( self.ursapq.gasLine_enable )
+        self.window.oven_temp.setText(  '{:.2f}'.format(self.ursapq.sample_bodyTemp))
+        self.window.ovenPow.setText(  '{:.2f}'.format(self.ursapq.oven_output_pow))
+        self.window.ovenSetPoint.setText('{:.1f}'.format(self.ursapq.oven_setPoint))
+        self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
+        self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
+
+        self.updateTimer.setInterval( self.updateTime )
 
     #Callbacks:
     @Slot()
     def oven_enable(self):
-        self.ursapq.oven_enable = self.enableSwitch.isChecked()
+        self.ursapq.oven_enable = self.ovenSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+
+    #Callbacks:
+    @Slot()
+    def gasLine_enable(self):
+        self.ursapq.gasLine_enable = self.gasLine_switch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
+
+    @Slot()
+    def newFlow(self):
+        try:
+            self.ursapq.gasLine_flow_set = float( self.window.flow_in.toPlainText() )
+        except Exception:
+            pass
 
     @Slot()
     def newSetPoints(self):
         try:
-            self.ursapq.oven_bodySetPoint = float( self.window.bodySetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_tipSetPoint = float( self.window.tipSetPoint_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.oven_capSetPoint = float( self.window.capSetPoint_in.toPlainText() )
+            self.ursapq.oven_setPoint = float( self.window.ovenSetPoint_in.toPlainText() )
         except Exception:
             pass
 
@@ -204,22 +222,25 @@ class SpectrometerWindow(ConsoleWindow):
         super(SpectrometerWindow, self).__init__('spectrometer.ui', *args, **kvargs)
         self.mcpEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.tofEnableSwitch = Switch(thumb_radius=11, track_radius=8)
+        self.coilEnableSwitch = Switch(thumb_radius=11, track_radius=8)
         self.window.mcpEnableBox.addWidget(self.mcpEnableSwitch)
         self.window.tofEnableBox.addWidget(self.tofEnableSwitch)
+        self.window.coilEnableBox.addWidget(self.coilEnableSwitch)
+        
         self.ursapq = ursapq
         self.setupCallbacks()
-
-        self.resetTimer = False
 
     def setupCallbacks(self):
         self.mcpEnableSwitch.clicked.connect(self.mcpEnable)
         self.tofEnableSwitch.clicked.connect(self.tofEnable)
+        self.coilEnableSwitch.clicked.connect(self.coilEnable)
         self.window.mcpSetButton.clicked.connect(self.mcpSet)
         self.window.tofSetButton.clicked.connect(self.tofSet)
 
     def update(self):
         self.mcpEnableSwitch.setChecked( self.ursapq.mcp_hvEnable )
         self.tofEnableSwitch.setChecked( self.ursapq.tof_hvEnable )
+        self.coilEnableSwitch.setChecked( self.ursapq.coil_enable )
 
         self.window.mcpFront_act.setText(  '{:.1f}'.format(self.ursapq.mcp_frontHV))
         self.window.mcpBack_act.setText(   '{:.1f}'.format(self.ursapq.mcp_backHV))
@@ -229,15 +250,11 @@ class SpectrometerWindow(ConsoleWindow):
         self.window.mcpPhos_set.setText(   '{:.1f}'.format(self.ursapq.mcp_phosphorSetHV))
 
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        self.window.tofLens_act.setText(     '{:.1f}'.format(self.ursapq.tof_lensHV))
-        self.window.tofMagnet_act.setText(   '{:.1f}'.format(self.ursapq.tof_magnetHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
-        self.window.tofLens_set.setText(     '{:.1f}'.format(self.ursapq.tof_lensSetHV))
-        self.window.tofMagnet_set.setText(   '{:.1f}'.format(self.ursapq.tof_magnetSetHV))
+        self.window.coilCurr_act.setText( '{:.1f}'.format(self.ursapq.coil_current))
+        self.window.coilCurr_set.setText( '{:.1f}'.format(self.ursapq.coil_setCurrent))        
 
-        if self.resetTimer:
-            self.updateTimer.setInterval( self.updateTime )
-            self.resetTimer = False
+        self.updateTimer.setInterval( self.updateTime )
 
     #Callbacks:
     @Slot()
@@ -246,7 +263,6 @@ class SpectrometerWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
 
     @Slot()
     def tofEnable(self):
@@ -254,7 +270,13 @@ class SpectrometerWindow(ConsoleWindow):
         #Prolong next update cycle so that server has time to process the enable request
         #Update func will set update interval back to normal
         self.updateTimer.setInterval(self.updateTime*3)
-        self.resetTimer = True
+
+    @Slot()
+    def coilEnable(self):
+        self.ursapq.coil_enable = self.coilEnableSwitch.isChecked()
+        #Prolong next update cycle so that server has time to process the enable request
+        #Update func will set update interval back to normal
+        self.updateTimer.setInterval(self.updateTime*3)
 
     @Slot()
     def mcpSet(self):
@@ -278,11 +300,7 @@ class SpectrometerWindow(ConsoleWindow):
         except Exception:
             pass
         try:
-            self.ursapq.tof_lensSetHV = float( self.window.tofLens_in.toPlainText() )
-        except Exception:
-            pass
-        try:
-            self.ursapq.tof_magnetSetHV = float( self.window.tofMagnet_in.toPlainText() )
+            self.ursapq.coil_setCurrent = float( self.window.coilCurr_in.toPlainText() )
         except Exception:
             pass
 
@@ -317,6 +335,9 @@ class MainWindow(ConsoleWindow):
             self.childWindows.append(DataDisplayWindow(self.ursapq, "Main Chamber Pressure", "chamberPressure"))
         if obj is self.window.prevacPressure and event.type() == QEvent.MouseButtonPress:
             self.childWindows.append(DataDisplayWindow(self.ursapq, "Pre Vacuum Pressure", "preVacPressure"))
+        if obj is self.window.gasLine_pressure and event.type() == QEvent.MouseButtonPress:
+            self.childWindows.append(DataDisplayWindow(self.ursapq, "Gas Line Pressure", "gasLine_pressure"))
+
 
         return super(MainWindow, self).eventFilter(obj, event)
 
@@ -330,6 +351,7 @@ class MainWindow(ConsoleWindow):
 
         self.window.chamberPressure.installEventFilter(self)
         self.window.prevacPressure.installEventFilter(self)
+        self.window.gasLine_pressure.installEventFilter(self)
         pass
 
     def updateManipulator(self):
@@ -337,13 +359,15 @@ class MainWindow(ConsoleWindow):
 
     def updateVacuum(self):
         #VACUUM BOX
-        self.window.prevacPressure.setText(  '{:.2e}'.format(self.ursapq.preVacPressure) )
-        self.window.chamberPressure.setText( '{:.2e}'.format(self.ursapq.chamberPressure) )
+        self.window.prevacPressure.setText(  f'{self.ursapq.preVacPressure:.2e}')
+        self.window.chamberPressure.setText( f'{self.ursapq.chamberPressure:.2e}') 
+        self.window.pump_speed.setText( f'{self.ursapq.pump_speed}' )
+
         self.window.prevacValves.setText( '{} ({})'.format(
                                            "Open" if self.ursapq.preVacValve_isOpen else "Closed",
                                            "Locked" if self.ursapq.preVacValve_lock else "Auto" ))
         if not self.ursapq.pumps_areON:
-            pump_status = "Stopped"
+            pump_status = "Stop"
         elif self.ursapq.pumps_normalOp:
             pump_status = "Running"
         else:
@@ -368,6 +392,8 @@ class MainWindow(ConsoleWindow):
         self.window.bodyTemp.setText( '{:.1f}'.format(self.ursapq.sample_bodyTemp) )
         self.window.capTemp.setText(  '{:.1f}'.format(self.ursapq.sample_capTemp) )
         self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
+        self.window.gasLine_flow.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
+        self.window.gasLine_pressure.setText('{:.2e}'.format(self.ursapq.gasLine_pressure))
 
         #Update status label
         self.window.ovenStatus.setText(self.ursapq.oven_PIDStatus)
@@ -386,6 +412,8 @@ class MainWindow(ConsoleWindow):
         self.window.mcpBack_act.setText(  '{:.1f}'.format(self.ursapq.mcp_backHV))
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
+        self.window.retarder.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
+        self.window.coil_curr.setText(  '{:.1f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)

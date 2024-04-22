@@ -43,6 +43,12 @@ class HVPS:
         self.posSerial.flush()
         self.negSerial.flush()
 
+    def close(self):
+        if self.posSerial.is_open:
+            self.posSerial.close()
+        if self.negSerial.is_open:
+            self.negSerial.close()
+
     @property
     def mcpEnable(self):
         return self._mcpEnable
@@ -113,14 +119,14 @@ if __name__=='__main__':
 
     d = HVPS()
     d.connect()
-    d.MeshCh.setVoltage = 20
-    print(d.MeshCh.setVoltage)
-    print(d.MeshCh.voltage)
+    d.Mesh.setVoltage = 20
+    print(d.Mesh.setVoltage)
+    print(d.Mesh.voltage)
 
-    d.MeshCh.on()
+    d.Mesh.on()
     time.sleep(4)
-    print(d.MeshCh.voltage)
+    print(d.Mesh.voltage)
 
-    d.MeshCh.off()
+    d.Mesh.off()
     time.sleep(1)
-    print(d.MeshCh.voltage)
+    print(d.Mesh.voltage)

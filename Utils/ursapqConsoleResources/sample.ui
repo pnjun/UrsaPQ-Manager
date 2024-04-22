@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
-    <height>405</height>
+    <width>439</width>
+    <height>427</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,12 +44,12 @@ QGroupBox::title {
      <rect>
       <x>15</x>
       <y>15</y>
-      <width>331</width>
-      <height>376</height>
+      <width>411</width>
+      <height>401</height>
      </rect>
     </property>
     <property name="title">
-     <string>Oven Config</string>
+     <string>Sample Delivery</string>
     </property>
     <widget class="QLabel" name="label">
      <property name="geometry">
@@ -78,44 +78,129 @@ QGroupBox::title {
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>90</y>
-       <width>241</width>
+       <x>20</x>
+       <y>120</y>
+       <width>141</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Temperature Setpoints [C]:</string>
+      <string>Oven [C]</string>
      </property>
     </widget>
-    <widget class="QPlainTextEdit" name="tipSetPoint_in">
+    <widget class="QPlainTextEdit" name="ovenSetPoint_in">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>300</x>
        <y>120</y>
        <width>61</width>
        <height>31</height>
       </rect>
      </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
     </widget>
-    <widget class="QPlainTextEdit" name="bodySetPoint_in">
+    <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
-       <x>210</x>
-       <y>150</y>
+       <x>20</x>
+       <y>160</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Output power [W]:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="ovenPow">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>160</y>
        <width>61</width>
        <height>31</height>
       </rect>
      </property>
+     <property name="text">
+      <string>---</string>
+     </property>
     </widget>
-    <widget class="QPlainTextEdit" name="capSetPoint_in">
+    <widget class="QPushButton" name="ovenSetButton">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>160</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set values</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="ovenSetPoint">
      <property name="geometry">
       <rect>
        <x>210</x>
-       <y>180</y>
+       <y>120</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>230</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="flowEnableBox"/>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>230</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Gas Flow Enable</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="flow_act">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>315</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="flow_in">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>315</y>
        <width>61</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
      </property>
      <property name="lineWrapMode">
       <enum>QPlainTextEdit::NoWrap</enum>
@@ -127,141 +212,11 @@ QGroupBox::title {
       <number>4</number>
      </property>
     </widget>
-    <widget class="QLabel" name="label_3">
+    <widget class="QPushButton" name="flow_setButton">
      <property name="geometry">
       <rect>
-       <x>45</x>
-       <y>120</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Tip</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_4">
-     <property name="geometry">
-      <rect>
-       <x>45</x>
-       <y>150</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Body</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_5">
-     <property name="geometry">
-      <rect>
-       <x>45</x>
-       <y>180</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Cap</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>15</x>
-       <y>270</y>
-       <width>226</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Oven output power [W]:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_7">
-     <property name="geometry">
-      <rect>
-       <x>45</x>
-       <y>300</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Tip</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_8">
-     <property name="geometry">
-      <rect>
-       <x>135</x>
-       <y>300</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Body</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_9">
-     <property name="geometry">
-      <rect>
-       <x>225</x>
-       <y>300</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Cap</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="tipPow">
-     <property name="geometry">
-      <rect>
-       <x>45</x>
-       <y>330</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>---</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="bodyPow">
-     <property name="geometry">
-      <rect>
-       <x>135</x>
-       <y>330</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>---</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="capPow">
-     <property name="geometry">
-      <rect>
-       <x>225</x>
-       <y>330</y>
-       <width>46</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>---</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="setPointsButton">
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>225</y>
+       <x>270</x>
+       <y>355</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -270,10 +225,62 @@ QGroupBox::title {
       <string>Set values</string>
      </property>
     </widget>
-    <widget class="QLabel" name="tipSetPoint">
+    <widget class="QLabel" name="label_11">
      <property name="geometry">
       <rect>
-       <x>135</x>
+       <x>20</x>
+       <y>315</y>
+       <width>81</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Flow [0-1]</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="flow_set">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>315</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="capSetPoint_4">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>280</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Act</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="capSetPoint_5">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>280</y>
+       <width>51</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="oven_temp">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
        <y>120</y>
        <width>63</width>
        <height>31</height>
@@ -283,30 +290,30 @@ QGroupBox::title {
       <string>---</string>
      </property>
     </widget>
-    <widget class="QLabel" name="bodySetPoint">
+    <widget class="QLabel" name="capSetPoint_8">
      <property name="geometry">
       <rect>
-       <x>135</x>
-       <y>150</y>
+       <x>130</x>
+       <y>80</y>
        <width>63</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>---</string>
+      <string>Act</string>
      </property>
     </widget>
-    <widget class="QLabel" name="capSetPoint">
+    <widget class="QLabel" name="capSetPoint_9">
      <property name="geometry">
       <rect>
-       <x>135</x>
-       <y>180</y>
-       <width>63</width>
+       <x>210</x>
+       <y>80</y>
+       <width>51</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>---</string>
+      <string>Set</string>
      </property>
     </widget>
    </widget>

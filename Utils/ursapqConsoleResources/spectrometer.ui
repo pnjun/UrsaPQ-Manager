@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>423</width>
-    <height>585</height>
+    <width>432</width>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,8 +44,8 @@ QGroupBox::title {
      <rect>
       <x>15</x>
       <y>15</y>
-      <width>391</width>
-      <height>271</height>
+      <width>411</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="title">
@@ -54,8 +54,8 @@ QGroupBox::title {
     <widget class="QWidget" name="verticalLayoutWidget_6">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>45</y>
+       <x>10</x>
+       <y>40</y>
        <width>46</width>
        <height>31</height>
       </rect>
@@ -65,9 +65,9 @@ QGroupBox::title {
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>45</y>
-       <width>166</width>
+       <x>55</x>
+       <y>40</y>
+       <width>131</width>
        <height>31</height>
       </rect>
      </property>
@@ -81,7 +81,7 @@ QGroupBox::title {
        <x>15</x>
        <y>120</y>
        <width>361</width>
-       <height>151</height>
+       <height>121</height>
       </rect>
      </property>
      <widget class="QLabel" name="label_11">
@@ -89,12 +89,12 @@ QGroupBox::title {
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>91</width>
+        <width>101</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>Retarder</string>
+       <string>Retarder [V]</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_12">
@@ -102,153 +102,19 @@ QGroupBox::title {
        <rect>
         <x>0</x>
         <y>30</y>
-        <width>106</width>
+        <width>101</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>Lens</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofRetarder_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>0</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofLens_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>30</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="tofSetButton">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>105</y>
-        <width>121</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Set values</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofRetarder_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>0</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofLens_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>30</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="tofRetarder_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>0</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="tofLens_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_16">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>60</y>
-        <width>106</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Magnet</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofMagnet_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>60</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="tofMagnet_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>60</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="tofMagnet_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>60</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
+       <string>Coil [A]</string>
       </property>
      </widget>
     </widget>
     <widget class="QLabel" name="label_13">
      <property name="geometry">
       <rect>
-       <x>120</x>
+       <x>140</x>
        <y>90</y>
        <width>76</width>
        <height>30</height>
@@ -261,7 +127,7 @@ QGroupBox::title {
     <widget class="QLabel" name="label_14">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>230</x>
        <y>90</y>
        <width>76</width>
        <height>30</height>
@@ -271,26 +137,142 @@ QGroupBox::title {
       <string>Setpoint</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_15">
+    <widget class="QLabel" name="coilCurr_act">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>90</y>
-       <width>76</width>
-       <height>30</height>
+       <x>140</x>
+       <y>150</y>
+       <width>91</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>TOF [V]</string>
+      <string>---</string>
      </property>
     </widget>
+    <widget class="QPlainTextEdit" name="tofRetarder_in">
+     <property name="geometry">
+      <rect>
+       <x>305</x>
+       <y>120</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="tofRetarder_act">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>120</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="coilCurr_in">
+     <property name="geometry">
+      <rect>
+       <x>305</x>
+       <y>150</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="coilCurr_set">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>150</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="tofRetarder_set">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>120</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="tofSetButton">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>200</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set values</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_7">
+     <property name="geometry">
+      <rect>
+       <x>225</x>
+       <y>40</y>
+       <width>46</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="coilEnableBox"/>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>40</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Coil Enable</string>
+     </property>
+    </widget>
+    <zorder>verticalLayoutWidget_6</zorder>
+    <zorder>label_7</zorder>
+    <zorder>widget_2</zorder>
+    <zorder>coilCurr_act</zorder>
+    <zorder>tofRetarder_in</zorder>
+    <zorder>tofRetarder_act</zorder>
+    <zorder>label_14</zorder>
+    <zorder>coilCurr_in</zorder>
+    <zorder>coilCurr_set</zorder>
+    <zorder>tofRetarder_set</zorder>
+    <zorder>label_13</zorder>
+    <zorder>tofSetButton</zorder>
+    <zorder>verticalLayoutWidget_7</zorder>
+    <zorder>label_10</zorder>
    </widget>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>15</x>
-      <y>300</y>
-      <width>391</width>
+      <x>10</x>
+      <y>280</y>
+      <width>411</width>
       <height>271</height>
      </rect>
     </property>
@@ -369,133 +351,12 @@ QGroupBox::title {
        <string>Phosphor</string>
       </property>
      </widget>
-     <widget class="QLabel" name="mcpFront_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>0</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="mcpBack_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>30</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="mcpPhos_act">
-      <property name="geometry">
-       <rect>
-        <x>105</x>
-        <y>60</y>
-        <width>91</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="mcpFront_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>0</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="mcpSetButton">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>105</y>
-        <width>121</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Set values</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="mcpFront_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>0</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="mcpBack_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>30</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="mcpPhos_set">
-      <property name="geometry">
-       <rect>
-        <x>195</x>
-        <y>60</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>---</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="mcpBack_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="mcpPhos_in">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>60</y>
-        <width>76</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
     </widget>
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>90</y>
+       <x>135</x>
+       <y>85</y>
        <width>76</width>
        <height>30</height>
       </rect>
@@ -507,8 +368,8 @@ QGroupBox::title {
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>210</x>
-       <y>90</y>
+       <x>225</x>
+       <y>85</y>
        <width>76</width>
        <height>30</height>
       </rect>
@@ -530,6 +391,152 @@ QGroupBox::title {
       <string>MCP [V]</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="mcpSetButton">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>220</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set values</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpPhos_act">
+     <property name="geometry">
+      <rect>
+       <x>135</x>
+       <y>175</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpFront_set">
+     <property name="geometry">
+      <rect>
+       <x>225</x>
+       <y>115</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="mcpFront_in">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>115</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpPhos_set">
+     <property name="geometry">
+      <rect>
+       <x>225</x>
+       <y>175</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpFront_act">
+     <property name="geometry">
+      <rect>
+       <x>135</x>
+       <y>115</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpBack_act">
+     <property name="geometry">
+      <rect>
+       <x>135</x>
+       <y>145</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="mcpPhos_in">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>175</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="mcpBack_set">
+     <property name="geometry">
+      <rect>
+       <x>225</x>
+       <y>145</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="mcpBack_in">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>145</y>
+       <width>76</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhNone</set>
+     </property>
+    </widget>
+    <zorder>verticalLayoutWidget_2</zorder>
+    <zorder>label_3</zorder>
+    <zorder>widget</zorder>
+    <zorder>label_5</zorder>
+    <zorder>mcpPhos_act</zorder>
+    <zorder>mcpFront_set</zorder>
+    <zorder>mcpFront_in</zorder>
+    <zorder>mcpSetButton</zorder>
+    <zorder>label_4</zorder>
+    <zorder>mcpPhos_set</zorder>
+    <zorder>label_2</zorder>
+    <zorder>mcpFront_act</zorder>
+    <zorder>mcpBack_act</zorder>
+    <zorder>mcpPhos_in</zorder>
+    <zorder>mcpBack_set</zorder>
+    <zorder>mcpBack_in</zorder>
    </widget>
   </widget>
  </widget>

@@ -123,12 +123,14 @@ class ursapqDataHandler:
         try:
             self.tofAccumulator[1] += newTof['data'].T[1] 
             self.accumulatorCount += 1
-            self.gmdAccumulator += newGmd.mean()
+            if config.Data_GmdNorm:
+                self.gmdAccumulator += newGmd.mean()
         except Exception as error:
             traceback.print_exc()
             self.tofAccumulator  = newTof['data'].T.copy() #Rest tof accumulator
             self.accumulatorCount = 1
-            self.gmdAccumulator = newGmd.mean() 
+            if config.Data_GmdNorm:
+                self.gmdAccumulator = newGmd.mean() 
         return True
                            
     def updateLaserTrace(self):
@@ -145,7 +147,7 @@ class ursapqDataHandler:
         but the ifs slow it down too much.
         '''
         #Run until stop event
-        while not self.stopEvent.isSet():
+        while not self.stopEvent.is_set():
             if not self.updateTofTraces():
                 continue
             self.updateLaserTrace()
@@ -155,7 +157,7 @@ class ursapqDataHandler:
     def Tof2eV(self, tof, retard):
         ''' converts time of flight into ectronvolts '''
         # Constants for conversion:
-        s = 1.7
+        s = config.Data_BottleLenght
         m_over_e = 5.69
 
         # UNITS AND ORDERS OF MAGNITUDE DO CHECK OUT
@@ -206,7 +208,7 @@ class ursapqDataHandler:
         so that doocsUpdateLoop can run as fast as possible
         '''
         #Run until stop event
-        while not self.stopEvent.isSet():
+        while not self.stopEvent.is_set():
             self.dataUpdated.wait()
             self.dataUpdated.clear()
     
@@ -234,9 +236,9 @@ class ursapqDataHandler:
               
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
-                self.status.data_gmdAccumulator  = self.gmdAccumulator
                 self.status.data_AccumulatorCount = self.accumulatorCount
-               
+                if config.Data_GmdNorm:
+                    self.status.data_gmdAccumulator  = self.gmdAccumulator
                 self.status.data_updateFreq = self.updateFreq
                 self.status.data_laserTrace = self.laserTrace
                 self.status.data_tofTrace   = self.tofTrace
