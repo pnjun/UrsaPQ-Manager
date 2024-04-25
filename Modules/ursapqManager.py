@@ -16,7 +16,7 @@ from config import config
 import time
 
 class PIDFilter:
-    def __init__(self, p, i ,d, setPoint, lowpass_tau=60):
+    def __init__(self, p, i ,d, setPoint, lowpass_tau=30):
         '''
         PID filter. Takes the filter coefficients for the
         proportional, integral and derivative components
@@ -166,6 +166,7 @@ class UrsapqManager:
 
         self.status.coil_current = math.nan
         self.status.coil_setCurrent = math.nan
+        self.status.oven_output_pow = math.nan
         self.status.coil_enable = False
         self.status.oven_enable = False
 
@@ -380,6 +381,8 @@ class UrsapqManager:
             if self.status.oven_enable:
                 self.status.oven_PIDStatus = "ERROR"
                 self.setMessage("WARNING: LVPS disabled, cannot run oven (overtemp/overpressure?)", 5)
+            else:
+                self.status.oven_PIDStatus = "OFF"
                 
 
         # If stopping, switch everything off and reset PID filters

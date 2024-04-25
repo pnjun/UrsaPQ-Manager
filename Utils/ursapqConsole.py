@@ -434,13 +434,18 @@ class MainWindow(ConsoleWindow):
             self.updateSpectrometer()
             self.updateManipulator()
         except Exception as e:
+            print(str(e))
+            self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
+            statusbar = "ERROR UPDATING DATA"
+            
             try:
                 self.connect()
             except Exception as e:
                 print(str(e))
                 self.closeChildWindows()
-            self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
-            statusbar = "NOT CONNECTED - Attempting connection (check config file)"
+
+                self.window.statusBar().setStyleSheet(BG_COLOR_ERROR)
+                statusbar = "NOT CONNECTED - Server off/restarted?"
 
         else:
             lastStatusMessage = self.ursapq.lastStatusMessage.strftime("%H:%M:%S")
