@@ -59,9 +59,9 @@ def get_eTof_slices():
 
     for event in abo:
         eTof_trace = event.get('eTof').data
-        shots = xr.DataArray([eTof_trace[slice] for slice in slicer])
-        yield xr.Dataset({'even': shots[::2].mean(axis=0), 
-                          'odd':  shots[1::2].mean(axis=0)})
+        shots = xr.DataArray([eTof_trace[slice] for slice in slicer], dims=['shots', 'eTof'])
+        yield xr.Dataset({'even': shots[::2].mean('shots'), 
+                          'odd':  shots[1::2].mean('shots')})
 
-def gather_data(time=60):
-    yield from _until_timeout(_accumulate(get_eTof_slices(), 5), time)
+def gather_data(integ_time=20, update_time=2):
+    yield from _until_timeout(_accumulate(get_eTof_slices(), update_time), integ_time)
