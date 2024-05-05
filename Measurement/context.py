@@ -1,42 +1,100 @@
+#Context file for URSAPQ measurements, define general data gahtering and measurmement procedures
 import doocspie
 from doocspie.abo import TrainAbo
 import asyncio
 import xarray as xr
+from contextlib import contextmanager
 
-from fablive import action
+from fablive import action, gather
 from fablive.gather import _until_timeout, _accumulate
 
-#Context file for URSAPQ measurements, define general data gahtering and measurmement procedures
+import time
 
-DOOCS_UNDULATOR = ""
-DOOCS_DELAY = ""
+import sys
+sys.path.append("../Utils/")
+from ursapq_api import UrsaPQ
+
+# DOOCS ADDRESSES AND PARAMS
+DOOCS_ODL_SPEED_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.SPEED_IN_PERC.WR"
+DOOCS_ODL_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.WR"
+DOOCS_ODL_GET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD"
+
+DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_PERC.WR"
+DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
+DOOCS_LAM_GET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION.RD"
+DOOCS_LAM_FB_EN = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.INTS/INTEGER29"
+
+
+ODL_TOLERANCE = 0.002 # 2fs tolerance
+ODL_SPEED = 30
+ODL_LAM_DIFF = 1181.113037109375 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
+
 DOOCS_ETOF = "FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD"
 SLICER_PARAMS = {'offset': 2246,  'period': 9969.23, 'window': 3000, 'shot_num': 6}
 
+#ursa = UrsaPQ()
+
+# DEFINE ACTIONS (what to do when setting parameters)
 @action
 async def retarder(value):
-    print("set retarder to %s" % value)
-    await asyncio.sleep(3)
+    await asyncio.sleep(2)
 
 @action
 async def waveplate(value):
-    print("set waveplate to %s" % value)
-    await asyncio.sleep(3)
+    await asyncio.sleep(2)
 
 @action
 async def coil(value):
-    print("set coil to %s" % value)
-    await asyncio.sleep(3)
+    await asyncio.sleep(2)
 
 @action
-def delay(value):
-    print("set delay to %s" % value)
+async def deltest(value):
+    await asyncio.sleep(2)
+
+@action
+def integration_time(value):
+    # Used in gather_data
+    global _integ_time
+    _integ_time = value
+
+@contextmanager
+def disable_lam_feedback():
+    doocspie.set(DOOCS_LAM_FB_EN, 0)
+    try:
+        yield
+    finally:
+        doocspie.set(DOOCS_LAM_FB_EN, 1)
+
+@action
+async def delay(target_odl):
+    ''' Set ODL and LAM to target values, wait until they reach target '''
+
+    with disable_lam_feedback():
+        doocspie.set(DOOCS_ODL_SPEED_SET, ODL_SPEED)
+        doocspie.set(DOOCS_LAM_SPEED_SET, ODL_SPEED)
+
+        target_lam = target_odl + ODL_LAM_DIFF
+        doocspie.set(DOOCS_ODL_SET, target_odl)
+        doocspie.set(DOOCS_LAM_SET, target_lam)
+
+        start = time.time()
+        while True:
+            odl = doocspie.get(DOOCS_ODL_GET).data
+            lam = doocspie.get(DOOCS_LAM_GET).data
+
+            if abs(odl - target_odl) < ODL_TOLERANCE and abs(lam - target_lam) < ODL_TOLERANCE:
+                break
+            else:
+                if time.time() - start > 60:
+                    raise TimeoutError("Timeout while waiting for ODL and LAM to reach target")
+            
+            await asyncio.sleep(0.05)
 
 @action
 def energy(value):
-    print("set energy to %s" % value)
+    pass
 
-
+#Stuff for plotting
 class Slicer():
     def __init__(self, offset:int, period:int, window:int, shot_num=None):
         self.offset = offset
@@ -63,5 +121,7 @@ def get_eTof_slices():
         yield xr.Dataset({'even': shots[::2].mean('shots'), 
                           'odd':  shots[1::2].mean('shots')})
 
-def gather_data(integ_time=20, update_time=2):
-    yield from _until_timeout(_accumulate(get_eTof_slices(), update_time), integ_time)
+_integ_time = 30
+@gather
+def gather_data():
+    yield from _until_timeout(_accumulate(get_eTof_slices(), 2), _integ_time)

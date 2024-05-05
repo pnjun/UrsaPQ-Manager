@@ -4,13 +4,13 @@ import numpy as np
 
 import context 
 
-scan = Scan(context = context)
+scan = Scam.from_context(context)
 
 scan.setup( retarder = 90,
             waveplate = 35,
             coil = 0.5)
 
-scan.sequence( delay = np.arange(0, 100, 40),
+scan.sequence( deltest = np.arange(0, 100, 40),
                energy = ["M1", "M2", "M3"])
 
 scan.gather(context.gather_data)
