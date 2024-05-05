@@ -24,6 +24,7 @@ DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR
 DOOCS_LAM_GET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION.RD"
 DOOCS_LAM_FB_EN = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.INTS/INTEGER29"
 
+DOOCS_URSA_T0 = "FLASH.EXP/USER.STORE.FL24/FL24/VAL.01"
 
 ODL_TOLERANCE = 0.002 # 2fs tolerance
 ODL_SPEED = 30
@@ -44,11 +45,11 @@ async def waveplate(value):
     await asyncio.sleep(2)
 
 @action
-async def coil(value):
+async def deltest(value):
     await asyncio.sleep(2)
 
 @action
-async def deltest(value):
+async def odl_position(value):
     await asyncio.sleep(2)
 
 @action
@@ -68,6 +69,7 @@ def disable_lam_feedback():
 @action
 async def delay(target_odl):
     ''' Set ODL and LAM to target values, wait until they reach target '''
+    raise NotImplementedError("BEAM IS AT FL23, dont even try")
 
     with disable_lam_feedback():
         doocspie.set(DOOCS_ODL_SPEED_SET, ODL_SPEED)
@@ -90,9 +92,12 @@ async def delay(target_odl):
             
             await asyncio.sleep(0.05)
 
-@action
-def energy(value):
-    pass
+def get_t0():
+    t0 = doocspie.get(DOOCS_URSA_T0).data
+    return t0
+
+def set_t0(t0):
+    doocspie.set(DOOCS_URSA_T0, t0)
 
 #Stuff for plotting
 class Slicer():

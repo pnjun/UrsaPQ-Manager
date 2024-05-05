@@ -4,7 +4,7 @@ import numpy as np
 
 import context 
 
-scan = Scan.from_context(context)
+scan = Scan.from_context(context, type='Delay')
 
 scan.setup(integration_time = 20)
 
@@ -26,6 +26,6 @@ scan.sequence( deltest = np.arange(-500, -300, 50) )
         
 # scan.on_update(plot.update_fig)
 
-daq  = Run(daq=False, proposal_id=False,**scan.info)
+daq  = Run(daq=True, proposal_id=False,**scan.info)
 with daq:
     scan.run()
