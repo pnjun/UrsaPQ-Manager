@@ -33,7 +33,7 @@ ODL_LAM_DIFF = 1181.113037109375 #hardcoded LAM - DELAY offset, set at start of 
 DOOCS_ETOF = "FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD"
 SLICER_PARAMS = {'offset': 2246,  'period': 9969.23, 'window': 3000, 'shot_num': 6}
 
-#ursa = UrsaPQ()
+ursa = UrsaPQ()
 
 # DEFINE ACTIONS (what to do when setting parameters)
 @action
