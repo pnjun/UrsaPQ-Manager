@@ -6,26 +6,29 @@ import context
 
 scan = Scan.from_context(context, type='Delay')
 
-scan.setup(integration_time = 20)
+scan.setup(integration_time = 70)
 
-scan.sequence( deltest = np.arange(-500, -300, 50) )
+scan.sequence( deltest = np.arange(-700, -300, 50) )
 
-#plot = LiveFigure()
+plot = LiveFigure(savefig='test.png')
 
-# @plot.update
-# def updateplot(fig, data):
-#     fig.clear()
-#     fig.suptitle("Difference between even and odd shots")
+@plot.update
+def updateplot(fig, data):
+    fig.clear()
+    fig.suptitle("Difference between even and odd shots")
 
-
-#     diff = (data.even - data.odd)
-#     if diff.squeeze().ndim == 1:
-#         diff.plot()
-#     if diff.squeeze().ndim == 2:
-#         diff.plot(cmap='RdBu')
+    diff = (data.even - data.odd)
+    if diff.squeeze().ndim == 1:
+        diff.plot()
+    if diff.squeeze().ndim == 2:
+        diff.plot(cmap='RdBu')
         
-# scan.on_update(plot.update_fig)
+scan.on_update(plot.update_fig)
 
-daq  = Run(daq=True, proposal_id=False,**scan.info)
-with daq:
+daq  = Run(daq=False, proposal_id=11013415,**scan.info)
+with daq, plot:
     scan.run()
+
+import pickle
+with open('figure.pkl', 'wb') as f:
+    pickle.dump(plot.fig, f)
