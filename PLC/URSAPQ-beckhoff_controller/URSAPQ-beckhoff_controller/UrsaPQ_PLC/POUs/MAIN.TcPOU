@@ -152,7 +152,7 @@ manageAx_MagnetY(axis := MagnetY, setPoint := MagnetY_SetPoint, speed := PARAM.S
 		 
 //*** SAFETY CHECKS ***
 // Compute status variables
-Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp; // OR Sample_CapTemp > PARAM.Oven_MaxTemp Prevent overtemp of oven
+Oven_OverTEMP   := Sample_BodyTemp > PARAM.Oven_MaxTemp OR Sample_TipTemp > PARAM.Oven_MaxTemp OR Sample_CapTemp > PARAM.Oven_MaxTemp; // Prevent overtemp of oven
 TurboError 		:= TurboTOF_ERR AND TurboMain_ERR;
 Turbo_NO        := TurboTOF_NO AND TurboMain_NO; 
 MainVac_OK      := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.MainVac_Ok_Threshold; // Negative pressure means sensor error or sensor disconnected
@@ -168,7 +168,7 @@ LVPS_ON := MainVac_TurboOK AND NOT Oven_OverTEMP;
 // Sample Valve
 Sample_Flow := INT_TO_REAL(Flow_Valve) / 32767; // convert int to float in range 0-1
 Sample_Flow_Set := MAX( MIN( Sample_Flow_Set, 1), 0);
-Flow_Valve_Set := REAL_TO_INT( Sample_Flow_Set * 32767) * BOOL_TO_INT(MainVac_TurboOK) * BOOL_TO_INT(GasLine_Enable);  // If vented, valve is closed
+Flow_Valve_Set := REAL_TO_INT( Sample_Flow_Set * 32767) * BOOL_TO_INT(GasLine_Enable) * BOOL_TO_INT(MainVac_TurboOK);  // If vented, valve is closed
 
 // Actuate outputs (when one action controls more than one output)
 MPreVac_Valve   := PreVacValves_Open;
