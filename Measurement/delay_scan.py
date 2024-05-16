@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 from fablive import Scan, Run, LiveFigure
 import numpy as np
-
 import context 
 
 scan = Scan.from_context(context, type='Delay')
+scan.setup(integration_time =10)
+scan.sequence( deltest = np.arange(-500, -300, 50) )
 
-scan.setup(integration_time = 70)
-
-scan.sequence( deltest = np.arange(-700, -300, 50) )
-
-plot = LiveFigure(savefig='test.png')
-
+plot = LiveFigure()
 @plot.update
 def updateplot(fig, data):
     fig.clear()
     fig.suptitle("Difference between even and odd shots")
+
+    data = data.swap_dims(eTof='evs') # Plot on evs
 
     diff = (data.even - data.odd)
     if diff.squeeze().ndim == 1:
@@ -25,10 +23,9 @@ def updateplot(fig, data):
         
 scan.on_update(plot.update_fig)
 
-daq  = Run(daq=False, proposal_id=11013415,**scan.info)
-with daq, plot:
+
+run  = Run(daq=False, **scan.info)
+with run, plot:
     scan.run()
 
-import pickle
-with open('figure.pkl', 'wb') as f:
-    pickle.dump(plot.fig, f)
+run.set_figure(plot.fig)
