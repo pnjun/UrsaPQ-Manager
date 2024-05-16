@@ -73,8 +73,8 @@ class UrsapqManager:
         self.controls_stop = threading.Event()  # Stops event for control threads of oven and HVPS controllers
 
         #PID filters
-        self.OvenPID =  PIDFilter(*tuple(config.OvenPID.Params),  config.OvenPID.DefSetpoint)
-        self.PressurePID =  PIDFilter(*tuple(config.PressurePID.Params),  config.PressurePID.DefSetpoint)
+        self.OvenPID =  PIDFilter(**config.OvenPID.init_params._asdict())
+        self.PressurePID =  PIDFilter(**config.PressurePID.init_params._asdict())
 
         #System status message initalization
         self.status.statusMessage = ""

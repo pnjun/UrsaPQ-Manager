@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class PIDFilter:
-    def __init__(self, p, i ,d, setPoint, lowpass_tau=30):
+    def __init__(self, p, i ,d, lowpass_tau, set_point):
         '''
         PID filter. Takes the filter coefficients for the
         proportional, integral and derivative components
@@ -12,7 +12,7 @@ class PIDFilter:
         self.i = i
         self.p = p
         self.lowpass_tau = lowpass_tau
-        self.setPoint = setPoint
+        self.setPoint = set_point
         self.reset()
 
     def filter(self, t_in):

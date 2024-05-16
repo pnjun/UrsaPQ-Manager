@@ -208,7 +208,7 @@ class SampleWindow(ConsoleWindow):
     @Slot()
     def newPress(self):
         try:
-            self.ursapq.pressurePID_setPoint = float( self.window.press_in.toPlainText() )
+            self.ursapq.pressurePID_setPoint = float( self.window.press_in.toPlainText() ) *1e-7
         except Exception:
             pass
 
