@@ -6,15 +6,12 @@ from fablive import Scan, Run, LiveFigure
 import context 
 
 scan = Scan.from_context(context, type='Time Zero')
-
-scan.setup(integration_time = 5)
-
-scan.sequence( odl_position = np.arange(-565, -562, 1) )
-
 run = Run(daq=False, proposal_id=False,**scan.info)
 
-plot = LiveFigure()
+scan.setup(integration_time = 5)
+scan.sequence( odl_position = np.arange(-565, -562, 1) )
 
+plot = LiveFigure()
 @plot.update
 def update_figure(fig, data):
     fig.clear()
@@ -25,10 +22,9 @@ def update_figure(fig, data):
         diff.plot()
     if diff.squeeze().ndim == 2:
         diff.plot(cmap='RdBu')
-        
 scan.on_update(plot.update_fig)
 
-with run:
+with run, plot:
     scan.run()
 
 

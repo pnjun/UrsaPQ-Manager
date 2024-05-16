@@ -37,27 +37,27 @@ ursa = UrsaPQ()
 # DEFINE ACTIONS (what to do when setting parameters)
 @action
 async def retarder(value):
-    ursa.tof_retarderHV = value
-    while abs(ursa.tof_retarderHV - value) > 0.1:
+    ursa.tof_retarderSetHV = value
+    while abs(ursa.tof_retarderHV - value) > 0.3:
         await asyncio.sleep(0.1)
 
 @action
 async def coil(value):
-    ursa.coil_current = value
+    ursa.coil_setCurrent = value
     while abs(ursa.coil_current - value) > 0.1:
         await asyncio.sleep(0.1)
 
 @action
 async def waveplate(value):
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
 
 @action
 async def deltest(value):
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
 
 @action
 async def odl_position(value):
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
 
 @action
 def integration_time(value):

@@ -4,14 +4,19 @@ import numpy as np
 import context 
 
 scan = Scan.from_context(context, type='Delay')
-scan.setup(integration_time =10)
+run  = Run(daq=False, **scan.info)
+
+scan.setup(integration_time =10,
+           retarder = -20,
+           coil = 0.2,
+           waveplate = 0)
 scan.sequence( deltest = np.arange(-500, -300, 50) )
 
 plot = LiveFigure()
 @plot.update
 def updateplot(fig, data):
     fig.clear()
-    fig.suptitle("Difference between even and odd shots")
+    fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
 
     data = data.swap_dims(eTof='evs') # Plot on evs
 
@@ -20,11 +25,8 @@ def updateplot(fig, data):
         diff.plot()
     if diff.squeeze().ndim == 2:
         diff.plot(cmap='RdBu')
-        
 scan.on_update(plot.update_fig)
 
-
-run  = Run(daq=False, **scan.info)
 with run, plot:
     scan.run()
 
