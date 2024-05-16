@@ -60,7 +60,7 @@ class PIDFilter:
         if out < 0:
             out = 0
 
-        print(err, self.lastErr, self.integ, deriv)
+        #print(err, self.lastErr, self.integ, deriv)
 
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
