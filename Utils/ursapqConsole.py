@@ -172,7 +172,7 @@ class SampleWindow(ConsoleWindow):
 
     def setupCallbacks(self):
         self.window.ovenSetButton.clicked.connect(self.newSetPoints)
-        self.window.flow_setButton.clicked.connect(self.newFlow)
+        self.window.press_setButton.clicked.connect(self.newPress)
         self.ovenSwitch.clicked.connect(self.oven_enable)
         self.gasLine_switch.clicked.connect(self.gasLine_enable)
 
@@ -182,8 +182,10 @@ class SampleWindow(ConsoleWindow):
         self.window.oven_temp.setText(  '{:.2f}'.format(self.ursapq.sample_bodyTemp))
         self.window.ovenPow.setText(  '{:.2f}'.format(self.ursapq.oven_output_pow))
         self.window.ovenSetPoint.setText('{:.1f}'.format(self.ursapq.oven_setPoint))
-        self.window.flow_act.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
-        self.window.flow_set.setText('{:.3f}'.format(self.ursapq.gasLine_flow_set))
+        self.window.press_act.setText('{:.1e}'.format(self.ursapq.chamberPressure))
+        self.window.press_set.setText('{:.1e}'.format(self.ursapq.pressurePID_setPoint))
+        self.window.flow_act.setText('{:.0%}'.format(self.ursapq.gasLine_flow))
+        self.window.flow_set.setText('{:.0%}'.format(self.ursapq.gasLine_flow_set))
 
         self.updateTimer.setInterval( self.updateTime )
 
@@ -204,9 +206,9 @@ class SampleWindow(ConsoleWindow):
         self.updateTimer.setInterval(self.updateTime*3)
 
     @Slot()
-    def newFlow(self):
+    def newPress(self):
         try:
-            self.ursapq.gasLine_flow_set = float( self.window.flow_in.toPlainText() )
+            self.ursapq.pressurePID_setPoint = float( self.window.press_in.toPlainText() )
         except Exception:
             pass
 
@@ -392,7 +394,7 @@ class MainWindow(ConsoleWindow):
         self.window.bodyTemp.setText( '{:.1f}'.format(self.ursapq.sample_bodyTemp) )
         self.window.capTemp.setText(  '{:.1f}'.format(self.ursapq.sample_capTemp) )
         self.window.tipTemp.setText(  '{:.1f}'.format(self.ursapq.sample_tipTemp) )
-        self.window.gasLine_flow.setText('{:.3f}'.format(self.ursapq.gasLine_flow))
+        self.window.gasLine_flow.setText('{:.0%}'.format(self.ursapq.gasLine_flow))
         self.window.gasLine_pressure.setText('{:.2e}'.format(self.ursapq.gasLine_pressure))
 
         #Update status label

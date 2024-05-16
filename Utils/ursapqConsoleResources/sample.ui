@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>439</width>
-    <height>427</height>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,7 @@ QGroupBox::title {
       <x>15</x>
       <y>15</y>
       <width>411</width>
-      <height>401</height>
+      <height>451</height>
      </rect>
     </property>
     <property name="title">
@@ -177,11 +177,11 @@ QGroupBox::title {
       <string>Gas Flow Enable</string>
      </property>
     </widget>
-    <widget class="QLabel" name="flow_act">
+    <widget class="QLabel" name="press_act">
      <property name="geometry">
       <rect>
        <x>130</x>
-       <y>315</y>
+       <y>360</y>
        <width>63</width>
        <height>31</height>
       </rect>
@@ -190,12 +190,12 @@ QGroupBox::title {
       <string>---</string>
      </property>
     </widget>
-    <widget class="QPlainTextEdit" name="flow_in">
+    <widget class="QPlainTextEdit" name="press_in">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>315</y>
-       <width>61</width>
+       <x>290</x>
+       <y>360</y>
+       <width>81</width>
        <height>31</height>
       </rect>
      </property>
@@ -212,11 +212,11 @@ QGroupBox::title {
       <number>4</number>
      </property>
     </widget>
-    <widget class="QPushButton" name="flow_setButton">
+    <widget class="QPushButton" name="press_setButton">
      <property name="geometry">
       <rect>
        <x>270</x>
-       <y>355</y>
+       <y>400</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -229,20 +229,20 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>315</y>
+       <y>360</y>
        <width>81</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Flow [0-1]</string>
+      <string>Pressure</string>
      </property>
     </widget>
-    <widget class="QLabel" name="flow_set">
+    <widget class="QLabel" name="press_set">
      <property name="geometry">
       <rect>
        <x>210</x>
-       <y>315</y>
+       <y>360</y>
        <width>63</width>
        <height>31</height>
       </rect>
@@ -314,6 +314,45 @@ QGroupBox::title {
      </property>
      <property name="text">
       <string>Set</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="flow_set">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>320</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="flow_act">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>320</y>
+       <width>63</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>---</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_12">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>320</y>
+       <width>81</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Flow</string>
      </property>
     </widget>
    </widget>

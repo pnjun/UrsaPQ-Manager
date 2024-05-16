@@ -63,9 +63,7 @@ class PIDFilter:
         #print(err, self.lastErr, self.integ, deriv)
 
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
-        # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
-        # the PID out to make it linear in applied power.
-        return math.sqrt(out)
+        return out
 
     def reset(self):
         self.integ = 0
@@ -131,6 +129,7 @@ class UrsapqManager:
 
         #PID filters
         self.OvenPID =  PIDFilter(*tuple(config.OvenPID.Params),  config.OvenPID.DefSetpoint)
+        self.PressurePID =  PIDFilter(*tuple(config.PressurePID.Params),  config.PressurePID.DefSetpoint)
 
         #System status message initalization
         self.status.statusMessage = ""
@@ -275,6 +274,7 @@ class UrsapqManager:
         self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
         self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
         self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
+        self._beckhoffRead('gasLine_enable', 'MAIN.GasLine_Enable',  pyads.PLCTYPE_BOOL)
 
         
         # Update PID setpoints if necessary
@@ -287,6 +287,16 @@ class UrsapqManager:
 
         coil_enable = self._getParamWrite('coil_enable')
         if coil_enable is not None: self.status.coil_enable = coil_enable
+
+        newPressureSetP = self._getParamWrite('pressurePID_setPoint')
+        if newPressureSetP is not None: self.PressurePID.setPoint = min(newPressureSetP, config.PressurePID.max_setp)
+        self.status.pressurePID_setPoint = self.PressurePID.setPoint
+
+        if self.status.gasLine_enable:
+            self.writeStatus.gasLine_flow_set = self.PressurePID.filter(self.status.chamberPressure)
+        else:
+            self.writeStatus.gasLine_flow_set = 0
+            self.PressurePID.reset()
 
         # Check if a client requested a change and wirte it out to beckhoff if necessary
         # self.status namespace values are updated to the new value if write is succesful
@@ -345,7 +355,9 @@ class UrsapqManager:
 
                 if self.status.oven_enable:
                     self.LVPS.Oven.on()
-                    self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
+                    # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
+                    # the PID out to make it linear in applied power.
+                    self.LVPS.Oven.setVoltage  = math.sqrt(self.OvenPID.filter(self.status.sample_bodyTemp))
 
                     # Write oven status variable
                     if self.OvenPID.lastErr is not None and abs(self.OvenPID.lastErr) < config.OvenPID.NormalOpMaxErr:
