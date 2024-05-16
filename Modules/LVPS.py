@@ -17,7 +17,7 @@ class LVPS:
         self.serial = serial.Serial()
         self.name = name
         self.serial.baudrate = 9600
-        self.serial.timeout = 0.3
+        self.serial.timeout = 0.5
 
     def connect(self):
         #Scan all serials looking for matching device name
@@ -54,7 +54,7 @@ class LVPS:
             def off(self):
                 serial.write( b':INST OUT%d' % int(chid) + b'\r\n'); serial.flush()
                 serial.write( b':OUTP OFF\r\n'); serial.flush()
-
+                
             #sets and retrives the set voltage for channel
             @property
             def setVoltage(self):

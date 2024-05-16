@@ -69,6 +69,9 @@ class HVPS:
 
     @tofEnable.setter
     def tofEnable(self, enable):
+        self.posSerial.write( b'*CLS' + b'\r\n'); self.posSerial.flush() # Reset events
+        self.negSerial.write( b'*CLS' + b'\r\n'); self.negSerial.flush() # Reset events
+
         for key,val in config.HVPS.TOF_Channels._asdict().items():
             if enable:
                 self.__getattr__(key).on()

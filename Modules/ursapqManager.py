@@ -60,7 +60,7 @@ class PIDFilter:
         if out < 0:
             out = 0
 
-        print(err, self.lastErr, self.integ, deriv)
+        #print(err, self.lastErr, self.integ, deriv)
 
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         # Applied power scales with square of voltage. Since the filters outputs a voltage we sqrt
@@ -223,6 +223,7 @@ class UrsapqManager:
 
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.CHAMBER", self.status.chamberPressure)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.PREVAC",  self.status.preVacPressure)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.GASLINE", self.status.gasLine_pressure)
 
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.PHOSPHORHV", self.status.mcp_phosphorHV)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MCP.BACKHV",     self.status.mcp_backHV)
@@ -234,14 +235,15 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.CAPTEMP",      self.status.sample_capTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.TIPTEMP",      self.status.sample_tipTemp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.BODYTEMP",     self.status.sample_bodyTemp)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.GASFLOW",      self.status.gasLine_flow)
 
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.TEMP", self.status.magnet_temp)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSX", self.status.sample_pos_x)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSY", self.status.sample_pos_y)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSZ", self.status.sample_pos_z)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY", self.status.magnet_pos_y)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSY",  self.status.frame_pos_y)
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/FRAME.POSZ",  self.status.frame_pos_x) #DOOCS HAS WRONG NAME FOR FRAMEX
+        
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.CURRENT", self.status.coil_current)
 
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
@@ -271,8 +273,6 @@ class UrsapqManager:
         self._beckhoffRead('sample_pos_y',   'MAIN.SampleY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
         self._beckhoffRead('sample_pos_z',   'MAIN.SampleZ.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
         self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('frame_pos_x',    'MAIN.FrameX.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('frame_pos_y',    'MAIN.FrameY.NcToPlc.ActPos',  pyads.PLCTYPE_LREAL)
         self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
         self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
 
@@ -344,8 +344,6 @@ class UrsapqManager:
                 self.status.coil_setCurrent = self.LVPS.Coil.setCurrent
 
                 if self.status.oven_enable:
-                    # If we got this far, the LVPS is probably connected and working,
-                    # we can set the new control voltages based on PID filter
                     self.LVPS.Oven.on()
                     self.LVPS.Oven.setVoltage  = self.OvenPID.filter(self.status.sample_bodyTemp)
 
