@@ -47,4 +47,6 @@ def grab_t0(event):
 fig.canvas.mpl_connect('button_press_event', grab_t0)
 
 plt.show()
+run.set_figure(fig)
+
 

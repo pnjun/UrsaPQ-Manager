@@ -45,8 +45,6 @@ class PIDFilter:
         if out < 0:
             out = 0
 
-        #print(err, self.lastErr, self.integ, deriv)
-
         #print("Filter %f %f %f %f %f" % (err, out, self.integ, self.lastErr, dt))
         return out
 
