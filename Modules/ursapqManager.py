@@ -111,6 +111,9 @@ class UrsapqManager:
         self.status.coil_current = math.nan
         self.status.coil_setCurrent = math.nan
         self.status.oven_output_pow = math.nan
+        self.status.coil_wiggle_ampl = 0
+        self.status.coil_wiggle_freq = 0
+        self.status.coil_current_set = 0
         self.status.coil_enable = False
         self.status.oven_enable = False
 
@@ -188,6 +191,10 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY", self.status.magnet_pos_y)
         
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.CURRENT", self.status.coil_current)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.AMPLITUDE", self.status.coil_wiggle_ampl)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.FREQUENCY", self.status.coil_wiggle_freq)
+
+
 
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
@@ -221,7 +228,18 @@ class UrsapqManager:
         self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
         self._beckhoffRead('gasLine_enable', 'MAIN.GasLine_Enable',  pyads.PLCTYPE_BOOL)
 
-        
+        coil_enable = self._getParamWrite('coil_enable')
+        if coil_enable is not None: self.status.coil_enable = coil_enable
+
+        newWiggleAmpl = self._getParamWrite('coil_wiggle_ampl')
+        if newWiggleAmpl is not None: self.status.coil_wiggle_ampl = newWiggleAmpl
+
+        newWiggleFreq = self._getParamWrite('coil_wiggle_freq')
+        if newWiggleFreq is not None: self.status.coil_wiggle_freq = newWiggleFreq
+
+        newCurrent = self._getParamWrite('coil_current_set')
+        if newCurrent is not None: self.status.coil_current_set = newCurrent
+
         # Update PID setpoints if necessary
         oven_enable = self._getParamWrite('oven_enable')
         if oven_enable is not None: self.status.oven_enable = oven_enable
@@ -229,9 +247,6 @@ class UrsapqManager:
         newOvenTemp = self._getParamWrite('oven_setPoint')
         if newOvenTemp is not None: self.OvenPID.setPoint = newOvenTemp
         self.status.oven_setPoint = self.OvenPID.setPoint
-
-        coil_enable = self._getParamWrite('coil_enable')
-        if coil_enable is not None: self.status.coil_enable = coil_enable
 
         newPressureSetP = self._getParamWrite('pressurePID_setPoint')
         if newPressureSetP is not None: self.PressurePID.setPoint = min(newPressureSetP, config.PressurePID.max_setp)
@@ -291,12 +306,10 @@ class UrsapqManager:
                 else:
                     self.LVPS.Coil.off()
 
-                newCurrent = self._getParamWrite('coil_setCurrent')
-                if newCurrent is not None: 
-                    self.LVPS.Coil.setCurrent = newCurrent
-
+                wiggle = self.status.coil_wiggle_ampl*math.sin(self.status.coil_wiggle_freq*math.pi*time.time()) #Wiggle component
+                
+                self.LVPS.Coil.setCurrent = self.status.coil_current_set + wiggle
                 self.status.coil_current = self.LVPS.Coil.current
-                self.status.coil_setCurrent = self.LVPS.Coil.setCurrent
 
                 if self.status.oven_enable:
                     self.LVPS.Oven.on()

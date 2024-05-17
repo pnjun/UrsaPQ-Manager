@@ -253,8 +253,11 @@ class SpectrometerWindow(ConsoleWindow):
 
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
-        self.window.coilCurr_act.setText( '{:.1f}'.format(self.ursapq.coil_current))
-        self.window.coilCurr_set.setText( '{:.1f}'.format(self.ursapq.coil_setCurrent))        
+        self.window.coilCurr_act.setText( '{:.2f}'.format(self.ursapq.coil_current))
+        self.window.coilCurr_set.setText( '{:.2f}'.format(self.ursapq.coil_current_set))        
+
+        self.window.wiggle_f.setText( '{:.2f}'.format(self.ursapq.coil_wiggle_freq))
+        self.window.wiggle_a.setText( '{:.2f}'.format(self.ursapq.coil_wiggle_ampl))      
 
         self.updateTimer.setInterval( self.updateTime )
 
@@ -302,9 +305,18 @@ class SpectrometerWindow(ConsoleWindow):
         except Exception:
             pass
         try:
-            self.ursapq.coil_setCurrent = float( self.window.coilCurr_in.toPlainText() )
+            self.ursapq.coil_current_set = float( self.window.coilCurr_in.toPlainText() )
         except Exception:
             pass
+        try:
+            self.ursapq.coil_wiggle_ampl = float( self.window.wiggle_a_in.toPlainText() )
+        except Exception:
+            pass
+        try:
+            self.ursapq.coil_wiggle_freq = float( self.window.wiggle_f_in.toPlainText() )
+        except Exception:
+            pass
+
 
 class DataDisplayWindow(ConsoleWindow):
     def __init__(self, ursapq, title, varname, *args, **kvargs):
@@ -415,7 +427,7 @@ class MainWindow(ConsoleWindow):
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
         self.window.retarder.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        self.window.coil_curr.setText(  '{:.1f}'.format(self.ursapq.coil_current))
+        self.window.coil_curr.setText(  '{:.2f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)
