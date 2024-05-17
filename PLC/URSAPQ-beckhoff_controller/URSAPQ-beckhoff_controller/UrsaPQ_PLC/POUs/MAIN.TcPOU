@@ -168,13 +168,14 @@ MainVac_TurboOK := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.TurboStart_
 PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_Threshold;
 
 Coil_Output := TRUE;
+IF Coil_Reset THEN
+	Coil_Reset := FALSE;
+END_IF
 IF Coil_Err THEN  // If coil error, disable the coil and reset
 	Coil_Enable := FALSE;
 	Coil_Reset := TRUE;
 END_IF
-IF Coil_Reset THEN
-	Coil_Reset := FALSE;
-END_IF
+
 
 // Decide actions based on status
 PreVacValves_Open := NOT PreVac_Valve_Lock AND ( PreVac_OK OR NOT MainVac_TurboOK );
@@ -238,10 +239,12 @@ END_IF
       <LineId Id="317" Count="0" />
       <LineId Id="1580" Count="0" />
       <LineId Id="1078" Count="0" />
+      <LineId Id="1711" Count="1" />
+      <LineId Id="1710" Count="0" />
       <LineId Id="1573" Count="1" />
       <LineId Id="1576" Count="0" />
       <LineId Id="1575" Count="0" />
-      <LineId Id="1577" Count="2" />
+      <LineId Id="1579" Count="0" />
       <LineId Id="438" Count="0" />
       <LineId Id="323" Count="0" />
       <LineId Id="318" Count="0" />

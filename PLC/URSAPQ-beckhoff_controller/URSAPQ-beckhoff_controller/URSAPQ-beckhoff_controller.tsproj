@@ -7209,7 +7209,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="35" BoxType="9093" BoxFlags="#x00000020">
 						<Name>Profibus</Name>
 						<ImageId>1007</ImageId>
-						<EtherCAT SlaveType="5" AdsServerAddress="c0a8000103010000" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
+						<EtherCAT SlaveType="5" AdsServerAddress="c0a800010301fe03" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
 							<SyncMan>0010800126000100010000005000da058001001026010000</SyncMan>
 							<SyncMan>8011800122000100020000005000da058001801122010000</SyncMan>
 							<SyncMan>00130c002400010003000000000000000000001324010000</SyncMan>
@@ -8418,6 +8418,7 @@ Revision: 1.02
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Coil Supply">
 				<Link VarA="PlcTask Inputs^MAIN.Coil_Curr_In" VarB="DOX Synchron info data^Info data 2"/>
+				<Link VarA="PlcTask Inputs^MAIN.Coil_Err" VarB="DOX Status^Error"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Curr_Out" VarB="DOX Current^Output current"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Enable" VarB="DOX Control^Enable"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Output" VarB="DOX Control^Output"/>
