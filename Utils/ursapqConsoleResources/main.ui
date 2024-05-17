@@ -463,7 +463,7 @@ QGroupBox::title {
        </rect>
       </property>
       <property name="text">
-       <string>Coil [A]:</string>
+       <string>Coil [mA]:</string>
       </property>
      </widget>
      <widget class="QLabel" name="coil_curr">

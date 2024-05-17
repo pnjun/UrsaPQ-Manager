@@ -253,11 +253,11 @@ class SpectrometerWindow(ConsoleWindow):
 
         self.window.tofRetarder_act.setText( '{:.1f}'.format(self.ursapq.tof_retarderHV))
         self.window.tofRetarder_set.setText( '{:.1f}'.format(self.ursapq.tof_retarderSetHV))
-        self.window.coilCurr_act.setText( '{:.2f}'.format(self.ursapq.coil_current))
-        self.window.coilCurr_set.setText( '{:.2f}'.format(self.ursapq.coil_current_set))        
+        self.window.coilCurr_act.setText( '{:.0f}'.format(self.ursapq.coil_current))
+        self.window.coilCurr_set.setText( '{:.0f}'.format(self.ursapq.coil_current_set))        
 
         self.window.wiggle_f.setText( '{:.2f}'.format(self.ursapq.coil_wiggle_freq))
-        self.window.wiggle_a.setText( '{:.2f}'.format(self.ursapq.coil_wiggle_ampl))      
+        self.window.wiggle_a.setText( '{:.0f}'.format(self.ursapq.coil_wiggle_ampl))      
 
         self.updateTimer.setInterval( self.updateTime )
 
@@ -427,7 +427,7 @@ class MainWindow(ConsoleWindow):
         self.window.mcpPhos_act.setText(  '{:.1f}'.format(self.ursapq.mcp_phosphorHV))
         self.window.magnet_temp.setText(  '{:.1f}'.format(self.ursapq.magnet_temp))
         self.window.retarder.setText(  '{:.1f}'.format(self.ursapq.tof_retarderHV))
-        self.window.coil_curr.setText(  '{:.2f}'.format(self.ursapq.coil_current))
+        self.window.coil_curr.setText(  '{:.0f}'.format(self.ursapq.coil_current))
 
         if self.ursapq.HV_Status == 'OFF':
             self.window.detector_SL.setStyleSheet(BG_COLOR_OFF)

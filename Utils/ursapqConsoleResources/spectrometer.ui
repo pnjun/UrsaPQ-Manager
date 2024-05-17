@@ -107,7 +107,7 @@ QGroupBox::title {
        </rect>
       </property>
       <property name="text">
-       <string>Coil [A]</string>
+       <string>Coil [mA]</string>
       </property>
      </widget>
      <widget class="QPushButton" name="tofSetButton">
@@ -159,7 +159,7 @@ QGroupBox::title {
        </rect>
       </property>
       <property name="text">
-       <string>Coil wiggler ampli [A]</string>
+       <string>Coil wiggler ampli [mA]</string>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="wiggle_a_in">

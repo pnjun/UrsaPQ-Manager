@@ -114,7 +114,6 @@ class UrsapqManager:
         self.status.coil_wiggle_ampl = 0
         self.status.coil_wiggle_freq = 0
         self.status.coil_current_set = 0
-        self.status.coil_enable = False
         self.status.oven_enable = False
 
         self.updateStatus()
@@ -227,10 +226,10 @@ class UrsapqManager:
         self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
         self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
         self._beckhoffRead('gasLine_enable', 'MAIN.GasLine_Enable',  pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('coil_enable',    'MAIN.Coil_Enable',  pyads.PLCTYPE_BOOL)
+        self._beckhoffRead('coil_current',   'MAIN.Coil_Curr_In', pyads.PLCTYPE_INT)
 
-        coil_enable = self._getParamWrite('coil_enable')
-        if coil_enable is not None: self.status.coil_enable = coil_enable
-
+        # Coil wiggle
         newWiggleAmpl = self._getParamWrite('coil_wiggle_ampl')
         if newWiggleAmpl is not None: self.status.coil_wiggle_ampl = newWiggleAmpl
 
@@ -240,7 +239,10 @@ class UrsapqManager:
         newCurrent = self._getParamWrite('coil_current_set')
         if newCurrent is not None: self.status.coil_current_set = newCurrent
 
-        # Update PID setpoints if necessary
+        wiggle = self.status.coil_wiggle_ampl/2*math.sin(self.status.coil_wiggle_freq*2*math.pi*time.time()) #Wiggle component
+        self.beckhoff.write("MAIN.Coil_Curr_Out", int(self.status.coil_current_set + wiggle), pyads.PLCTYPE_INT)
+
+        # Oven/Pressure PIDs
         oven_enable = self._getParamWrite('oven_enable')
         if oven_enable is not None: self.status.oven_enable = oven_enable
 
@@ -283,6 +285,7 @@ class UrsapqManager:
         self._beckhoffWrite('frame_pos_x_stop',        'MAIN.FrameX_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('frame_pos_y_stop',        'MAIN.FrameY_MotionStop',   pyads.PLCTYPE_BOOL)
         self._beckhoffWrite('gasLine_flow_set',        'MAIN.Sample_Flow_Set',  pyads.PLCTYPE_REAL)
+        self._beckhoffWrite('coil_enable',             'MAIN.Coil_Enable',  pyads.PLCTYPE_BOOL)
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
@@ -298,18 +301,7 @@ class UrsapqManager:
 
         if self.status.LVPS_isOn: # no point in trying if power is off
             try:
-                # Try to read out status
                 self.LVPS.connect()
-
-                if self.status.coil_enable:
-                    self.LVPS.Coil.on()
-                else:
-                    self.LVPS.Coil.off()
-
-                wiggle = self.status.coil_wiggle_ampl/2*math.sin(self.status.coil_wiggle_freq*2*math.pi*time.time()) #Wiggle component
-                
-                self.LVPS.Coil.setCurrent = self.status.coil_current_set + wiggle
-                self.status.coil_current = self.LVPS.Coil.current
 
                 if self.status.oven_enable:
                     self.LVPS.Oven.on()
@@ -340,7 +332,6 @@ class UrsapqManager:
                 self.OvenPID.reset()
 
                 self.status.oven_output_pow = math.nan
-                self.status.coil_current = math.nan
 
                 self.setMessage("ERROR: Cannot connect to LVPS, check USB", 5)
                 print("LVPS not reachable: " , traceback.format_exc())     
