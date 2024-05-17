@@ -2993,7 +2993,7 @@ External Setpoint Generation:
 						<Name>PlcTask Inputs</Name>
 						<Var>
 							<Name>MAIN.PrePump_Pressure_Int</Name>
-							<Comment><![CDATA[INPUTS]]></Comment>
+							<Comment><![CDATA[**********************************************************INPUTS]]></Comment>
 							<Type>INT</Type>
 						</Var>
 						<Var>
@@ -3039,12 +3039,20 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.Coil_Err</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.TurboMain_Overtemp</Name>
 							<Comment><![CDATA[ IMPORTANT! 
  LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
  LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
  BECKHOFF:  8  9  10 11 12 13 14 15 0  1  2  3  4  5  6  7 ]]></Comment>
 							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Curr_In</Name>
+							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.TurboMain_NO</Name>
@@ -3072,6 +3080,14 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.SampleY_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleZ_Fw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.FrameX.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 						</Var>
@@ -3094,14 +3110,6 @@ External Setpoint Generation:
 						<Var>
 							<Name>MAIN.MagnetY.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleZ_Fw_End</Name>
-							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.SampleZ_Bw_End</Name>
@@ -3136,7 +3144,6 @@ External Setpoint Generation:
 						<Name>PlcTask Outputs</Name>
 						<Var>
 							<Name>MAIN.Penning_Enable</Name>
-							<Comment><![CDATA[OUTPUTS]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3164,20 +3171,37 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.FlashInterlock</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.Flow_Valve_Set</Name>
 							<Comment><![CDATA[ Flow valve setpoint]]></Comment>
 							<Type>INT</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.FlashInterlock</Name>
-							<Type>BOOL</Type>
+							<Name>MAIN.HVPS_ON</Name>
+							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.Lamp1_Enable</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.HVPS_ON</Name>
+							<Name>MAIN.Coil_Enable</Name>
+							<Comment><![CDATA[**************************************************************OUTPUTS]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Output</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Reset</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Curr_Out</Name>
 							<Type>INT</Type>
 						</Var>
 						<Var>
@@ -6173,11 +6197,11 @@ External Setpoint Generation:
 					<Box Id="26" BoxType="9099">
 						<Name>Coil Supply</Name>
 						<ImageId>1003</ImageId>
-						<EtherCAT SlaveType="2" PdiType="#x0405" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="47" FoeType="1" VendorId="#x00000002" ProductCode="#x0a243052" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataDcTimes="true" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL2596 1-channel LED strobe control terminal 24V/3A" Desc="EL2596" PortABoxInfo="#x01000018">
+						<EtherCAT SlaveType="2" PdiType="#x0405" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x0a243052" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataDcTimes="true" PortPhys="51" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL2596 1-channel LED strobe control terminal 24V/3A" Desc="EL2596" PortABoxInfo="#x01000018">
 							<SyncMan>001080002600010001000000000000008000001026010000</SyncMan>
 							<SyncMan>801080002200010002000000000000008000801022010000</SyncMan>
 							<SyncMan>001104002400010003000000000000000200001124010000</SyncMan>
-							<SyncMan>001202002000010004000000000000000200001220010000</SyncMan>
+							<SyncMan>001206002000010004000000000000000200001220010000</SyncMan>
 							<Fmmu>0000000000000000001100020100000001000000000000000000000000000000</Fmmu>
 							<Fmmu>0000000000000000001200010100000002000000000000000000000000000000</Fmmu>
 							<Fmmu>00000000000000000d0800010100000003000000000000000000000000000000</Fmmu>
@@ -6216,7 +6240,7 @@ External Setpoint Generation:
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
-							<Pdo Name="DOX Synchron info data" Index="#x1a01" Flags="#x0010">
+							<Pdo Name="DOX Synchron info data" Index="#x1a01" Flags="#x0010" SyncMan="3">
 								<Entry Name="Info data 1" Index="#x6000" Sub="#x11">
 									<Type>UINT</Type>
 								</Entry>
@@ -8391,6 +8415,13 @@ Revision: 1.02
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
 				<Link VarA="PlcTask Outputs^MAIN.TOFPreVac_Valve" VarB="Channel 2^TOFPreVacValve"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Coil Supply">
+				<Link VarA="PlcTask Inputs^MAIN.Coil_Curr_In" VarB="DOX Synchron info data^Info data 2"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Curr_Out" VarB="DOX Current^Output current"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Enable" VarB="DOX Control^Enable"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Output" VarB="DOX Control^Output"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Reset" VarB="DOX Control^Reset"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Flow Valve Control">
 				<Link VarA="PlcTask Outputs^MAIN.Flow_Valve_Set" VarB="AO Outputs Channel 1^Flow Valve Control"/>

@@ -3,7 +3,7 @@
   <POU Name="MAIN" Id="{bebe6b61-023e-4d51-b092-c239fd7bc0f8}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR		
-	//INPUTS
+	//**********************************************************INPUTS
 	PrePump_Pressure_Int AT %I* : INT;
 	Chamber_Penning_Int  AT %I* : INT;
 	Chamber_Pirani_Int   AT %I* : INT;	
@@ -18,7 +18,6 @@ VAR
 	TurboTOF_NO AT %I* : BOOL;	
 	TurboTOF_ERR AT %I* : BOOL;
 		
-	
 	// IMPORTANT! 
 	// LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
 	// LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
@@ -28,7 +27,16 @@ VAR
 	TurboMain_ERR AT %I* : BOOL;
 	TurboMain_Freq AT %I* : UINT;
 	
-	//OUTPUTS
+	Coil_Err AT %I* : BOOL;
+	Coil_Curr_In AT %I* : INT;
+	
+	
+	//**************************************************************OUTPUTS
+	Coil_Enable AT %Q* : BOOL;
+	Coil_Output AT %Q* : BOOL;
+	Coil_Reset AT %Q* : BOOL;
+	Coil_Curr_Out AT %Q* : INT;
+
 	Penning_Enable AT %Q* : BOOL;
 	LVPS_ON AT %Q* : BOOL;
 	MPreVac_Valve AT %Q*: BOOL;
@@ -44,7 +52,7 @@ VAR
 	HVPS_ON AT %Q* : INT;
 	Lamp1_Enable AT %Q* : BOOL;
 	
-	//ADS inputs: CONTROL PARAMETERS (PLC reads values and acts accordignly, ADS clients should set these values)
+	//************************************ ADS inputs: CONTROL PARAMETERS (PLC reads values and acts accordignly, ADS clients should set these values)
 	GasLine_Enable :    BOOL := FALSE;
 	Pumps_Enable :      BOOL := FALSE;      // Start pumping sequence
 	PreVac_Valve_Lock : BOOL := FALSE;		// Ovverides auto valves and close prevac valves
@@ -73,7 +81,7 @@ VAR
 	FrameY_SetPoint  : REAL := 0;
 	MagnetY_SetPoint  : REAL := 0;
 	
-	//ADS outputs: READ ONLY (PLC updates them at every cycle, ADS clients should just read)
+	//******************************************* ADS outputs: READ ONLY (PLC updates them at every cycle, ADS clients should just read)
 	Chamber_Pressure : REAL;				// Main chamber pressure in mBars
 	GasLine_Pressure : REAL;
 	PreVac_Pressure  : REAL;                // PrePump line pressure
@@ -159,6 +167,14 @@ MainVac_OK      := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.MainVac_Ok_
 MainVac_TurboOK := Chamber_Pressure > 0 AND Chamber_Pressure < PARAM.TurboStart_Threshold;
 PreVac_OK       := PreVac_Pressure  > 0 AND PreVac_Pressure  < PARAM.PreVac_Ok_Threshold;
 
+Coil_Output := TRUE;
+IF Coil_Err THEN  // If coil error, disable the coil and reset
+	Coil_Enable := FALSE;
+	Coil_Reset := TRUE;
+END_IF
+IF Coil_Reset THEN
+	Coil_Reset := FALSE;
+END_IF
 
 // Decide actions based on status
 PreVacValves_Open := NOT PreVac_Valve_Lock AND ( PreVac_OK OR NOT MainVac_TurboOK );
@@ -220,7 +236,12 @@ END_IF
       <LineId Id="294" Count="0" />
       <LineId Id="329" Count="0" />
       <LineId Id="317" Count="0" />
+      <LineId Id="1580" Count="0" />
       <LineId Id="1078" Count="0" />
+      <LineId Id="1573" Count="1" />
+      <LineId Id="1576" Count="0" />
+      <LineId Id="1575" Count="0" />
+      <LineId Id="1577" Count="2" />
       <LineId Id="438" Count="0" />
       <LineId Id="323" Count="0" />
       <LineId Id="318" Count="0" />

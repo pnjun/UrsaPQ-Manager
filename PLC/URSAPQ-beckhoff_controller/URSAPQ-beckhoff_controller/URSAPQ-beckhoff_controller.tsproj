@@ -2993,7 +2993,7 @@ External Setpoint Generation:
 						<Name>PlcTask Inputs</Name>
 						<Var>
 							<Name>MAIN.PrePump_Pressure_Int</Name>
-							<Comment><![CDATA[INPUTS]]></Comment>
+							<Comment><![CDATA[**********************************************************INPUTS]]></Comment>
 							<Type>INT</Type>
 						</Var>
 						<Var>
@@ -3039,12 +3039,20 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.Coil_Err</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.TurboMain_Overtemp</Name>
 							<Comment><![CDATA[ IMPORTANT! 
  LEYBOLD AND BECKHOOF PLC USE DIFFERENT BYTE ORDER, be careful when linking to profibus
  LEYBOLD:   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
  BECKHOFF:  8  9  10 11 12 13 14 15 0  1  2  3  4  5  6  7 ]]></Comment>
 							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Curr_In</Name>
+							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.TurboMain_NO</Name>
@@ -3072,6 +3080,14 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.SampleY_Bw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.SampleZ_Fw_End</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.FrameX.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 						</Var>
@@ -3094,14 +3110,6 @@ External Setpoint Generation:
 						<Var>
 							<Name>MAIN.MagnetY.NcToPlc</Name>
 							<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleY_Bw_End</Name>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>MAIN.SampleZ_Fw_End</Name>
-							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.SampleZ_Bw_End</Name>
@@ -3136,7 +3144,6 @@ External Setpoint Generation:
 						<Name>PlcTask Outputs</Name>
 						<Var>
 							<Name>MAIN.Penning_Enable</Name>
-							<Comment><![CDATA[OUTPUTS]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -3164,20 +3171,37 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>MAIN.FlashInterlock</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
 							<Name>MAIN.Flow_Valve_Set</Name>
 							<Comment><![CDATA[ Flow valve setpoint]]></Comment>
 							<Type>INT</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.FlashInterlock</Name>
-							<Type>BOOL</Type>
+							<Name>MAIN.HVPS_ON</Name>
+							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>MAIN.Lamp1_Enable</Name>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>MAIN.HVPS_ON</Name>
+							<Name>MAIN.Coil_Enable</Name>
+							<Comment><![CDATA[**************************************************************OUTPUTS]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Output</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Reset</Name>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>MAIN.Coil_Curr_Out</Name>
 							<Type>INT</Type>
 						</Var>
 						<Var>
@@ -7185,7 +7209,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 					<Box Id="35" BoxType="9093" BoxFlags="#x00000020">
 						<Name>Profibus</Name>
 						<ImageId>1007</ImageId>
-						<EtherCAT SlaveType="5" AdsServerAddress="c0a800010301fe03" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
+						<EtherCAT SlaveType="5" AdsServerAddress="c0a8000103010000" PdiType="#x0408" ExecIo="true" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="39" FoeType="1" VendorId="#x00000002" ProductCode="#x1a4b3052" RevisionNo="#x00190000" InfoDataAddr="true" InfoDataNetId="true" InfoDataDcTimes="true" OwnAddrExtern="true" RepeatSupport="true" SetFrameRepeatTime="true" TimeoutMailbox2="2000" GenerateOwnNetId="true" InitializeOwnNetId="true" CheckRevisionNoType="3" PortPhys="51" MaxSlotCount="125" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="EL6731 PROFIBUS DP Master" Desc="EL6731" PortABoxInfo="#x01000029">
 							<SyncMan>0010800126000100010000005000da058001001026010000</SyncMan>
 							<SyncMan>8011800122000100020000005000da058001801122010000</SyncMan>
 							<SyncMan>00130c002400010003000000000000000000001324010000</SyncMan>
@@ -8391,6 +8415,13 @@ Revision: 1.02
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 1 (EK1100)^Valves M2 + TOF">
 				<Link VarA="PlcTask Outputs^MAIN.TOFPreVac_Valve" VarB="Channel 2^TOFPreVacValve"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Coil Supply">
+				<Link VarA="PlcTask Inputs^MAIN.Coil_Curr_In" VarB="DOX Synchron info data^Info data 2"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Curr_Out" VarB="DOX Current^Output current"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Enable" VarB="DOX Control^Enable"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Output" VarB="DOX Control^Output"/>
+				<Link VarA="PlcTask Outputs^MAIN.Coil_Reset" VarB="DOX Control^Reset"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Flow Valve Control">
 				<Link VarA="PlcTask Outputs^MAIN.Flow_Valve_Set" VarB="AO Outputs Channel 1^Flow Valve Control"/>
