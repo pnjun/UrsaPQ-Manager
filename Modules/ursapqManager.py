@@ -306,7 +306,7 @@ class UrsapqManager:
                 else:
                     self.LVPS.Coil.off()
 
-                wiggle = self.status.coil_wiggle_ampl*math.sin(self.status.coil_wiggle_freq*math.pi*time.time()) #Wiggle component
+                wiggle = self.status.coil_wiggle_ampl/2*math.sin(self.status.coil_wiggle_freq*2*math.pi*time.time()) #Wiggle component
                 
                 self.LVPS.Coil.setCurrent = self.status.coil_current_set + wiggle
                 self.status.coil_current = self.LVPS.Coil.current

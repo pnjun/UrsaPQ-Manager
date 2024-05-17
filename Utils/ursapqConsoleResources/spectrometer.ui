@@ -159,7 +159,7 @@ QGroupBox::title {
        </rect>
       </property>
       <property name="text">
-       <string>Coil wiggler ampli [mA]</string>
+       <string>Coil wiggler ampli [A]</string>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="wiggle_a_in">
