@@ -434,7 +434,10 @@ class MainWindow(ConsoleWindow):
         elif self.ursapq.HV_Status == 'WARNING':
             self.window.detector_SL.setStyleSheet(BG_COLOR_WARNING)
         elif self.ursapq.HV_Status == 'OK':
-            self.window.detector_SL.setStyleSheet(BG_COLOR_OK)
+            if self.ursapq.coil_enable:
+                self.window.detector_SL.setStyleSheet(BG_COLOR_OK)
+            else:
+                self.window.detector_SL.setStyleSheet(BG_COLOR_WARNING)
         else:
             self.window.detector_SL.setStyleSheet(BG_COLOR_ERROR)
 
