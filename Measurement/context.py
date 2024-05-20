@@ -46,9 +46,13 @@ async def retarder(value):
 
 @action
 async def coil(value):
+    if not ursa.coil_enable:
+        raise ValueError("Coil is not enabled")
     ursa.coil_setCurrent = value
-    while abs(ursa.coil_current - value) > 0.1:
-        await asyncio.sleep(0.1)
+
+@action
+async def deltest(value):
+    await asyncio.sleep(1)
 
 @action
 async def waveplate(value):
@@ -117,7 +121,7 @@ def set_t0(t0):
 #**** DATA GATERING FOR PLOTS ****
 
 DOOCS_ETOF = "FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD"
-DOOCS_GMD  = ""
+DOOCS_GMD  = "FLASH.FEL/XGM.INTENSITY/FL2.HALL/INTENSITY.TD"
 SLICER_PARAMS = {'offset': 2246,  'period': 9969.23, 'window':  3000, 'shot_num': 6}
 ETOF_T0, ETOF_DT =  0.142, 0.0005
 
@@ -160,21 +164,30 @@ def get_eTof_slices():
     slicer = Slicer(**SLICER_PARAMS)
     abo = TrainAbo()
     abo.add(DOOCS_ETOF, label='eTof')
+    abo.add(DOOCS_GMD, label='gmd')
 
     tofs = ETOF_T0 + np.arange(SLICER_PARAMS['window']) * ETOF_DT
     retarder = ursa.tof_retarderHV
 
     for event in abo:
         eTof_trace = event.get('eTof').data
+        gmd = event.get('gmd').data
+
+        gmd_even = gmd[::2].sum()
+        gmd_odd = gmd[1::2].sum()
+
         shots = xr.DataArray([eTof_trace[slice] for slice in slicer], dims=['shots', 'eTof'])
 
         stacked = xr.Dataset({'even': shots[::2].mean('shots'), 
-                              'odd':  shots[1::2].mean('shots')}) 
+                              'odd':  shots[1::2].mean('shots'),
+                              'gmd_even': gmd_even, 'gmd_odd': gmd_odd}) 
 
         stacked = stacked.assign_coords(eTof=tofs)
         stacked = stacked.assign_coords(evs=('eTof', _tof_to_ev(tofs, retarder)))
+        stacked = stacked.swap_dims(eTof='evs') # make evs the main dimension
+        stacked = stacked.transpose(...,'evs') 
 
-        yield stacked
+        yield stacked.isel(evs=slice(None, None, -1))
 
 _integ_time = 30
 @gather

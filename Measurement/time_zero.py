@@ -15,15 +15,16 @@ import context
 # MID will be the new STOP. The scan will then be repeated
 # until START-STOP < TOLERANCE
 
-START = 4000
-STOP  = 4500
+START = 4395
+STOP  = 4400
 TOLERANCE = 0.050 # 50fs tolerance
-
+ROI = slice(40, 70)
+INTEG_TIME = 20
 
 scan = Scan.from_context(context, type='Time Zero')
 run = Run(daq=False, proposal_id=False,**scan.info)
 
-scan.setup(integration_time = 30)
+scan.setup(integration_time = INTEG_TIME)
 
 def distance(data, t1, t2):
     ''' calculates the "distance" between the spectras 
@@ -31,10 +32,15 @@ def distance(data, t1, t2):
         
         Used to evaluate how 'similar' the two spectras are
     '''
-    diff_t1 = data.sel(lam_dl=t1).even - data.sel(lam_dl=t1).odd
-    diff_t2 = data.sel(lam_dl=t2).even - data.sel(lam_dl=t2).odd
+    data = data.sel(evs=ROI)
+    even = data.even / data.gmd_even
+    odd = data.odd / data.gmd_odd
+    diff = even - odd
 
-    return np.linalg.norm(diff_t1 - diff_t2) # Sum of square
+    #Differential intensity (how much differential signal is there?)
+    diff_int  = np.abs(diff).sum(axis=1)
+    print(diff_int)
+    return diff_int.sel(lam_dl=t1) - diff_int.sel(lam_dl=t2)
 
 @scan.sequence
 def binary_search():
@@ -58,10 +64,14 @@ def binary_search():
 plot = LiveFigure()
 @plot.update
 def update_figure(fig, data):
+    ''' live plot definition '''
     fig.clear()
     fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
 
-    diff = (data.even - data.odd)
+    even = data.even / data.gmd_even
+    odd = data.odd / data.gmd_odd
+    diff = even - odd
+
     if diff.squeeze().ndim == 1:
         diff.plot()
     if diff.squeeze().ndim == 2:
@@ -73,10 +83,8 @@ scan.on_update(plot.update_fig)
 with run, plot:
     scan.run()
 
-print(scan.info)
 
 # ASK USER TO VERIFY ZERO ESTIMATION
-
 fig = plt.figure()
 update_figure(fig, scan.data)
 t0 = context.get_t0()

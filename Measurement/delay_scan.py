@@ -18,9 +18,10 @@ def updateplot(fig, data):
     fig.clear()
     fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
 
-    data = data.swap_dims(eTof='evs') # Plot on evs
+    even = data.even / data.gmd_even
+    odd = data.odd / data.gmd_odd
+    diff = even - odd
 
-    diff = (data.even - data.odd)
     if diff.squeeze().ndim == 1:
         diff.plot()
     if diff.squeeze().ndim == 2:
