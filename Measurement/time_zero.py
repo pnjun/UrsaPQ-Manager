@@ -33,9 +33,7 @@ def distance(data, t1, t2):
         Used to evaluate how 'similar' the two spectras are
     '''
     data = data.sel(evs=ROI)
-    even = data.even / data.gmd_even
-    odd = data.odd / data.gmd_odd
-    diff = even - odd
+    diff = data.even - data.odd
 
     #Differential intensity (how much differential signal is there?)
     t1_int = np.abs(diff.sel(lam_dl=t1)).sum()
@@ -67,11 +65,9 @@ plot = LiveFigure()
 def update_figure(fig, data):
     ''' live plot definition '''
     fig.clear()
-    fig.suptitle(f"Time Zero - {run.daq.run_number}: ")
+    fig.suptitle(f"Time Zero")
 
-    even = data.even / data.gmd_even
-    odd = data.odd / data.gmd_odd
-    diff = even - odd
+    diff = data.even - data.odd
 
     if diff.squeeze().ndim == 1:
         diff.plot()

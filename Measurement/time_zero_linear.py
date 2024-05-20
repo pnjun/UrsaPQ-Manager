@@ -16,11 +16,9 @@ plot = LiveFigure()
 def update_figure(fig, data):
     ''' live plot definition '''
     fig.clear()
-    fig.suptitle(f"Time Zero - {run.daq.run_number}")
+    fig.suptitle(f"Time Zero")
 
-    even = data.even / data.gmd_even
-    odd = data.odd / data.gmd_odd
-    diff = even - odd
+    diff = data.even - data.odd
 
     if diff.squeeze().ndim == 1:
         diff.plot()

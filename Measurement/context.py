@@ -49,7 +49,7 @@ async def retarder(value):
 async def coil(value):
     if not ursa.coil_enable:
         raise ValueError("Coil is not enabled")
-    ursa.coil_setCurrent = value
+    ursa.coil_current_set = value
 
 @action
 async def waveplate(value):
@@ -76,7 +76,6 @@ def disable_lam_feedback():
         #Restore values
         doocspie.set(DOOCS_LAM_FB_KP, kp)
         doocspie.set(DOOCS_LAM_FB_KI, ki)
-
 
 async def delay(value):
     value /= 1000 # convert to ps
@@ -128,84 +127,12 @@ def get_t0():
 def set_t0(t0):
     doocspie.set(DOOCS_URSA_T0, t0)
 
-#**** DATA GATERING FOR PLOTS ****
 
-DOOCS_ETOF = "FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD"
-DOOCS_GMD  = "FLASH.FEL/XGM.INTENSITY/FL2.HALL/INTENSITY.TD"
-SLICER_PARAMS = {'offset': 2246,  'period': 9969.23, 'window':  3000, 'shot_num': 6}
-ETOF_T0, ETOF_DT =  0.142, 0.0005
-
+#GMD RATE MONITOR
 UPDATE_PERIOD = 2 # seconds
 GMD_MIN_RATE = 10 # uJ/train Raise error if GMD rate is below this value
 GMD_FILTER = 300 # number of trains over which to filter the GMD rate (exp decay)
 
-class Slicer():
-    def __init__(self, offset:int, period:int, window:int, shot_num=None):
-        self.offset = offset
-        self.period = period
-        self.window = window
-        assert shot_num % 2 == 0, "shot_num must be even"
-        self.max_len = shot_num
-
-    def __getitem__(self, n:int) -> slice:
-        if self.max_len:
-            if n >= self.max_len: raise IndexError("Slice index out of range")
-        start = self.offset + self.period*n
-        end   = start + self.window
-        return slice(int(round(start)), int(round(end)))
-
-def _tof_to_ev(tof: np.array, retarder: float) -> np.array:
-    """ Converts between tof and Ev for main chamber TOF spectrometer """
-    l1, l2, l3 = 0.09, 1.690, 0.002  # meters
-    m_over_2e = 5.69 / 2
-    evOffset = 1.05  # eV
-
-    def ev2tof(e):
-        #Parameters for evConversion
-        new_e = e - evOffset
-        return np.sqrt(m_over_2e) * ( l1 / np.sqrt(new_e) +
-                                      l2 / np.sqrt(new_e + retarder) +
-                                      l3 / np.sqrt(new_e + 300) )
-
-    def generate_interpolator(ev_min, ev_max):
-        evRange = np.arange(ev_min+0.01, ev_max, 0.01)
-        tofVals = ev2tof( evRange )
-        return interpolate.interp1d(tofVals, evRange, kind='linear')
-
-    return generate_interpolator(evOffset - retarder, 5000)(tof)
-
-def get_eTof_slices():
-    slicer = Slicer(**SLICER_PARAMS)
-    abo = TrainAbo()
-    abo.add(DOOCS_ETOF, label='eTof')
-    abo.add(DOOCS_GMD, label='gmd')
-
-    tofs = ETOF_T0 + np.arange(SLICER_PARAMS['window']) * ETOF_DT
-    retarder = ursa.tof_retarderHV
-    evs_calib = _tof_to_ev(tofs, retarder)
-
-    for event in abo:
-        print(time.time())
-        eTof_trace = event.get('eTof').data
-        gmd = event.get('gmd').data
-
-        gmd_even = gmd[::2].sum()
-        gmd_odd = gmd[1::2].sum()
-
-        shots = xr.DataArray([eTof_trace[slice] for slice in slicer], dims=['shots', 'eTof'])
-
-        shots -= shots.isel(eTof=slice(None, 200)).mean('eTof') # subtract background
-
-        stacked = xr.Dataset({'even': shots[::2].mean('shots'), 
-                              'odd':  shots[1::2].mean('shots'),
-                              'gmd_even': gmd_even, 'gmd_odd': gmd_odd}) 
-
-        stacked = stacked.assign_coords(eTof=tofs)
-        stacked = stacked.assign_coords(evs=('eTof', evs_calib))
-        stacked = stacked.swap_dims(eTof='evs') # make evs the main dimension
-        stacked = stacked.transpose(...,'evs') 
-
-        yield stacked.isel(evs=slice(None, None, -1))
 
 _gmd_rate = None
 def gmd_rate_monitor(data_in):
@@ -223,6 +150,12 @@ def gmd_rate_monitor(data_in):
         yield data
 
 
+#**** DATA GATERING FOR PLOTS ****
+def read_from_ursa():
+    return xr.Dataset({'even':  xr.DataArray(ursa.data_evenAccumulator, dims=['evs']),
+                        'odd':  xr.DataArray(ursa.data_oddAccumulator, dims=['evs']),
+                        'gmd':  xr.DataArray(ursa.data_gmdAccumulator)})
+
 _integ_time = None
 _integ_gmd = None
 @gather
@@ -233,10 +166,19 @@ def gather_data():
     end_time = time.time() + ( _integ_time or 1e6 )
     max_gmd = _integ_gmd or 1e8
 
-    for data in _accumulate(gmd_rate_monitor(get_eTof_slices()), UPDATE_PERIOD):
-        gmd = data.gmd_even + data.gmd_odd
-
+    #reset accumulator
+    ursa.data_clearAccumulator = True
+    time.sleep(.5) #wait for data to clear
+    evs_axis = ursa.data_axis[1]
+    
+    while True:
+        data = read_from_ursa()
+        data = data.assign_coords(evs=evs_axis)
+        data = data.transpose(...,'evs') 
+        data = data.isel(evs=slice(None, None, -1)) #reverse evs axis
+        
+        time.sleep(2) #No need to read data too fast
         yield data
-        if time.time() > end_time or gmd > max_gmd:
+
+        if time.time() > end_time or data.gmd > max_gmd:
             break
-            
