@@ -15,6 +15,7 @@ from Beckhoff import BeckhoffSys
 import pyads
 from config import config
 import time
+from icecream import ic
 
 class UrsapqManager:
     '''
@@ -138,20 +139,40 @@ class UrsapqManager:
 
         self.setMessage("Server stopped")
 
-    #Wrapper functions to make updateStatus func more readable
-    #rescale can be provided to process data before writing
-    def _beckhoffRead(self, key, name, type, rescale=lambda x:x):
-        self.status.__setattr__(key, rescale( self.beckhoff.read(name,type)) )
+    #Wrapper functions read/write parameter from PLC
+    def _beckhoff_read_bulk(self, names_dict, rescaler_dict= None):
+        ''' Read the variables from beckhoff and update their 
+            vaules in the status dict. Beckhoff variable names should be 
+            the keys of <names_dict>, vaules should map to the corresponding 
+            variable names in the satus dict 
+            
+            rescaler_dict should be a list of callables mapping plc names to 
+            callables that modify the value before it is written'''
+        rescaler_dict = rescaler_dict or {}
 
-    def _beckhoffWrite(self, key, name, type):
-        try:
-            #If __setter variable is present, use its value to update HW
-            self.beckhoff.write(name, self.writeStatus.__getattr__(key), type)
-            #Delete __setter from namespace after
-            self.writeStatus.__delattr__(key)
-        except Exception:
-            pass
-        self.status.__setattr__(key, self.beckhoff.read(name,type))
+        response = self.beckhoff.read_multiple(names_dict.keys())
+        for name, value in response.items():
+            if name in rescaler_dict:
+                value = rescaler_dict[name](value)
+            self.status.__setattr__(names_dict[name], value)
+    
+    def _beckhoff_write_bulk(self, names_dict):
+        ''' Check if a write request is present in the write_status dict,
+            and update the coreesponding parameter on the plc.
+            Keys of names_dict should correspond to PLC names, values to 
+            status dict names'''
+
+        request = {}
+        for plc_name, status_name in names_dict.items():
+            try:
+                newval = self.writeStatus.__getattr__(status_name)
+                self.writeStatus.__delattr__(status_name)
+                request.update({plc_name: newval})
+            except:
+                pass
+
+        self.beckhoff.write_multiple(request)
+        self._beckhoff_read_bulk(names_dict) #update va
 
     #Wrapper function to make processing of write requests from clients cleaner
     def _getParamWrite(self, key):
@@ -166,7 +187,6 @@ class UrsapqManager:
 
     def writeDoocs(self):
         ''' Writes values to DOOCS '''
-
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.CHAMBER", self.status.chamberPressure)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.PREVAC",  self.status.preVacPressure)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/PRESSURE.GASLINE", self.status.gasLine_pressure)
@@ -193,8 +213,6 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.AMPLITUDE", self.status.coil_wiggle_ampl)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.FREQUENCY", self.status.coil_wiggle_freq)
 
-
-
         if not self.doocs_stop.is_set():
             threading.Timer(config.UrsapqServer_DoocsUpdatePeriod, self.writeDoocs).start()
 
@@ -203,31 +221,36 @@ class UrsapqManager:
         Main update function. Reads/Writes values from beckhoff to the status namespace and
         updates the oven temperature set points if needed.
         '''
-
-        #Update 'read only' values
-        #First argument is variable named exposed by ursapsUtils, second and third are PLC variable names
-        self._beckhoffRead('chamberPressure',     'MAIN.Chamber_Pressure',  pyads.PLCTYPE_REAL)
-        self._beckhoffRead('preVacPressure',      'MAIN.PreVac_Pressure',   pyads.PLCTYPE_REAL)
-        self._beckhoffRead('preVac_OK',           'MAIN.PreVac_OK',         pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('mainVac_OK',          'MAIN.MainVac_OK',        pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('pumps_areON',         'MAIN.TurboPump_ON',      pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('pumps_normalOp',      'MAIN.Turbo_NO',          pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('pump_speed',          'MAIN.TurboMain_Freq',    pyads.PLCTYPE_UINT)
-        self._beckhoffRead('preVacValve_isOpen',  'MAIN.PreVacValves_Open', pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('LVPS_isOn',           'MAIN.LVPS_ON',      pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('sample_capTemp',      'MAIN.Sample_CapTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
-        self._beckhoffRead('sample_tipTemp',      'MAIN.Sample_TipTemp',    pyads.PLCTYPE_INT, lambda x:x/10)
-        self._beckhoffRead('sample_bodyTemp',     'MAIN.Sample_BodyTemp',   pyads.PLCTYPE_INT, lambda x:x/10)
-        self._beckhoffRead('magnet_temp',         'MAIN.Magnet_Temp',       pyads.PLCTYPE_INT, lambda x:x/10)
-        self._beckhoffRead('sample_pos_x',   'MAIN.SampleX.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('sample_pos_y',   'MAIN.SampleY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('sample_pos_z',   'MAIN.SampleZ.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('magnet_pos_y',   'MAIN.MagnetY.NcToPlc.ActPos', pyads.PLCTYPE_LREAL)
-        self._beckhoffRead('gasLine_flow',     'MAIN.Sample_Flow',  pyads.PLCTYPE_REAL)
-        self._beckhoffRead('gasLine_pressure', 'MAIN.GasLine_Pressure',  pyads.PLCTYPE_REAL)
-        self._beckhoffRead('gasLine_enable', 'MAIN.GasLine_Enable',  pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('coil_enable',    'MAIN.Coil_Enable',  pyads.PLCTYPE_BOOL)
-        self._beckhoffRead('coil_current',   'MAIN.Coil_Curr_In', pyads.PLCTYPE_INT)
+        #Update 'read only' values from PLC
+        self._beckhoff_read_bulk({
+            'MAIN.Chamber_Pressure'       : 'chamberPressure',
+            'MAIN.PreVac_Pressure'        : 'preVacPressure',
+            'MAIN.PreVac_OK'              : 'preVac_OK',
+            'MAIN.MainVac_OK'             : 'mainVac_OK',
+            'MAIN.TurboPump_ON'           : 'pumps_areON',
+            'MAIN.Turbo_NO'               : 'pumps_normalOp',
+            'MAIN.TurboMain_Freq'         : 'pump_speed',
+            'MAIN.PreVacValves_Open'      : 'preVacValve_isOpen',
+            'MAIN.LVPS_ON'                : 'LVPS_isOn',
+            'MAIN.SampleX.NcToPlc.ActPos' : 'sample_pos_x',
+            'MAIN.SampleY.NcToPlc.ActPos' : 'sample_pos_y',
+            'MAIN.SampleZ.NcToPlc.ActPos' : 'sample_pos_z',
+            'MAIN.MagnetY.NcToPlc.ActPos' : 'magnet_pos_y',
+            'MAIN.Sample_Flow'            : 'gasLine_flow',
+            'MAIN.GasLine_Pressure'       : 'gasLine_pressure',
+            'MAIN.GasLine_Enable'         : 'gasLine_enable',
+            'MAIN.Coil_Enable'            : 'coil_enable',
+            'MAIN.Coil_Curr_In'           : 'coil_current',
+            'MAIN.Sample_CapTemp'         : 'sample_capTemp',
+            'MAIN.Sample_TipTemp'         : 'sample_tipTemp',
+            'MAIN.Sample_BodyTemp'        : 'sample_bodyTemp',
+            'MAIN.Magnet_Temp'            : 'magnet_temp',
+        }, rescaler_dict={
+            'MAIN.Sample_CapTemp' : lambda x: x / 10,
+            'MAIN.Sample_TipTemp' : lambda x: x / 10,
+            'MAIN.Sample_BodyTemp': lambda x: x / 10,
+            'MAIN.Magnet_Temp'    : lambda x: x / 10,            
+        })
 
         # Coil wiggle
         newWiggleAmpl = self._getParamWrite('coil_wiggle_ampl')
@@ -260,32 +283,33 @@ class UrsapqManager:
             self.writeStatus.gasLine_flow_set = 0
             self.PressurePID.reset()
 
-        # Check if a client requested a change and wirte it out to beckhoff if necessary
-        # self.status namespace values are updated to the new value if write is succesful
-        self._beckhoffWrite('gasLine_enable',     'MAIN.GasLine_Enable',      pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('light_enable',       'MAIN.Lamp1_Enable',       pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('preVacValve_lock',   'MAIN.PreVac_Valve_Lock',  pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('pumps_enable',       'MAIN.Pumps_Enable',       pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_x_setPoint',   'MAIN.SampleX_SetPoint', pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('sample_pos_y_setPoint',   'MAIN.SampleY_SetPoint', pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('sample_pos_z_setPoint',   'MAIN.SampleZ_SetPoint', pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('sample_pos_x_enable',     'MAIN.SampleX_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_y_enable',     'MAIN.SampleY_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_z_enable',     'MAIN.SampleZ_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_x_stop',       'MAIN.SampleX_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_y_stop',       'MAIN.SampleY_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('sample_pos_z_stop',       'MAIN.SampleZ_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('magnet_pos_y_setPoint',   'MAIN.MagnetY_SetPoint', pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('magnet_pos_y_enable',     'MAIN.MagnetY_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('magnet_pos_y_stop',       'MAIN.MagnetY_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('frame_pos_x_setPoint',    'MAIN.FrameX_SetPoint',  pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('frame_pos_y_setPoint',    'MAIN.FrameY_SetPoint',  pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('frame_pos_x_enable',      'MAIN.FrameX_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('frame_pos_y_enable',      'MAIN.FrameY_MotionEnable', pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('frame_pos_x_stop',        'MAIN.FrameX_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('frame_pos_y_stop',        'MAIN.FrameY_MotionStop',   pyads.PLCTYPE_BOOL)
-        self._beckhoffWrite('gasLine_flow_set',        'MAIN.Sample_Flow_Set',  pyads.PLCTYPE_REAL)
-        self._beckhoffWrite('coil_enable',             'MAIN.Coil_Enable',  pyads.PLCTYPE_BOOL)
+        # Forward writes to PLC
+        self._beckhoff_write_bulk({
+            'MAIN.GasLine_Enable'      : 'gasLine_enable',
+            'MAIN.Lamp1_Enable'        : 'light_enable',
+            'MAIN.PreVac_Valve_Lock'   : 'preVacValve_lock',
+            'MAIN.Pumps_Enable'        : 'pumps_enable',
+            'MAIN.SampleX_SetPoint'    : 'sample_pos_x_setPoint',
+            'MAIN.SampleY_SetPoint'    : 'sample_pos_y_setPoint',
+            'MAIN.SampleZ_SetPoint'    : 'sample_pos_z_setPoint',
+            'MAIN.SampleX_MotionEnable': 'sample_pos_x_enable',
+            'MAIN.SampleY_MotionEnable': 'sample_pos_y_enable',
+            'MAIN.SampleZ_MotionEnable': 'sample_pos_z_enable',
+            'MAIN.SampleX_MotionStop'  : 'sample_pos_x_stop',
+            'MAIN.SampleY_MotionStop'  : 'sample_pos_y_stop',
+            'MAIN.SampleZ_MotionStop'  : 'sample_pos_z_stop',
+            'MAIN.MagnetY_SetPoint'    : 'magnet_pos_y_setPoint',
+            'MAIN.MagnetY_MotionEnable': 'magnet_pos_y_enable',
+            'MAIN.MagnetY_MotionStop'  : 'magnet_pos_y_stop',
+            'MAIN.FrameX_SetPoint'     : 'frame_pos_x_setPoint',
+            'MAIN.FrameY_SetPoint'     : 'frame_pos_y_setPoint',
+            'MAIN.FrameX_MotionEnable' : 'frame_pos_x_enable',
+            'MAIN.FrameY_MotionEnable' : 'frame_pos_y_enable',
+            'MAIN.FrameX_MotionStop'   : 'frame_pos_x_stop',
+            'MAIN.FrameY_MotionStop'   : 'frame_pos_y_stop',
+            'MAIN.Sample_Flow_Set'     : 'gasLine_flow_set',
+            'MAIN.Coil_Enable'         : 'coil_enable',
+        })
 
         #If update complete sucessfully, update timestamp
         self.status.lastUpdate = datetime.now()
@@ -472,7 +496,7 @@ def main():
             expManager.start()
             while True:
                 expManager.updateStatus()
-                time.sleep(config.UrsapqServer_UpdatePeriod)
+                time.sleep(config.UrsapqServer_UpdateWait)
 
         except Exception as e:
             expManager.stop()

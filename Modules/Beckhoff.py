@@ -23,14 +23,20 @@ class BeckhoffSys:
         except Exception:
             pass
 
-    def read(self, name, type):
+    def read(self, name, type=None):
         return self.plc.read_by_name(name, type)
 
-    def write(self, name, val, type):
+    def write(self, name, val, type=None):
         return self.plc.write_by_name(name, val, type)
+
+    def read_multiple(self, names_list):
+        return self.plc.read_list_by_name(names_list)
+
+    def write_multiple(self, names_dict):
+        self.plc.write_list_by_name(names_dict)
 
 
 if __name__=='__main__':
     beckhoff = BeckhoffSys()
     print("reading ovenps status")
-    print(beckhoff.read('MAIN.OvenPS_Relay', pyads.PLCTYPE_BOOL))
+    print(beckhoff.read('MAIN.LVPS_ON', pyads.PLCTYPE_BOOL))
