@@ -8,16 +8,20 @@ import context
 scan = Scan.from_context(context, type='Time Zero')
 run = Run(daq=False, proposal_id=False,**scan.info)
 
-scan.setup(integration_time = 25)
-scan.sequence( lam_dl = np.arange(4100, 4502, 100), repeat=True )
+scan.setup(integ_time = 25)
+scan.sequence( lam_dl = np.arange(4100, 4502, 100))
 
 plot = LiveFigure()
 @plot.update
 def update_figure(fig, data):
+    ''' live plot definition '''
     fig.clear()
-    fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
+    fig.suptitle(f"Time Zero - {run.daq.run_number}")
 
-    diff = (data.even - data.odd)
+    even = data.even / data.gmd_even
+    odd = data.odd / data.gmd_odd
+    diff = even - odd
+
     if diff.squeeze().ndim == 1:
         diff.plot()
     if diff.squeeze().ndim == 2:

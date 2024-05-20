@@ -20,6 +20,8 @@ from ursapq_api import UrsaPQ
 DOOCS_ODL_SPEED_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.SPEED_IN_PERC.WR"
 DOOCS_ODL_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.WR"
 DOOCS_ODL_GET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD"
+DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
+DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
 
 DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_PERC.WR"
 DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
@@ -30,7 +32,6 @@ DOOCS_LAM_FB_KI = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE6"
 
 
 DOOCS_URSA_T0 = "FLASH.EXP/STORE.FL24/URSAPQ/TIMEZERO"
-
 ODL_TOLERANCE = 0.001 # 2fs tolerance
 ODL_SPEED = 30
 ODL_LAM_DIFF = 3488.757 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
@@ -51,12 +52,15 @@ async def coil(value):
     ursa.coil_setCurrent = value
 
 @action
-async def deltest(value):
-    await asyncio.sleep(1)
+async def waveplate(value):
+    doocspie.set(DOOCS_WAVEPLATE, value)
+    doocspie.set(DOOCS_WAVEPLATE_EN, 1)
+    while doocspie.get(DOOCS_WAVEPLATE).data != value:
+        await asyncio.sleep(0.1)
 
 @action
-async def waveplate(value):
-    await asyncio.sleep(1)
+def null(value):
+    pass
 
 @contextmanager
 def disable_lam_feedback():
@@ -75,6 +79,7 @@ def disable_lam_feedback():
 
 
 async def delay(value):
+    value /= 1000 # convert to ps
     t0 = get_t0()
     await lam_dl(value + t0)
 
@@ -105,11 +110,16 @@ async def lam_dl(target_lam):
             await asyncio.sleep(0.01)
 
 @action
-def integration_time(value):
+def integ_time(value):
     # Used in gather_data
     global _integ_time
     _integ_time = value
 
+@action
+def integ_gmd(value):
+    # Used in gather_data
+    global _integ_gmd
+    _integ_gmd = value
 
 def get_t0():
     t0 = doocspie.get(DOOCS_URSA_T0).data
@@ -124,6 +134,10 @@ DOOCS_ETOF = "FLASH.FEL/ADC.ADQ.FL2EXP1/FL2EXP1.CH00/CH00.DAQ.TD"
 DOOCS_GMD  = "FLASH.FEL/XGM.INTENSITY/FL2.HALL/INTENSITY.TD"
 SLICER_PARAMS = {'offset': 2246,  'period': 9969.23, 'window':  3000, 'shot_num': 6}
 ETOF_T0, ETOF_DT =  0.142, 0.0005
+
+UPDATE_PERIOD = 2 # seconds
+GMD_MIN_RATE = 10 # uJ/train Raise error if GMD rate is below this value
+GMD_FILTER = 300 # number of trains over which to filter the GMD rate (exp decay)
 
 class Slicer():
     def __init__(self, offset:int, period:int, window:int, shot_num=None):
@@ -168,8 +182,10 @@ def get_eTof_slices():
 
     tofs = ETOF_T0 + np.arange(SLICER_PARAMS['window']) * ETOF_DT
     retarder = ursa.tof_retarderHV
+    evs_calib = _tof_to_ev(tofs, retarder)
 
     for event in abo:
+        print(time.time())
         eTof_trace = event.get('eTof').data
         gmd = event.get('gmd').data
 
@@ -178,18 +194,49 @@ def get_eTof_slices():
 
         shots = xr.DataArray([eTof_trace[slice] for slice in slicer], dims=['shots', 'eTof'])
 
+        shots -= shots.isel(eTof=slice(None, 200)).mean('eTof') # subtract background
+
         stacked = xr.Dataset({'even': shots[::2].mean('shots'), 
                               'odd':  shots[1::2].mean('shots'),
                               'gmd_even': gmd_even, 'gmd_odd': gmd_odd}) 
 
         stacked = stacked.assign_coords(eTof=tofs)
-        stacked = stacked.assign_coords(evs=('eTof', _tof_to_ev(tofs, retarder)))
+        stacked = stacked.assign_coords(evs=('eTof', evs_calib))
         stacked = stacked.swap_dims(eTof='evs') # make evs the main dimension
         stacked = stacked.transpose(...,'evs') 
 
         yield stacked.isel(evs=slice(None, None, -1))
 
-_integ_time = 30
+_gmd_rate = None
+def gmd_rate_monitor(data_in):
+    for data in data_in:
+        ''' pass through data, but raise error if GMD rate is too low '''
+        global _gmd_rate
+        gmd = data.gmd_even + data.gmd_odd
+        
+        if _gmd_rate is None:
+            _gmd_rate = gmd * 1.5 # first value, set high to avoid error on first train
+
+        _gmd_rate = _gmd_rate * (1 - 1/GMD_FILTER) + gmd / GMD_FILTER
+        if gmd < GMD_MIN_RATE:
+            raise ValueError(f"GMD rate is too low: {gmd:.2f} uJ/train")
+        yield data
+
+
+_integ_time = None
+_integ_gmd = None
 @gather
 def gather_data():
-    yield from _until_timeout(_accumulate(get_eTof_slices(), 2), _integ_time)
+    if _integ_time is None and _integ_gmd is None:
+        raise ValueError("At least one of integ_time or integ_gmd must be set")
+
+    end_time = time.time() + ( _integ_time or 1e6 )
+    max_gmd = _integ_gmd or 1e8
+
+    for data in _accumulate(gmd_rate_monitor(get_eTof_slices()), UPDATE_PERIOD):
+        gmd = data.gmd_even + data.gmd_odd
+
+        yield data
+        if time.time() > end_time or gmd > max_gmd:
+            break
+            

@@ -4,19 +4,18 @@ import numpy as np
 import context 
 
 scan = Scan.from_context(context, type='Delay')
-run  = Run(daq=False, **scan.info)
+run  = Run(daq=False, proposal_id=False, **scan.info)
 
-scan.setup(integration_time =10,
+scan.setup(integ_time =10,
            retarder = -20,
-           coil = 0.2,
-           waveplate = 0)
-scan.sequence( deltest = np.arange(-500, -300, 50) )
+           coil = 0.2)
+scan.sequence( null = np.arange(-500, 500, 50) )
 
 plot = LiveFigure()
 @plot.update
 def updateplot(fig, data):
     fig.clear()
-    fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
+    fig.suptitle(f"Delay Scan - {run.daq.run_number}")
 
     even = data.even / data.gmd_even
     odd = data.odd / data.gmd_odd

@@ -15,7 +15,7 @@ import context
 # MID will be the new STOP. The scan will then be repeated
 # until START-STOP < TOLERANCE
 
-START = 4395
+START = 4398
 STOP  = 4400
 TOLERANCE = 0.050 # 50fs tolerance
 ROI = slice(40, 70)
@@ -24,7 +24,7 @@ INTEG_TIME = 20
 scan = Scan.from_context(context, type='Time Zero')
 run = Run(daq=False, proposal_id=False,**scan.info)
 
-scan.setup(integration_time = INTEG_TIME)
+scan.setup(integ_time = INTEG_TIME)
 
 def distance(data, t1, t2):
     ''' calculates the "distance" between the spectras 
@@ -38,9 +38,10 @@ def distance(data, t1, t2):
     diff = even - odd
 
     #Differential intensity (how much differential signal is there?)
-    diff_int  = np.abs(diff).sum(axis=1)
-    print(diff_int)
-    return diff_int.sel(lam_dl=t1) - diff_int.sel(lam_dl=t2)
+    t1_int = np.abs(diff.sel(lam_dl=t1)).sum()
+    t2_int = np.abs(diff.sel(lam_dl=t2)).sum()
+
+    return np.abs(t1_int - t2_int)
 
 @scan.sequence
 def binary_search():
@@ -58,7 +59,7 @@ def binary_search():
         else:
             STOP = mid
     
-    # Last mid point is the time zero
+    # Last mid point is time zero estimate
     context.set_t0(mid)     
 
 plot = LiveFigure()
@@ -66,7 +67,7 @@ plot = LiveFigure()
 def update_figure(fig, data):
     ''' live plot definition '''
     fig.clear()
-    fig.suptitle(f"Run {run.daq.run_number}: Time Zero")
+    fig.suptitle(f"Time Zero - {run.daq.run_number}: ")
 
     even = data.even / data.gmd_even
     odd = data.odd / data.gmd_odd
