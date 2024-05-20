@@ -25,12 +25,15 @@ DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_
 DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
 DOOCS_LAM_GET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION.RD"
 DOOCS_LAM_FB_EN = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.INTS/INTEGER29"
+DOOCS_LAM_FB_KP = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE5"
+DOOCS_LAM_FB_KI = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE6"
+
 
 DOOCS_URSA_T0 = "FLASH.EXP/STORE.FL24/URSAPQ/TIMEZERO"
 
-ODL_TOLERANCE = 0.002 # 2fs tolerance
+ODL_TOLERANCE = 0.001 # 2fs tolerance
 ODL_SPEED = 30
-ODL_LAM_DIFF = 1181.113037109375 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
+ODL_LAM_DIFF = 3488.757 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
 
 ursa = UrsaPQ()
 
@@ -51,38 +54,36 @@ async def coil(value):
 async def waveplate(value):
     await asyncio.sleep(1)
 
-@action
-async def deltest(value):
-    await asyncio.sleep(1)
-
-@action
-async def odl_position(value):
-    await asyncio.sleep(1)
-
-@action
-def integration_time(value):
-    # Used in gather_data
-    global _integ_time
-    _integ_time = value
-
 @contextmanager
 def disable_lam_feedback():
-    doocspie.set(DOOCS_LAM_FB_EN, 0)
+    #Read current FB values
+    kp = doocspie.get(DOOCS_LAM_FB_KP).data
+    ki = doocspie.get(DOOCS_LAM_FB_KI).data
+    #Set to 0 to stop FB loop while we move the LAM
+    doocspie.set(DOOCS_LAM_FB_KP, 0)
+    doocspie.set(DOOCS_LAM_FB_KI, 0)
     try:
         yield
     finally:
-        doocspie.set(DOOCS_LAM_FB_EN, 1)
+        #Restore values
+        doocspie.set(DOOCS_LAM_FB_KP, kp)
+        doocspie.set(DOOCS_LAM_FB_KI, ki)
+
+
+async def delay(value):
+    t0 = get_t0()
+    await lam_dl(value + t0)
 
 @action
-async def delay(target_odl):
+async def lam_dl(target_lam):
     ''' Set ODL and LAM to target values, wait until they reach target '''
-    raise NotImplementedError("BEAM IS AT FL23, dont even try")
+    #raise NotImplementedError("Dont use")
 
     with disable_lam_feedback():
         doocspie.set(DOOCS_ODL_SPEED_SET, ODL_SPEED)
         doocspie.set(DOOCS_LAM_SPEED_SET, ODL_SPEED)
 
-        target_lam = target_odl + ODL_LAM_DIFF
+        target_odl = target_lam - ODL_LAM_DIFF
         doocspie.set(DOOCS_ODL_SET, target_odl)
         doocspie.set(DOOCS_LAM_SET, target_lam)
 
@@ -94,10 +95,17 @@ async def delay(target_odl):
             if abs(odl - target_odl) < ODL_TOLERANCE and abs(lam - target_lam) < ODL_TOLERANCE:
                 break
             else:
-                if time.time() - start > 60:
+                if time.time() - start > 90:
                     raise TimeoutError("Timeout while waiting for ODL and LAM to reach target")
             
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.01)
+
+@action
+def integration_time(value):
+    # Used in gather_data
+    global _integ_time
+    _integ_time = value
+
 
 def get_t0():
     t0 = doocspie.get(DOOCS_URSA_T0).data
