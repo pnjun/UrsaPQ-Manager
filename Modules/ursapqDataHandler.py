@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from multiprocessing.managers import BaseManager, Namespace, NamespaceProxy
 from datetime import datetime
 from collections import namedtuple
@@ -6,6 +8,7 @@ import traceback
 import math
 import time
 import numpy as np
+import pydoocs as pds
 
 from config import config
 import time
@@ -38,15 +41,10 @@ class ursapqDataHandler:
         self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
-        self.skipSlicesEnd  = config.Data_SkipSlicesEnd  #How many slices to skip for singleShot average at the end   
+        self.skipSlicesEnd  = config.Data_SkipSlices     #How many slices to skip for singleShot average at the end   
         
         if self.skipSlices % 2 != 0 or self.skipSlicesEnd % 2 != 0:
             raise ValueError("skipSlices must be even")
-        
-        try:
-            self.pydoocs = __import__('pydoocs')
-        except Exception:
-            raise Exception("pydoocs not available")
 
         self.stopEvent = threading.Event() #Event is set to stop all background threads
 
@@ -56,7 +54,7 @@ class ursapqDataHandler:
         self.macropulse = 0
         self.timestamp = time.time()
         self.tofTrace = None
-        self.laserTrace = None
+        self.laserTrace = np.empty((2,2)) #empty data for when laser trace cannot be read from DOOCS
         self.triggTrace = None
         
     def start(self):
@@ -65,14 +63,18 @@ class ursapqDataHandler:
         piece of the analysis
         '''
         self.stopEvent.clear()
+        pds.connect([config.Data_DOOCS_TOF], cycles=-1)
         threading.Thread(target = self.doocsUpdateLoop).start()
         threading.Thread(target = self.updateLoop).start()
+
+        self.tof_trace_daq_len = pds.read(config.Data_DOOCS_TOF_LEN)['data'] #Get set value for TRACE->DAQ lenght
 
     def stop(self):
         '''
         Tells background threads to stop
         '''
         self.stopEvent.set()
+        pds.disconnect()
 
     def dataFilter(self, newData, oldData):
         '''
@@ -87,26 +89,27 @@ class ursapqDataHandler:
         
         # Try pulling new TOF traces from DOOCS
         try:
-            newTof = self.pydoocs.read(config.Data_DOOCS_TOF)           
-            
-            if newTof['macropulse'] == self.macropulse: #if we got the same data twice, return false (we dont want to process the same data twice)
+            zmqdata = pds.getdata()
+            if zmqdata is None:
                 return False
-                
-            self.macropulse = newTof['macropulse'] 
-            
-            if config.Data_GmdNorm:
-                newGmd = self.pydoocs.read(config.Data_DOOCS_GMD, 
-                                           macropulse = self.macropulse)['data'].T[1]            
-            
+
+            newTof = zmqdata[0]    
+            newGmd = pds.read(config.Data_DOOCS_GMD, macropulse = newTof['macropulse'])   
+
+            self.macropulse = newTof['macropulse']
             self.updateFreq = (  0.03 * 1/(newTof['timestamp'] - self.timestamp) 
                                + 0.97 * self.updateFreq)
             self.timestamp = newTof['timestamp']
+            
         except Exception as error:
             traceback.print_exc()
             return False
         
+        #CHOP trace so that it maches DAQ:
+        newTof['data'] = newTof['data'][:self.tof_trace_daq_len,:]
+
         if config.Data_Invert:
-            newTof['data'].T[1] *= -1      
+            newTof['data'][:,1] *= -1      
                 
         #Two types of online data: Low passed ('moving average') and accumulated
        
@@ -114,28 +117,28 @@ class ursapqDataHandler:
         #This is run in a separate try...except so that tofTrace gets reinitialized 
         #if the lenght of newTof changes due to DOOCS reconfiguration
         try:
-            self.tofTrace[1]   = self.dataFilter( newTof['data'].T[1]   ,  self.tofTrace[1] )
+            self.tofTrace[1]   = self.dataFilter( newTof['data'][:,1]   ,  self.tofTrace[1] )
         except Exception as error:
             traceback.print_exc()
             self.tofTrace  = newTof['data'].T.copy()
             
         #Accumulate data:
         try:
-            self.tofAccumulator[1] += newTof['data'].T[1] 
+            self.tof_accumulator[1] += newTof['data'][:,1] 
             self.accumulatorCount += 1
-            if config.Data_GmdNorm:
-                self.gmdAccumulator += newGmd.mean()
+            self.gmd_even_accum += newGmd['data'][::2,1].sum()
+            self.gmd_odd_accum  += newGmd['data'][1::2,1].sum()
         except Exception as error:
             traceback.print_exc()
-            self.tofAccumulator  = newTof['data'].T.copy() #Rest tof accumulator
+            self.tof_accumulator  = newTof['data'].T.copy() #Rest tof accumulator
             self.accumulatorCount = 1
-            if config.Data_GmdNorm:
-                self.gmdAccumulator = newGmd.mean() 
+            self.gmd_even_accum = newGmd['data'][::2,1].sum()
+            self.gmd_odd_accum  = newGmd['data'][1::2,1].sum()
         return True
                            
     def updateLaserTrace(self):
         try:
-            self.laserTrace = self.pydoocs.read(config.Data_DOOCS_LASER, 
+            self.laserTrace = pds.read(config.Data_DOOCS_LASER, 
                                                 macropulse = self.macropulse)['data'].T                 
         except Exception as error:
             traceback.print_exc()
@@ -143,14 +146,13 @@ class ursapqDataHandler:
     def doocsUpdateLoop(self):
         '''
         Keeps reading data from DOOCS and filters it as it comes in.
-        The commented part should make it so that it takes in all data sequentially,
-        but the ifs slow it down too much.
         '''
         #Run until stop event
         while not self.stopEvent.is_set():
             if not self.updateTofTraces():
                 continue
-            self.updateLaserTrace()
+            if config.Data_ReadLaser:
+                self.updateLaserTrace()
             # Notify filter worker that new data is available
             self.dataUpdated.set()
             
@@ -183,21 +185,25 @@ class ursapqDataHandler:
         #Sikp traces
         numTraces = stackedTraces.shape[0]
         start = config.Data_SkipSlices
-        end   = numTraces - config.Data_SkipSlicesEnd    
+        end   = config.Data_ShotNum    
                                  
-        bg = np.percentile(stackedTraces, 15, axis=1)
+        bg = np.percentile(stackedTraces, 5, axis=1)
         stackedTraces -= bg[:,None]                                
                                  
         #Sum up all slices skipping the first self.skipSlices
-        evenSlice = stackedTraces[start:end:2].mean(axis=0)
-        oddSlice  = stackedTraces[start+1:end+1:2].mean(axis=0)
-            
-        return evenSlice, oddSlice, end-start                        
+        evenSlice = stackedTraces[start:end:2]
+        oddSlice  = stackedTraces[start+1:end:2]
+        assert evenSlice.shape == oddSlice.shape, f"Check slicing config, unequal number of even and odd slices"
+
+        return evenSlice.mean(axis=0), oddSlice.mean(axis=0), end-start                        
     
     def getTofsAndEvs(self, tofAxis):
         #Generate tof times and eV data
         tofs = tofAxis[:config.Data_SliceSize] - tofAxis[0]
-                   
+
+        #avoid 0tof, leads to +inf eV
+        tofs += config.Data_eTof_start
+
         #Generate EV from TOF
         evs = self.Tof2eV( tofs, self.status.tof_retarderHV )    
         return tofs, evs 
@@ -215,13 +221,13 @@ class ursapqDataHandler:
             try:       
                 evenLowPass, oddLowPass, traceCount = self.sliceAverage(self.tofTrace[1])
                 
-                evenAcc, oddAcc, traceCount = self.sliceAverage(self.tofAccumulator[1])
+                evenAcc, oddAcc, traceCount = self.sliceAverage(self.tof_accumulator[1])
 
                 #slightly thread usafe (as accumulatorCount / gmd could be updated after sliceAverage returns)
                 #but worst case it's out by 1-2 shots out of hundreds
                 if config.Data_GmdNorm:
-                    evenAcc /= self.gmdAccumulator
-                    oddAcc  /= self.gmdAccumulator
+                    evenAcc /= self.gmd_even_accum
+                    oddAcc  /= self.gmd_odd_accum
                 else:
                     evenAcc /= self.accumulatorCount
                     oddAcc  /= self.accumulatorCount                      
@@ -237,8 +243,7 @@ class ursapqDataHandler:
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
                 self.status.data_AccumulatorCount = self.accumulatorCount
-                if config.Data_GmdNorm:
-                    self.status.data_gmdAccumulator  = self.gmdAccumulator
+                self.status.data_gmdAccumulator  = self.gmd_even_accum + self.gmd_odd_accum
                 self.status.data_updateFreq = self.updateFreq
                 self.status.data_laserTrace = self.laserTrace
                 self.status.data_tofTrace   = self.tofTrace

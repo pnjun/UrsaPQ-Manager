@@ -209,7 +209,7 @@ class UrsapqManager:
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/SAMPLE.POSZ", self.status.sample_pos_z)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/MAGNET.POSY", self.status.magnet_pos_y)
         
-        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.CURRENT", self.status.coil_current)
+        self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.CURRENT", self.status.coil_current_set)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.AMPLITUDE", self.status.coil_wiggle_ampl)
         self.pydoocs.write("FLASH.UTIL/STORE/URSAPQ/COIL.FREQUENCY", self.status.coil_wiggle_freq)
 
