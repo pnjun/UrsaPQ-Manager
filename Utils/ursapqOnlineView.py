@@ -30,8 +30,7 @@ class TracePlots:
         self.tofTracepl   = self.figure.add_subplot(gs[:2,0])
         self.tofTracepl.set_title("ADC TOF TRACE")
         self.laserTracepl = self.figure.add_subplot(gs[2,0])
-        self.laserTracepl.set_title("LASER TRACE")
-        self.laserTracepl.set_xlim([ ursapq.data_tofTrace[0][0], ursapq.data_tofTrace[0][-1]]) #set laserTrace timeaxis the same as tofTrace
+        self.laserTracepl.set_title("LAM TRACE")
 
         self.tofTrace,   = self.tofTracepl.plot  (ursapq.data_tofTrace[0], ursapq.data_tofTrace[1])
         self.laserTrace, = self.laserTracepl.plot(ursapq.data_laserTrace[0], ursapq.data_laserTrace[1])
@@ -39,7 +38,7 @@ class TracePlots:
         
         
         axslid = self.figure.add_axes([0.42, 0.93, 0.48, 0.04])
-        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.5, 90, valinit=ursapq.data_filterTau)
+        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.5, 60, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
         
         axbutton = self.figure.add_axes([0.04, 0.87, 0.15, 0.06])
