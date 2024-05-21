@@ -22,6 +22,9 @@ DOOCS_ODL_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.W
 DOOCS_ODL_GET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD"
 DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
 DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
+DOOCS_UV_STEERING_V = "FLASH.LASER/MOD24.PICOMOTOR/Steering_PMC/MOTOR.2.MOVE.REL" 
+DOOCS_UV_STEERING_H = "FLASH.LASER/MOD24.PICOMOTOR/Steering_PMC/MOTOR.1.MOVE.REL" 
+
 
 DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_PERC.WR"
 DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
@@ -34,7 +37,7 @@ DOOCS_LAM_FB_KI = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE6"
 DOOCS_URSA_T0 = "FLASH.EXP/STORE.FL24/URSAPQ/TIMEZERO"
 ODL_TOLERANCE = 0.001 # 2fs tolerance
 ODL_SPEED = 30
-ODL_LAM_DIFF = 3488.757 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
+ODL_LAM_DIFF = 3489.421 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
 
 ursa = UrsaPQ()
 
@@ -46,10 +49,22 @@ async def retarder(value):
         await asyncio.sleep(0.1)
 
 @action
-async def coil(value):
+def coil(value):
     if not ursa.coil_enable:
         raise ValueError("Coil is not enabled")
     ursa.coil_current_set = value
+
+@action
+def wiggle_freq(value):
+    if not ursa.coil_enable:
+        raise ValueError("Coil is not enabled")
+    ursa.coil_wiggle_freq = value
+
+@action
+def wiggle_ampl(value):
+    if not ursa.coil_enable:
+        raise ValueError("Coil is not enabled")
+    ursa.coil_wiggle_ampl = value
 
 @action
 async def waveplate(value):
@@ -57,6 +72,22 @@ async def waveplate(value):
     doocspie.set(DOOCS_WAVEPLATE_EN, 1)
     while doocspie.get(DOOCS_WAVEPLATE).data != value:
         await asyncio.sleep(0.1)
+
+_uv_steering_h = 0
+@action
+def uv_steering_h(value):
+    global _uv_steering_h
+    step = value - _uv_steering_h
+    doocspie.set(DOOCS_UV_STEERING_H, step)
+    _uv_steering_h += step
+
+_uv_steering_v = 0
+@action
+def uv_steering_v(value):
+    global _uv_steering_v
+    step = value - _uv_steering_v
+    doocspie.set(DOOCS_UV_STEERING_V, step)
+    _uv_steering_v += step
 
 @action
 def null(value):
@@ -127,6 +158,11 @@ def get_t0():
 def set_t0(t0):
     doocspie.set(DOOCS_URSA_T0, t0)
 
+def calibrate_evs(data):
+    evs_axis = ursa.data_axis[1]
+    data = data.rename(eTof='evs').assign_coords(evs=evs_axis)
+    data = data.transpose(...,'evs') 
+    return data.isel(evs=slice(None, None, -1)) #reverse evs axis
 
 #GMD RATE MONITOR
 UPDATE_PERIOD = 2 # seconds
@@ -152,8 +188,8 @@ def gmd_rate_monitor(data_in):
 
 #**** DATA GATERING FOR PLOTS ****
 def read_from_ursa():
-    return xr.Dataset({'even':  xr.DataArray(ursa.data_evenAccumulator, dims=['evs']),
-                        'odd':  xr.DataArray(ursa.data_oddAccumulator, dims=['evs']),
+    return xr.Dataset({'even':  xr.DataArray(ursa.data_evenAccumulator, dims=['eTof']),
+                        'odd':  xr.DataArray(ursa.data_oddAccumulator, dims=['eTof']),
                         'gmd':  xr.DataArray(ursa.data_gmdAccumulator)})
 
 _integ_time = None
@@ -169,14 +205,10 @@ def gather_data():
     #reset accumulator
     ursa.data_clearAccumulator = True
     time.sleep(.5) #wait for data to clear
-    evs_axis = ursa.data_axis[1]
     
     while True:
         data = read_from_ursa()
-        data = data.assign_coords(evs=evs_axis)
-        data = data.transpose(...,'evs') 
-        data = data.isel(evs=slice(None, None, -1)) #reverse evs axis
-        
+
         time.sleep(2) #No need to read data too fast
         yield data
 

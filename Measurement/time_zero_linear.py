@@ -17,7 +17,8 @@ def update_figure(fig, data):
     ''' live plot definition '''
     fig.clear()
     fig.suptitle(f"Time Zero")
-
+    
+    data = context.calibrate_evs(data)
     diff = data.even - data.odd
 
     if diff.squeeze().ndim == 1:

@@ -15,14 +15,13 @@ import context
 # MID will be the new STOP. The scan will then be repeated
 # until START-STOP < TOLERANCE
 
-START = 4398
-STOP  = 4400
+START = 3944
+STOP  = 3945
 TOLERANCE = 0.050 # 50fs tolerance
-ROI = slice(40, 70)
-INTEG_TIME = 20
+ROI = slice(22, 38)
+INTEG_TIME = 60
 
 scan = Scan.from_context(context, type='Time Zero')
-run = Run(daq=False, proposal_id=False,**scan.info)
 
 scan.setup(integ_time = INTEG_TIME)
 
@@ -32,6 +31,7 @@ def distance(data, t1, t2):
         
         Used to evaluate how 'similar' the two spectras are
     '''
+    data = context.calibrate_evs(data)
     data = data.sel(evs=ROI)
     diff = data.even - data.odd
 
@@ -66,8 +66,10 @@ def update_figure(fig, data):
     ''' live plot definition '''
     fig.clear()
     fig.suptitle(f"Time Zero")
-
+    
+    data = context.calibrate_evs(data)
     diff = data.even - data.odd
+    diff = diff.sel(evs=ROI)
 
     if diff.squeeze().ndim == 1:
         diff.plot()
@@ -77,7 +79,7 @@ scan.on_update(plot.update_fig)
 
 
 # RUN THE SCAN
-with run, plot:
+with Run(**scan.info), plot:
     scan.run()
 
 
