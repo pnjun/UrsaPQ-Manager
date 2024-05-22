@@ -54,6 +54,7 @@ class ursapqDataHandler:
         self.macropulse = 0
         self.timestamp = time.time()
         self.tofTrace = None
+        self.gmd = None #Rate of gmd in uJ / s, filtered
         self.laserTrace = np.empty((2,2)) #empty data for when laser trace cannot be read from DOOCS
         self.triggTrace = None
         
@@ -118,10 +119,12 @@ class ursapqDataHandler:
         #if the lenght of newTof changes due to DOOCS reconfiguration
         try:
             self.tofTrace[1]   = self.dataFilter( newTof['data'][:,1]   ,  self.tofTrace[1] )
+            self.gmd        = self.dataFilter(newGmd['data'][:,1], self.gmd) 
         except Exception as error:
             traceback.print_exc()
             self.tofTrace  = newTof['data'].T.copy()
-            
+            self.gmd = newGmd['data'][:,1].copy()
+
         #Accumulate data:
         try:
             self.tof_accumulator[1] += newTof['data'][:,1] 
@@ -220,7 +223,6 @@ class ursapqDataHandler:
     
             try:       
                 evenLowPass, oddLowPass, traceCount = self.sliceAverage(self.tofTrace[1])
-                
                 evenAcc, oddAcc, traceCount = self.sliceAverage(self.tof_accumulator[1])
 
                 #slightly thread usafe (as accumulatorCount / gmd could be updated after sliceAverage returns)
@@ -228,6 +230,9 @@ class ursapqDataHandler:
                 if config.Data_GmdNorm:
                     evenAcc /= self.gmd_even_accum
                     oddAcc  /= self.gmd_odd_accum
+
+                    evenLowPass /= self.gmd[::2].sum()
+                    oddLowPass /= self.gmd[1::2].sum()
                 else:
                     evenAcc /= self.accumulatorCount
                     oddAcc  /= self.accumulatorCount                      
@@ -239,7 +244,8 @@ class ursapqDataHandler:
                 self.status.data_evenShots =  evenLowPass
                 self.status.data_oddShots  =  oddLowPass
                 self.status.data_traceNum = traceCount
-              
+                self.status.gmd_rate = self.gmd[:].sum() * 10 # 10 shots per second. gmd_rate is total GMD per second
+
                 self.status.data_evenAccumulator =  evenAcc 
                 self.status.data_oddAccumulator  =  oddAcc
                 self.status.data_AccumulatorCount = self.accumulatorCount
