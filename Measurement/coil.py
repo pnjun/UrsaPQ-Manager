@@ -22,7 +22,7 @@ def updateplot(fig, data):
 
 scan.on_update(plot.update_fig)
 
-with run, plot:z
+with run, plot:
     scan.run()
 
 run.set_figure(plot.fig)

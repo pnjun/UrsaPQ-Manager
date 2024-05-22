@@ -3,14 +3,14 @@ from fablive import Scan, Run, LiveFigure
 import numpy as np
 import context 
 
-scan = Scan.from_context(context, type='Delay')
+scan = Scan.from_context(context, type='Delay High Power')
 
-scan.setup(integ_gmd = 450e3,
-           retarder = -0,
-           coil = 600,
-           waveplate = 15,
-           wiggle_ampl = 200)
-scan.sequence( delay = np.arange(-500, 500, 100) )
+scan.setup(integ_gmd = 900e3, #seconds
+           retarder = -0, # volts
+           coil = 800, #mA
+           waveplate = 45, #degree
+           wiggle_ampl = 200) #mA
+scan.sequence( delay = np.arange(-200, 1000, 200) ) #relative delay in fs
 
 plot = LiveFigure()
 @plot.update
@@ -20,7 +20,7 @@ def updateplot(fig, data):
     
     data = context.calibrate_evs(data)
     diff = data.even - data.odd
-    diff = diff.sel(evs=slice(0,320))
+    diff = diff.sel(evs=slice(0,80))
     diff = diff - diff.mean('evs')
 
     if diff.squeeze().ndim == 1:

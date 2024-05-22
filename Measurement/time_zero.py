@@ -15,15 +15,18 @@ import context
 # MID will be the new STOP. The scan will then be repeated
 # until START-STOP < TOLERANCE
 
-START = 3944
-STOP  = 3945
+START = 3949.5
+STOP  = 3951.5
 TOLERANCE = 0.050 # 50fs tolerance
-ROI = slice(22, 38)
-INTEG_TIME = 60
+ROI = slice(35,50)
 
 scan = Scan.from_context(context, type='Time Zero')
 
-scan.setup(integ_time = INTEG_TIME)
+scan.setup(integ_gmd = 80e3,
+           retarder = -0,
+           coil = 800,
+           waveplate = 45,
+           wiggle_ampl = 200)
 
 def distance(data, t1, t2):
     ''' calculates the "distance" between the spectras 
@@ -32,8 +35,9 @@ def distance(data, t1, t2):
         Used to evaluate how 'similar' the two spectras are
     '''
     data = context.calibrate_evs(data)
-    data = data.sel(evs=ROI)
     diff = data.even - data.odd
+    diff = diff.sel(evs=ROI)
+    diff = diff - diff.mean('evs')
 
     #Differential intensity (how much differential signal is there?)
     t1_int = np.abs(diff.sel(lam_dl=t1)).sum()
@@ -52,6 +56,7 @@ def binary_search():
         yield {'lam_dl': mid}
         start_diff = distance(scan.data, START, mid)
         stop_diff = distance(scan.data, STOP, mid)
+
         if start_diff < stop_diff:
             START = mid
         else:
@@ -70,6 +75,7 @@ def update_figure(fig, data):
     data = context.calibrate_evs(data)
     diff = data.even - data.odd
     diff = diff.sel(evs=ROI)
+    diff = diff - diff.mean('evs')
 
     if diff.squeeze().ndim == 1:
         diff.plot()
@@ -79,7 +85,8 @@ scan.on_update(plot.update_fig)
 
 
 # RUN THE SCAN
-with Run(**scan.info), plot:
+run = Run(**scan.info)
+with run, plot:
     scan.run()
 
 

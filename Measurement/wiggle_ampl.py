@@ -8,7 +8,7 @@ run  = Run(**scan.info)
 
 scan.setup(integ_time = 60,
            retarder = -0,
-           coil = 700,
+           coil = 825,
            wiggle_freq = 0.5)
 scan.sequence( wiggle_ampl = np.arange(0, 200, 10) )
 

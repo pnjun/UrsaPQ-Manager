@@ -22,9 +22,13 @@ DOOCS_ODL_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.W
 DOOCS_ODL_GET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD"
 DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
 DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
+DOOCS_LASER_SHUTTER = "FLASH.LASER/TIMER/ULGAN2/RTM.TRG3.CONTROL"
 DOOCS_UV_STEERING_V = "FLASH.LASER/MOD24.PICOMOTOR/Steering_PMC/MOTOR.2.MOVE.REL" 
 DOOCS_UV_STEERING_H = "FLASH.LASER/MOD24.PICOMOTOR/Steering_PMC/MOTOR.1.MOVE.REL" 
-
+DOOCS_UV_GONIOMETER = "FLASH.LASER/MOD24.SMARACT/CH_B/SET_POSITION_FPOS"
+DOOCS_UV_GONIOMETER_EN = "FLASH.LASER/MOD24.SMARACT/CH_B/COMMAND"
+DOOCS_UV_ROTATION = "FLASH.LASER/MOD24.SMARACT/CH_A/SET_POSITION_FPOS"
+DOOCS_UV_ROTATION_EN = "FLASH.LASER/MOD24.SMARACT/CH_A/COMMAND"
 
 DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_PERC.WR"
 DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
@@ -67,7 +71,21 @@ def wiggle_ampl(value):
     ursa.coil_wiggle_ampl = value
 
 @action
+def goniometer(value):
+    doocspie.set(DOOCS_UV_GONIOMETER, value)
+    doocspie.set(DOOCS_UV_GONIOMETER_EN, 3)
+
+@action
+def rotation(value):
+    doocspie.set(DOOCS_UV_ROTATION, value)
+    doocspie.set(DOOCS_UV_ROTATION_EN, 3)
+
+@action
 async def waveplate(value):
+    shutter = doocspie.get(DOOCS_LASER_SHUTTER).data
+    if shutter < 32500:
+        raise ValueError("Laser shutter is closed")
+
     doocspie.set(DOOCS_WAVEPLATE, value)
     doocspie.set(DOOCS_WAVEPLATE_EN, 1)
     while doocspie.get(DOOCS_WAVEPLATE).data != value:
@@ -108,10 +126,11 @@ def disable_lam_feedback():
         doocspie.set(DOOCS_LAM_FB_KP, kp)
         doocspie.set(DOOCS_LAM_FB_KI, ki)
 
+@action
 async def delay(value):
     value /= 1000 # convert to ps
     t0 = get_t0()
-    await lam_dl(value + t0)
+    await lam_dl(t0 - value)
 
 @action
 async def lam_dl(target_lam):
