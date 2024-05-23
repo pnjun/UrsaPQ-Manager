@@ -106,7 +106,7 @@ class SingleShot:
         self.autoscale_button.on_clicked(self.autoscaleCallback)        
 
         #MARKERS
-        self.figure.text(0.08, 0.03, "Left/Right click on plot to place liner markers. Middle click to clear", fontsize=8)
+        self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
 
         self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
         self.lines = []
