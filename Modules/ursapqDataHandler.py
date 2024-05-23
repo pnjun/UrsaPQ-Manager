@@ -38,7 +38,7 @@ class ursapqDataHandler:
 
         # Init analyis parameters from config file they are not present already
         self.status.data_filterTau = config.Data_FilterTau   # Tau in seconds of the low pass filter on evenShots and oddShots
-        self.status.data_clearAccumulator = False            # Flag to signal that user wants an accumulator restart
+        self.status.data_clear_accumulator = False            # Flag to signal that user wants an accumulator restart
         
         self.skipSlices     = config.Data_SkipSlices     #How many slices to skip for singleShot average
         self.skipSlicesEnd  = config.Data_SkipSlices     #How many slices to skip for singleShot average at the end   
@@ -82,7 +82,10 @@ class ursapqDataHandler:
         Quick and dirty " Average " filter for incoming data. It's fast and does not
         use memory, while performing almost like a moving average
         '''
-        lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
+        if self.status.data_filterTau == 0:
+            lvl = 0
+        else:
+            lvl = np.exp( -1 / ( self.status.data_filterTau * self.updateFreq  ))
         return (oldData * lvl) + (newData * (1-lvl))
         
     def updateTofTraces(self):
@@ -95,7 +98,7 @@ class ursapqDataHandler:
                 return False
 
             newTof = zmqdata[0]    
-            newGmd = pds.read(config.Data_DOOCS_GMD, macropulse = newTof['macropulse'])   
+            newGmd = pds.read(config.Data_DOOCS_GMD, macropulse = newTof['macropulse'] )   
 
             self.macropulse = newTof['macropulse']
             self.updateFreq = (  0.03 * 1/(newTof['timestamp'] - self.timestamp) 
@@ -129,13 +132,13 @@ class ursapqDataHandler:
         #Accumulate data:
         try:
             self.tof_accumulator[1] += newTof['data'][:,1] 
-            self.accumulatorCount += 1
+            self.accumulator_count += 1
             self.gmd_even_accum += newGmd['data'][::2,1].sum()
             self.gmd_odd_accum  += newGmd['data'][1::2,1].sum()
         except Exception as error:
             traceback.print_exc()
             self.tof_accumulator  = newTof['data'].T.copy() #Rest tof accumulator
-            self.accumulatorCount = 1
+            self.accumulator_count = 1
             self.gmd_even_accum = newGmd['data'][::2,1].sum()
             self.gmd_odd_accum  = newGmd['data'][1::2,1].sum()
         return True
@@ -236,30 +239,28 @@ class ursapqDataHandler:
                     evenLowPass /= self.gmd[::2].sum()
                     oddLowPass /= self.gmd[1::2].sum()
                 else:
-                    evenAcc /= self.accumulatorCount
-                    oddAcc  /= self.accumulatorCount                      
+                    evenAcc /= self.accumulator_count
+                    oddAcc  /= self.accumulator_count                      
                                            
                 tofs, evs = self.getTofsAndEvs(self.tofTrace[0])
                     
                 #Output arrays
                 self.status.data_axis = np.vstack((tofs, evs))
-                self.status.data_evenShots =  evenLowPass
-                self.status.data_oddShots  =  oddLowPass
+                self.status.data_shots_filtered = np.array([evenLowPass, oddLowPass])
                 self.status.data_traceNum = traceCount
                 self.status.gmd_rate = self.gmd[:].sum() * 10 # 10 shots per second. gmd_rate is total GMD per second
 
-                self.status.data_evenAccumulator =  evenAcc 
-                self.status.data_oddAccumulator  =  oddAcc
-                self.status.data_AccumulatorCount = self.accumulatorCount
-                self.status.data_gmdAccumulator  = self.gmd_even_accum + self.gmd_odd_accum
+                self.status.data_shots_accumulator =  np.array([evenAcc, oddAcc])
+                self.status.data_accumulator_count = self.accumulator_count
+                self.status.data_gmd_accumulator  = self.gmd_even_accum + self.gmd_odd_accum
                 self.status.data_updateFreq = self.updateFreq
                 self.status.data_laserTrace = self.laserTrace
                 self.status.data_tofTrace   = self.tofTrace
                 
-                if self.status.data_clearAccumulator:
+                if self.status.data_clear_accumulator:
                     # Will throw TypeError in updateTofTraces and reset the accumulators
-                    self.accumulatorCount = None  
-                    self.status.data_clearAccumulator = False
+                    self.accumulator_count = None  
+                    self.status.data_clear_accumulator = False
                                    
             except Exception as e:
                 traceback.print_exc()   

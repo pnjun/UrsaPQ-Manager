@@ -39,7 +39,7 @@ class TracePlots:
         
         
         axslid = self.figure.add_axes([0.42, 0.87, 0.48, 0.04])
-        self.filterSlider = Slider(axslid, 'Filter Tau[s]', 0.5, 60, valinit=ursapq.data_filterTau)
+        self.filterSlider = Slider(axslid, 'Filter Tau[s] ', 0, 60, valinit=ursapq.data_filterTau)
         self.filterSlider.on_changed(self.filterUpdate)
         
         axbutton = self.figure.add_axes([0.04, 0.87, 0.15, 0.06])
@@ -92,10 +92,11 @@ class SingleShot:
         self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)
         self.diff_ax.set_title("SINGLE SHOT DIFFERENCE")               
         
-        self.evenSlice, = self.slice_ax.plot( ursapq.data_axis[self.axId], ursapq.data_evenShots, label = 'even')
-        self.oddSlice,  = self.slice_ax.plot( ursapq.data_axis[self.axId], ursapq.data_oddShots, label = 'odd' )
-        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId],  
-                                              ursapq.data_evenShots - ursapq.data_oddShots)
+        data = ursapq.data_shots_filtered
+
+        self.evenSlice, = self.slice_ax.plot( ursapq.data_axis[self.axId], data[0], label = 'even')
+        self.oddSlice,  = self.slice_ax.plot( ursapq.data_axis[self.axId], data[1], label = 'odd' )
+        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId], data[0] - data[1])
         self.slice_ax.legend()
 
         #AUTOSCALE                                    
@@ -129,18 +130,18 @@ class SingleShot:
         if event.button == 3:  #Right click, v line on both axes
             line_a = self.diff_ax.axvline (event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
             line_b = self.slice_ax.axvline(event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
-            self.lines.append(line_a)
-            self.lines.append(line_b)
+            self.lines.extend([line_a, line_b])
 
     def autoscaleCallback(self, event):
         self.slice_ax.set_ylim( *calculate_autoscale( self.evenSlice.get_ydata() ))
         self.diff_ax.set_ylim( *calculate_autoscale( self.diffSlice.get_ydata() ))
 
     def update(self):
-        self.evenSlice.set_data( ursapq.data_axis[self.axId], ursapq.data_evenShots )
-        self.oddSlice.set_data(  ursapq.data_axis[self.axId], ursapq.data_oddShots  )
-        self.diffSlice.set_data( ursapq.data_axis[self.axId],  
-                                 ursapq.data_evenShots - ursapq.data_oddShots)
+        data = ursapq.data_shots_filtered
+
+        self.evenSlice.set_data( ursapq.data_axis[self.axId], data[0] )
+        self.oddSlice.set_data(  ursapq.data_axis[self.axId], data[1]  )
+        self.diffSlice.set_data( ursapq.data_axis[self.axId], data[0] - data[1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
