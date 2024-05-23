@@ -80,25 +80,23 @@ class SingleShot:
             self.axId = 1
     
         #PLOT SETUP
-        gs = gridspec.GridSpec(2, 2) #
+        gs = gridspec.GridSpec(2, 1) #
     
         self.figure = plt.figure()
         self.figure.subplots_adjust(right=0.96, left=0.085, top=0.92, bottom=0.135,hspace=0.35)
 
-        self.evenSlicepl = self.figure.add_subplot(gs[0,0])
-        if not tof: self.evenSlicepl.set_xlim([0,xmax])
-        self.evenSlicepl.set_title("SINGLE SHOT EVEN")
-       
-        self.oddSlicepl = self.figure.add_subplot( gs[0,1], sharex=self.evenSlicepl, sharey=self.evenSlicepl)
-        self.oddSlicepl.set_title("SINGLE SHOT ODD")       
+        self.slice_ax = self.figure.add_subplot(gs[0])
+        if not tof: self.slice_ax.set_xlim([0,xmax])
+        self.slice_ax.set_title("SINGLE SHOT")
+
+        self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)
+        self.diff_ax.set_title("SINGLE SHOT DIFFERENCE")               
         
-        self.diffSlicepl = self.figure.add_subplot(gs[1,:], sharex=self.evenSlicepl)
-        self.diffSlicepl.set_title("SINGLE SHOT DIFFERENCE")               
-        
-        self.evenSlice, = self.evenSlicepl.plot( ursapq.data_axis[self.axId], ursapq.data_evenShots )
-        self.oddSlice,  = self.oddSlicepl.plot(  ursapq.data_axis[self.axId], ursapq.data_oddShots )
-        self.diffSlice, = self.diffSlicepl.plot( ursapq.data_axis[self.axId],  
-                                            ursapq.data_evenShots - ursapq.data_oddShots)
+        self.evenSlice, = self.slice_ax.plot( ursapq.data_axis[self.axId], ursapq.data_evenShots, label = 'even')
+        self.oddSlice,  = self.slice_ax.plot( ursapq.data_axis[self.axId], ursapq.data_oddShots, label = 'odd' )
+        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId],  
+                                              ursapq.data_evenShots - ursapq.data_oddShots)
+        self.slice_ax.legend()
 
         #AUTOSCALE                                    
         axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
@@ -115,23 +113,25 @@ class SingleShot:
 
     def set_marker(self, event):
         if event.button == 2:
-            while line := self.lines.pop():
-                line.remove()
+            while self.lines:
+                self.lines.pop().remove()
             return
 
         if not event.inaxes or self.figure.canvas.toolbar.mode:
             return
-        
-        if event.button == 1: #Left click, h line
+
+        if event.button == 1: #Left click, h line only on clicked axis
             line = event.inaxes.axhline(event.ydata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
             self.lines.append(line)
-        if event.button == 3:  #Left click, v line
-            line = event.inaxes.axvline(event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
-            self.lines.append(line)
+        if event.button == 3:  #Right click, v line on both axes
+            line_a = self.diff_ax.axvline (event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
+            line_b = self.slice_ax.axvline(event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
+            self.lines.append(line_a)
+            self.lines.append(line_b)
 
     def autoscaleCallback(self, event):
-        self.evenSlicepl.set_ylim( *calculate_autoscale( self.evenSlice.get_ydata() ))
-        self.diffSlicepl.set_ylim( *calculate_autoscale( self.diffSlice.get_ydata() ))
+        self.slice_ax.set_ylim( *calculate_autoscale( self.evenSlice.get_ydata() ))
+        self.diff_ax.set_ylim( *calculate_autoscale( self.diffSlice.get_ydata() ))
 
     def update(self):
         self.evenSlice.set_data( ursapq.data_axis[self.axId], ursapq.data_evenShots )
