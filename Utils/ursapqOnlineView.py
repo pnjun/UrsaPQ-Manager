@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from ursapq_api import UrsaPQ
 import matplotlib as mpl
 import matplotlib.gridspec as gridspec
@@ -43,7 +44,7 @@ class TracePlots:
         
         axbutton = self.figure.add_axes([0.04, 0.87, 0.15, 0.06])
         self.autoscale_button = Button(axbutton, 'Autoscale y')
-        self.autoscale_button.on_clicked(self.autoscaleCallback)                
+        self.autoscale_button.on_clicked(self.autoscaleCallback)      
         
         self.figure.show()
         
@@ -78,10 +79,11 @@ class SingleShot:
         else:
             self.axId = 1
     
+        #PLOT SETUP
         gs = gridspec.GridSpec(2, 2) #
     
         self.figure = plt.figure()
-        self.figure.subplots_adjust(right=0.95, left=0.08, top=0.85, bottom=0.07,hspace=0.4)
+        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.92, bottom=0.135,hspace=0.35)
 
         self.evenSlicepl = self.figure.add_subplot(gs[0,0])
         if not tof: self.evenSlicepl.set_xlim([0,xmax])
@@ -97,12 +99,35 @@ class SingleShot:
         self.oddSlice,  = self.oddSlicepl.plot(  ursapq.data_axis[self.axId], ursapq.data_oddShots )
         self.diffSlice, = self.diffSlicepl.plot( ursapq.data_axis[self.axId],  
                                             ursapq.data_evenShots - ursapq.data_oddShots)
-                                            
-        axbutton = self.figure.add_axes([0.43, 0.91, 0.16, 0.07])
+
+        #AUTOSCALE                                    
+        axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
         self.autoscale_button = Button(axbutton, 'Autoscale y')
         self.autoscale_button.on_clicked(self.autoscaleCallback)        
-                                                                                                       
+
+        #MARKERS
+        self.figure.text(0.08, 0.03, "Left/Right click on plot to place liner markers. Middle click to clear", fontsize=8)
+
+        self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
+        self.lines = []
+
         self.figure.show()
+
+    def set_marker(self, event):
+        if event.button == 2:
+            while line := self.lines.pop():
+                line.remove()
+            return
+
+        if not event.inaxes or self.figure.canvas.toolbar.mode:
+            return
+        
+        if event.button == 1: #Left click, h line
+            line = event.inaxes.axhline(event.ydata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
+            self.lines.append(line)
+        if event.button == 3:  #Left click, v line
+            line = event.inaxes.axvline(event.xdata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
+            self.lines.append(line)
 
     def autoscaleCallback(self, event):
         self.evenSlicepl.set_ylim( *calculate_autoscale( self.evenSlice.get_ydata() ))
@@ -126,8 +151,8 @@ if __name__=='__main__':
     tof = True if "--tof" in sys.argv else False
 
     ursapq = UrsaPQ()
+    singleshots = SingleShot(ursapq, tof = tof, xmax=450) #Set tof to true to plot TOF instead of eV
     traces = TracePlots(ursapq)
-    singleshots = SingleShot(ursapq, tof = tof,xmax=450) #Set tof to true to plot TOF instead of eV
     
     while True:
         traces.update()
