@@ -99,8 +99,8 @@ class SingleShot:
         self.slice_ax.legend()
 
         #AUTOSCALE                                    
-        axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
-        self.autoscale_button = Button(axbutton, 'Autoscale y')
+        self.axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
+        self.autoscale_button = Button(self.axbutton, 'Autoscale y')
         self.autoscale_button.on_clicked(self.autoscaleCallback)        
 
         #MARKERS
@@ -120,6 +120,9 @@ class SingleShot:
         if not event.inaxes or self.figure.canvas.toolbar.mode:
             return
 
+        if event.inaxes == self.axbutton:
+            return
+        
         if event.button == 1: #Left click, h line only on clicked axis
             line = event.inaxes.axhline(event.ydata, color='black', linestyle='--', alpha=0.7, linewidth=0.9)
             self.lines.append(line)

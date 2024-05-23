@@ -111,6 +111,7 @@ class ursapqDataHandler:
 
         if config.Data_Invert:
             newTof['data'][:,1] *= -1      
+        newGmd['data'] = newGmd['data'][config.Data_SkipSlices:config.Data_ShotNum]
                 
         #Two types of online data: Low passed ('moving average') and accumulated
        
@@ -190,13 +191,14 @@ class ursapqDataHandler:
         start = config.Data_SkipSlices
         end   = config.Data_ShotNum    
                                  
-        bg = np.percentile(stackedTraces, 5, axis=1)
+        bg = np.percentile(stackedTraces, 10, axis=1)
         stackedTraces -= bg[:,None]                                
                                  
         #Sum up all slices skipping the first self.skipSlices
         evenSlice = stackedTraces[start:end:2]
         oddSlice  = stackedTraces[start+1:end:2]
         assert evenSlice.shape == oddSlice.shape, f"Check slicing config, unequal number of even and odd slices"
+        assert evenSlice.shape[0] == self.gmd.size/2, f"GMD shot number does not match slices number"
 
         return evenSlice.mean(axis=0), oddSlice.mean(axis=0), end-start                        
     
