@@ -145,7 +145,7 @@ manageAx_SampleX(axis := SampleX, setPoint := SampleX_SetPoint, speed := PARAM.S
 manageAx_SampleY(axis := SampleY, setPoint := SampleY_SetPoint, speed := PARAM.Sample_Movement_Speed, 
 		 enable := SampleY_MotionEnable, stop:= SampleY_MotionStop, fwLimit := SampleY_Fw_End, bwLimit := SampleY_Bw_End);	 
 
-manageAx_SampleZ(axis := SampleZ, setPoint := SampleZ_SetPoint, speed := PARAM.Sample_Movement_Speed, 
+manageAx_SampleZ(axis := SampleZ, setPoint := SampleZ_SetPoint, speed := PARAM.Sample_Movement_Speed_Z, 
 		 enable := SampleZ_MotionEnable, stop:= SampleZ_MotionStop, fwLimit := SampleZ_Fw_End, bwLimit := SampleZ_Bw_End);
 		 
 manageAx_FrameX(axis := FrameX,  setPoint := FrameX_SetPoint,  speed := PARAM.Frame_Movement_Speed , 

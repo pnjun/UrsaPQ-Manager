@@ -8418,6 +8418,7 @@ Revision: 1.02
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT)^Term 27 (EK1100)^Coil Supply">
 				<Link VarA="PlcTask Inputs^MAIN.Coil_Curr_In" VarB="DOX Synchron info data^Info data 2"/>
+				<Link VarA="PlcTask Inputs^MAIN.Coil_Err" VarB="DOX Status^Error"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Curr_Out" VarB="DOX Current^Output current"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Enable" VarB="DOX Control^Enable"/>
 				<Link VarA="PlcTask Outputs^MAIN.Coil_Output" VarB="DOX Control^Output"/>

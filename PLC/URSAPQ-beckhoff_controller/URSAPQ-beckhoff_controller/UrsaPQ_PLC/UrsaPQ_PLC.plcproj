@@ -12,6 +12,7 @@
     <Implicit_KindOfTask>{c44b2a34-49cf-4b6b-bc7e-6af16a4e68db}</Implicit_KindOfTask>
     <Implicit_Jitter_Distribution>{cc3865dc-38d3-408a-9305-dd2d1547e1f8}</Implicit_Jitter_Distribution>
     <LibraryReferences>{390d70bb-e4bc-45f9-84de-1e1800bad6f7}</LibraryReferences>
+    <Released>false</Released>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GVLs\GVL.TcGVL">

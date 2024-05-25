@@ -11,9 +11,10 @@ VAR_GLOBAL CONSTANT
 	PenningMix_End   : REAL := 6E-4; //mBar (Stops mixing and uses penning only)
         
 	Sample_Movement_Speed: REAL := 2;
+	Sample_Movement_Speed_Z: REAL := 5; 
 	Frame_Movement_Speed : REAL := 0.2;
 	
-	Oven_MaxTemp : INT := 2000; // 200 deg C
+	Oven_MaxTemp : INT := 2500; // 200 deg C
 	HVPS_SafetyLoop_Current : INT := 15000;
 END_VAR]]></Declaration>
   </GVL>
