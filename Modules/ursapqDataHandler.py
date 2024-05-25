@@ -13,6 +13,8 @@ import pydoocs as pds
 from config import config
 import time
 
+#  "Data_DOOCS_TOF"      : "FLASH.FEL/SPDEVDMA/FL2EXP1.O/CH00.ZMQ", 
+
 
 class ursapqDataHandler:
     def __init__(self):
