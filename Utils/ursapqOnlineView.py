@@ -133,6 +133,8 @@ class SingleShot:
         minor_ticks = np.append(minor_ticks, np.arange(0, 500, 100))
         self.delay_axis.get_xaxis().set_ticks(minor_ticks, minor=True)
         
+        self.delay_line = None
+
         self.delay_axis.set_xlim([-20,500])
 
     def init_markers_callbacks(self):
@@ -168,7 +170,9 @@ class SingleShot:
         data = ursapq.data_shots_filtered
 
         self.delay_text.set_text( f"Delay {ursapq.data_delay:.3f} ps" )
-        self.delay_axis.axvline(ursapq.data_delay, color='red', linewidth=2.2)
+        if self.delay_line:
+            self.delay_line.remove()
+        self.delay_line = self.delay_axis.axvline(ursapq.data_delay, color='red', linewidth=2.2)
 
         self.evenSlice.set_data( ursapq.data_axis[self.axId], data[0] )
         self.oddSlice.set_data(  ursapq.data_axis[self.axId], data[1]  )
