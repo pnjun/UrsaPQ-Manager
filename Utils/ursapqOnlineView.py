@@ -124,15 +124,16 @@ class SingleShot:
         self.delay_axis.get_yaxis().set_ticks([])
 
         self.delay_axis.set_xscale('symlog',  linthresh=1, linscale=1.4)
-        ticks = [-100,-10,-1,0,1,10,100]
+        ticks = [-10,-1,0,1,10,100]
         self.delay_axis.get_xaxis().set_ticks(ticks, labels=ticks)
 
         minor_ticks = np.arange(-1, 1, 0.1)
         minor_ticks = np.append(minor_ticks, np.arange(-10, 10, 1))
-        minor_ticks = np.append(minor_ticks, np.arange(-100, 100, 10))
+        minor_ticks = np.append(minor_ticks, np.arange(0, 100, 10))
+        minor_ticks = np.append(minor_ticks, np.arange(0, 500, 100))
         self.delay_axis.get_xaxis().set_ticks(minor_ticks, minor=True)
         
-        self.delay_axis.set_xlim([-300,300])
+        self.delay_axis.set_xlim([-20,500])
 
     def init_markers_callbacks(self):
         self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
