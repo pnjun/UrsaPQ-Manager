@@ -259,6 +259,10 @@ class ursapqDataHandler:
                 self.status.data_laserTrace = self.laserTrace
                 self.status.data_tofTrace   = self.tofTrace
                 
+                time_zero   = pds.read(config.Data_DOOCS_t0)['data']
+                odl_set     = pds.read(config.Data_DOOCS_odl)['data']
+                self.status.data_delay = time_zero - odl_set
+
                 if self.status.data_clear_accumulator:
                     # Will throw TypeError in updateTofTraces and reset the accumulators
                     self.accumulator_count = None  

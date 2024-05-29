@@ -83,7 +83,7 @@ class SingleShot:
         gs = gridspec.GridSpec(2, 1) #
     
         self.figure = plt.figure()
-        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.92, bottom=0.135,hspace=0.35)
+        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.85, bottom=0.135,hspace=0.41)
 
         self.slice_ax = self.figure.add_subplot(gs[0])
         if not tof: self.slice_ax.set_xlim([0,xmax])
@@ -100,28 +100,55 @@ class SingleShot:
         self.slice_ax.legend()
 
         #AUTOSCALE                                    
-        self.axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
-        self.autoscale_button = Button(self.axbutton, 'Autoscale y')
-        self.autoscale_button.on_clicked(self.autoscaleCallback)        
-
-        #MARKERS
-        self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
-
-        self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
-        self.lines = []
+        self.init_autoscale()
+        self.init_delay_indicator()
+        self.init_markers_callbacks()
 
         self.figure.show()
 
+    def init_autoscale(self):
+        self.axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
+        self.autoscale_button = Button(self.axbutton, 'Autoscale y')
+        self.autoscale_button.on_clicked(self.autoscaleCallback)     
+
+    def init_delay_indicator(self):
+        self.delay_text  = self.figure.text(0.085, 0.95, "", fontsize=11)
+        self.delay_axis  = plt.axes([0.3,0.95,0.65,0.04], facecolor=(1,1,1,0))
+
+        self.delay_axis.spines['bottom'].set_position('center')
+
+        # Eliminate other axes
+        self.delay_axis.spines['left'].set_color('none')
+        self.delay_axis.spines['right'].set_color('none')
+        self.delay_axis.spines['top'].set_color('none')
+        self.delay_axis.get_yaxis().set_ticks([])
+
+        self.delay_axis.set_xscale('symlog',  linthresh=1, linscale=1.4)
+        ticks = [-100,-10,-1,0,1,10,100]
+        self.delay_axis.get_xaxis().set_ticks(ticks, labels=ticks)
+
+        minor_ticks = np.arange(-1, 1, 0.1)
+        minor_ticks = np.append(minor_ticks, np.arange(-10, 10, 1))
+        minor_ticks = np.append(minor_ticks, np.arange(-100, 100, 10))
+        self.delay_axis.get_xaxis().set_ticks(minor_ticks, minor=True)
+        
+        self.delay_axis.set_xlim([-300,300])
+
+    def init_markers_callbacks(self):
+        self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
+        self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
+        self.lines = []
+
     def set_marker(self, event):
+        if not event.inaxes or self.figure.canvas.toolbar.mode:
+            return
+
         if event.button == 2:
             while self.lines:
                 self.lines.pop().remove()
             return
 
-        if not event.inaxes or self.figure.canvas.toolbar.mode:
-            return
-
-        if event.inaxes == self.axbutton:
+        if event.inaxes not in [self.diff_ax, self.slice_ax]:
             return
         
         if event.button == 1: #Left click, h line only on clicked axis
@@ -138,6 +165,9 @@ class SingleShot:
 
     def update(self):
         data = ursapq.data_shots_filtered
+
+        self.delay_text.set_text( f"Delay {ursapq.data_delay:.3f} ps" )
+        self.delay_axis.axvline(ursapq.data_delay, color='red', linewidth=2.2)
 
         self.evenSlice.set_data( ursapq.data_axis[self.axId], data[0] )
         self.oddSlice.set_data(  ursapq.data_axis[self.axId], data[1]  )
