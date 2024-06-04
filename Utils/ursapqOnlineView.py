@@ -24,7 +24,7 @@ class TracePlots:
     Plots TOF and Laser Trace for a whole macropulse
     '''
     def __init__(self, ursapq):
-        self.figure = plt.figure()
+        self.figure = plt.figure('UrsaPQ trace view')
         self.figure.subplots_adjust(right=0.9, top=0.80, bottom=0.08, hspace=0.6)
         gs = gridspec.GridSpec(3, 1) #
         
@@ -82,22 +82,22 @@ class SingleShot:
         #PLOT SETUP
         gs = gridspec.GridSpec(2, 1) #
     
-        self.figure = plt.figure()
-        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.85, bottom=0.135,hspace=0.41)
+        self.figure = plt.figure('UrsaPQ slice view')
+        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.86, bottom=0.14,hspace=0.3)
 
         self.slice_ax = self.figure.add_subplot(gs[0])
         if not tof: self.slice_ax.set_xlim([0,xmax])
-        self.slice_ax.set_title("SINGLE SHOT")
 
-        self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)
-        self.diff_ax.set_title("SINGLE SHOT DIFFERENCE")               
+        self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)         
         
         data = ursapq.data_shots_filtered
 
         self.evenSlice, = self.slice_ax.plot( ursapq.data_axis[self.axId], data[0], label = 'even')
         self.oddSlice,  = self.slice_ax.plot( ursapq.data_axis[self.axId], data[1], label = 'odd' )
-        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId], data[0] - data[1])
+        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId], data[0] - data[1], label='even+odd')
+        self.diff_ax.axhline(0, color='black', linestyle=':', alpha=0.9, linewidth=0.9)
         self.slice_ax.legend()
+        self.diff_ax.legend(loc='upper right')
 
         #AUTOSCALE                                    
         self.init_autoscale()
@@ -112,8 +112,8 @@ class SingleShot:
         self.autoscale_button.on_clicked(self.autoscaleCallback)     
 
     def init_delay_indicator(self):
-        self.delay_text  = self.figure.text(0.085, 0.95, "", fontsize=11)
-        self.delay_axis  = plt.axes([0.3,0.95,0.65,0.04], facecolor=(1,1,1,0))
+        self.figure.text(0.085, 0.93, "Current delay:", fontsize=11)
+        self.delay_axis  = plt.axes([0.27,0.92,0.68,0.04], facecolor=(1,1,1,0))
 
         self.delay_axis.spines['bottom'].set_position('center')
 
@@ -130,7 +130,7 @@ class SingleShot:
         minor_ticks = np.arange(-1, 1, 0.1)
         minor_ticks = np.append(minor_ticks, np.arange(-10, 10, 1))
         minor_ticks = np.append(minor_ticks, np.arange(0, 100, 10))
-        minor_ticks = np.append(minor_ticks, np.arange(0, 500, 100))
+        minor_ticks = np.append(minor_ticks, np.arange(0, 1000, 100))
         self.delay_axis.get_xaxis().set_ticks(minor_ticks, minor=True)
         
         self.delay_line = None
@@ -169,14 +169,16 @@ class SingleShot:
     def update(self):
         data = ursapq.data_shots_filtered
 
-        self.delay_text.set_text( f"Delay {ursapq.data_delay:.3f} ps" )
+        curr_delay = ursapq.data_delay
         if self.delay_line:
             self.delay_line.remove()
-        self.delay_line = self.delay_axis.axvline(ursapq.data_delay, color='red', linewidth=2.2)
+            self.delay_text.remove()
+        self.delay_text = self.delay_axis.text(curr_delay, 1.1, f"{curr_delay:.3f} ps", ha='center', fontfamily='monospace', fontsize='medium')
+        self.delay_line = self.delay_axis.axvline(curr_delay, color='red', linewidth=2.2)
 
         self.evenSlice.set_data( ursapq.data_axis[self.axId], data[0] )
         self.oddSlice.set_data(  ursapq.data_axis[self.axId], data[1]  )
-        self.diffSlice.set_data( ursapq.data_axis[self.axId], data[0] - data[1])
+        self.diffSlice.set_data( ursapq.data_axis[self.axId], data[0] + data[1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
