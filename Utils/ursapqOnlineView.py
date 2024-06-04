@@ -24,7 +24,7 @@ class TracePlots:
     Plots TOF and Laser Trace for a whole macropulse
     '''
     def __init__(self, ursapq):
-        self.figure = plt.figure()
+        self.figure = plt.figure('UrsaPQ trace view')
         self.figure.subplots_adjust(right=0.9, top=0.80, bottom=0.08, hspace=0.6)
         gs = gridspec.GridSpec(3, 1) #
         
@@ -82,46 +82,76 @@ class SingleShot:
         #PLOT SETUP
         gs = gridspec.GridSpec(2, 1) #
     
-        self.figure = plt.figure()
-        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.92, bottom=0.135,hspace=0.35)
+        self.figure = plt.figure('UrsaPQ slice view')
+        self.figure.subplots_adjust(right=0.96, left=0.085, top=0.86, bottom=0.14,hspace=0.3)
 
         self.slice_ax = self.figure.add_subplot(gs[0])
         if not tof: self.slice_ax.set_xlim([0,xmax])
-        self.slice_ax.set_title("SINGLE SHOT")
 
-        self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)
-        self.diff_ax.set_title("SINGLE SHOT DIFFERENCE")               
+        self.diff_ax = self.figure.add_subplot(gs[1,:], sharex=self.slice_ax)         
         
         data = ursapq.data_shots_filtered
 
         self.evenSlice, = self.slice_ax.plot( ursapq.data_axis[self.axId], data[0], label = 'even')
         self.oddSlice,  = self.slice_ax.plot( ursapq.data_axis[self.axId], data[1], label = 'odd' )
-        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId], data[0] - data[1])
+        self.diffSlice, = self.diff_ax.plot(  ursapq.data_axis[self.axId], data[0] - data[1], label='even+odd')
+        self.diff_ax.axhline(0, color='black', linestyle=':', alpha=0.9, linewidth=0.9)
         self.slice_ax.legend()
+        self.diff_ax.legend(loc='upper right')
 
         #AUTOSCALE                                    
-        self.axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
-        self.autoscale_button = Button(self.axbutton, 'Autoscale y')
-        self.autoscale_button.on_clicked(self.autoscaleCallback)        
-
-        #MARKERS
-        self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
-
-        self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
-        self.lines = []
+        self.init_autoscale()
+        self.init_delay_indicator()
+        self.init_markers_callbacks()
 
         self.figure.show()
 
+    def init_autoscale(self):
+        self.axbutton = self.figure.add_axes([0.8, 0.018, 0.16, 0.055])
+        self.autoscale_button = Button(self.axbutton, 'Autoscale y')
+        self.autoscale_button.on_clicked(self.autoscaleCallback)     
+
+    def init_delay_indicator(self):
+        self.figure.text(0.085, 0.93, "Current delay:", fontsize=11)
+        self.delay_axis  = plt.axes([0.27,0.92,0.68,0.04], facecolor=(1,1,1,0))
+
+        self.delay_axis.spines['bottom'].set_position('center')
+
+        # Eliminate other axes
+        self.delay_axis.spines['left'].set_color('none')
+        self.delay_axis.spines['right'].set_color('none')
+        self.delay_axis.spines['top'].set_color('none')
+        self.delay_axis.get_yaxis().set_ticks([])
+
+        self.delay_axis.set_xscale('symlog',  linthresh=1, linscale=1.4)
+        ticks = [-10,-1,0,1,10,100]
+        self.delay_axis.get_xaxis().set_ticks(ticks, labels=ticks)
+
+        minor_ticks = np.arange(-1, 1, 0.1)
+        minor_ticks = np.append(minor_ticks, np.arange(-10, 10, 1))
+        minor_ticks = np.append(minor_ticks, np.arange(0, 100, 10))
+        minor_ticks = np.append(minor_ticks, np.arange(0, 1000, 100))
+        self.delay_axis.get_xaxis().set_ticks(minor_ticks, minor=True)
+        
+        self.delay_line = None
+
+        self.delay_axis.set_xlim([-20,500])
+
+    def init_markers_callbacks(self):
+        self.figure.text(0.08, 0.03, "Left/Right click on plot to place line markers. Middle click to clear", fontsize=8)
+        self.figure.canvas.mpl_connect('button_press_event', self.set_marker)
+        self.lines = []
+
     def set_marker(self, event):
+        if not event.inaxes or self.figure.canvas.toolbar.mode:
+            return
+
         if event.button == 2:
             while self.lines:
                 self.lines.pop().remove()
             return
 
-        if not event.inaxes or self.figure.canvas.toolbar.mode:
-            return
-
-        if event.inaxes == self.axbutton:
+        if event.inaxes not in [self.diff_ax, self.slice_ax]:
             return
         
         if event.button == 1: #Left click, h line only on clicked axis
@@ -139,9 +169,16 @@ class SingleShot:
     def update(self):
         data = ursapq.data_shots_filtered
 
+        curr_delay = ursapq.data_delay
+        if self.delay_line:
+            self.delay_line.remove()
+            self.delay_text.remove()
+        self.delay_text = self.delay_axis.text(curr_delay, 1.1, f"{curr_delay:.3f} ps", ha='center', fontfamily='monospace', fontsize='medium')
+        self.delay_line = self.delay_axis.axvline(curr_delay, color='red', linewidth=2.2)
+
         self.evenSlice.set_data( ursapq.data_axis[self.axId], data[0] )
         self.oddSlice.set_data(  ursapq.data_axis[self.axId], data[1]  )
-        self.diffSlice.set_data( ursapq.data_axis[self.axId], data[0] - data[1])
+        self.diffSlice.set_data( ursapq.data_axis[self.axId], data[0] + data[1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
