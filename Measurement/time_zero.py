@@ -15,17 +15,17 @@ import context
 # MID will be the new STOP. The scan will then be repeated
 # until START-STOP < TOLERANCE
 
-START = 3949.5
-STOP  = 3951.5
-TOLERANCE = 0.050 # 50fs tolerance
-ROI = slice(35,50)
+START = 3941.5
+STOP  = 3943.5
+TOLERANCE = 0.1 # 50fs tolerance
+ROI = slice(10,40)
 
 scan = Scan.from_context(context, type='Time Zero')
 
-scan.setup(integ_gmd = 80e3,
-           retarder = -0,
+scan.setup(integ_gmd = 120e3,
+           retarder = -18,
            coil = 800,
-           waveplate = 45,
+           waveplate = 21,
            wiggle_ampl = 200)
 
 def distance(data, t1, t2):

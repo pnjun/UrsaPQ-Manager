@@ -21,6 +21,7 @@ DOOCS_ODL_SPEED_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.SPEED_IN
 DOOCS_ODL_SET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION_SET.WR"
 DOOCS_ODL_GET = "FLASH.SYNC/LASER.LOCK.EXP/F2.PPL.OSC/FMC0.MD22.0.POSITION.RD"
 DOOCS_WAVEPLATE     = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS.SET'
+DOOCS_WAVEPLATE_RB  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/FPOS'
 DOOCS_WAVEPLATE_EN  = 'FLASH.FEL/FLAPP2BEAMLINES/MOTOR1.FL24/CMD'
 DOOCS_LASER_SHUTTER = "FLASH.LASER/TIMER/ULGAN2/RTM.TRG3.CONTROL"
 DOOCS_UV_STEERING_V = "FLASH.LASER/MOD24.PICOMOTOR/Steering_PMC/MOTOR.2.MOVE.REL" 
@@ -29,6 +30,10 @@ DOOCS_UV_GONIOMETER = "FLASH.LASER/MOD24.SMARACT/CH_B/SET_POSITION_FPOS"
 DOOCS_UV_GONIOMETER_EN = "FLASH.LASER/MOD24.SMARACT/CH_B/COMMAND"
 DOOCS_UV_ROTATION = "FLASH.LASER/MOD24.SMARACT/CH_A/SET_POSITION_FPOS"
 DOOCS_UV_ROTATION_EN = "FLASH.LASER/MOD24.SMARACT/CH_A/COMMAND"
+DOOCS_SDU_DELAY_SET    = "FLASH.FEL/FL24.SDU_CTRL/SDU_CTRL/OPCUA.MAIN.Delay"
+DOOCS_SDU_DELAY_EN     = "FLASH.FEL/FL24.SDU_CTRL/SDU_CTRL/OPCUA.MAIN.NewDelay"
+DOOCS_SDU_DELAY_GET    = "FLASH.FEL/FL24.SDU_CTRL/SDU_CTRL/OPCUA.MAIN.DispMeasMotorFemtoDelayEntry"
+DOOCS_SDU_DELAY_READY  = "FLASH.FEL/FL24.SDU_CTRL/SDU_CTRL/OPCUA.MAIN.ReadyToMoveSleds"
 
 DOOCS_LAM_SPEED_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.SPEED_IN_PERC.WR"
 DOOCS_LAM_SET = "FLASH.SYNC/LAM.EXP.ODL/F2.MOD.AMC12/FMC0.MD22.1.POSITION_SET.WR"
@@ -37,18 +42,28 @@ DOOCS_LAM_FB_EN = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.INTS/INTEGER29"
 DOOCS_LAM_FB_KP = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE5"
 DOOCS_LAM_FB_KI = "FLASH.LASER/ULGAN1.DYNPROP/TCFIBER.DOUBLES/DOUBLE6"
 
-
 DOOCS_URSA_T0 = "FLASH.EXP/STORE.FL24/URSAPQ/TIMEZERO"
 ODL_TOLERANCE = 0.001 # 2fs tolerance
 ODL_SPEED = 30
-ODL_LAM_DIFF = 3489.421 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
+ODL_LAM_DIFF = 3489.914 #hardcoded LAM - DELAY offset, set at start of beamtime based on calibration by laser group
 
 ursa = UrsaPQ()
 
 # DEFINE ACTIONS (what to do when setting parameters)
+
+@action
+async def sdu(value):
+    doocspie.set(DOOCS_SDU_DELAY_SET, value)
+    doocspie.set(DOOCS_SDU_DELAY_EN, 1)
+    while doocspie.get(DOOCS_SDU_DELAY_READY).data == 0:
+        await asyncio.sleep(0.1)
+
+    #save current delay to timezero
+    set_t0(value)
+
 @action
 async def retarder(value):
-    ursa.tof_retarderSetHV = value
+    ursa.tof_retarderSetHV = -abs(value)
     while abs(ursa.tof_retarderHV - value) > 0.3:
         await asyncio.sleep(0.1)
 
@@ -88,24 +103,7 @@ async def waveplate(value):
 
     doocspie.set(DOOCS_WAVEPLATE, value)
     doocspie.set(DOOCS_WAVEPLATE_EN, 1)
-    while doocspie.get(DOOCS_WAVEPLATE).data != value:
-        await asyncio.sleep(0.1)
-
-_uv_steering_h = 0
-@action
-def uv_steering_h(value):
-    global _uv_steering_h
-    step = value - _uv_steering_h
-    doocspie.set(DOOCS_UV_STEERING_H, step)
-    _uv_steering_h += step
-
-_uv_steering_v = 0
-@action
-def uv_steering_v(value):
-    global _uv_steering_v
-    step = value - _uv_steering_v
-    doocspie.set(DOOCS_UV_STEERING_V, step)
-    _uv_steering_v += step
+    await asyncio.sleep(0.4)
 
 @action
 def null(value):
@@ -153,7 +151,7 @@ async def lam_dl(target_lam):
             if abs(odl - target_odl) < ODL_TOLERANCE and abs(lam - target_lam) < ODL_TOLERANCE:
                 break
             else:
-                if time.time() - start > 90:
+                if time.time() - start > 120:
                     raise TimeoutError("Timeout while waiting for ODL and LAM to reach target")
             
             await asyncio.sleep(0.01)
@@ -207,9 +205,11 @@ def gmd_rate_monitor(data_in):
 
 #**** DATA GATERING FOR PLOTS ****
 def read_from_ursa():
-    return xr.Dataset({'even':  xr.DataArray(ursa.data_evenAccumulator, dims=['eTof']),
-                        'odd':  xr.DataArray(ursa.data_oddAccumulator, dims=['eTof']),
-                        'gmd':  xr.DataArray(ursa.data_gmdAccumulator)})
+    data = ursa.data_shots_accumulator
+
+    return xr.Dataset({'even':  xr.DataArray(data[0], dims=['eTof']),
+                        'odd':  xr.DataArray(data[1], dims=['eTof']),
+                        'gmd':  xr.DataArray(ursa.data_gmd_accumulator)})
 
 _integ_time = None
 _integ_gmd = None
@@ -218,12 +218,12 @@ def gather_data():
     if _integ_time is None and _integ_gmd is None:
         raise ValueError("At least one of integ_time or integ_gmd must be set")
 
-    end_time = time.time() + ( _integ_time or 1e6 )
+    end_time = time.time() + ( _integ_time or 1e3 )
     max_gmd = _integ_gmd or 1e8
 
     #reset accumulator
-    ursa.data_clearAccumulator = True
-    time.sleep(.5) #wait for data to clear
+    ursa.data_clear_accumulator = True
+    time.sleep(1) #wait for data to clear
     
     while True:
         data = read_from_ursa()
