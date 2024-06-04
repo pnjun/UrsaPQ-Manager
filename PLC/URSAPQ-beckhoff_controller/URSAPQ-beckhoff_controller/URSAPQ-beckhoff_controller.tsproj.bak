@@ -2658,7 +2658,7 @@ External Setpoint Generation:
 					<Name>SampleZ</Name>
 					<AxisPara>
 						<Dynamic Acceleration="8" Deceleration="8"/>
-						<Velo RefSearch="60" RefSync="60" SlowManual="1" FastManual="4" Maximum="2"/>
+						<Velo RefSearch="60" RefSync="60" SlowManual="1" FastManual="4" Maximum="10"/>
 						<OtherSettings AllowMotionCmdToSlave="true" DataPersistence="true" PulseDistancePos="1" PulseDistanceNeg="1"/>
 					</AxisPara>
 					<Encoder Name="Enc" EncType="4">

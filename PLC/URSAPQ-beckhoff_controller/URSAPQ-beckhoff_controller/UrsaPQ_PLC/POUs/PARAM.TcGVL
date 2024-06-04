@@ -11,7 +11,7 @@ VAR_GLOBAL CONSTANT
 	PenningMix_End   : REAL := 6E-4; //mBar (Stops mixing and uses penning only)
         
 	Sample_Movement_Speed: REAL := 2;
-	Sample_Movement_Speed_Z: REAL := 5; 
+	Sample_Movement_Speed_Z: REAL := 2.5; 
 	Frame_Movement_Speed : REAL := 0.2;
 	
 	Oven_MaxTemp : INT := 2500; // 200 deg C
